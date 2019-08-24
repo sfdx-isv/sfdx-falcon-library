@@ -1,12 +1,26 @@
 {
   "name": "util",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
+  "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
+  "license": "MIT",
+  "main": "lib/util.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sfdx-isv/sfdx-falcon-library.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/sfdx-isv/sfdx-falcon-library/issues"
+  }
 }

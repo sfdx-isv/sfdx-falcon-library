@@ -1,11 +1,11 @@
 {
-  "name": "types",
+  "name": "debug",
   "version": "0.0.0",
   "description": "> TODO: description",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
-  "main": "lib/types.js",
+  "main": "lib/debug.js",
   "directories": {
     "lib": "lib",
     "test": "__tests__"
