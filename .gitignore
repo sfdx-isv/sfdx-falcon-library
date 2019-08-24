@@ -1,0 +1,24 @@
+# Debug and Error Logs
+*-debug.log
+*-error.log
+# SFDX and SFDX-Falcon Hidden Directories
+.sfdx
+.sfdx-falcon
+# Common Editor Files
+.idea
+# Automated Tests
+/.nyc_output
+# Lerna-specific
+lerna-debug.log
+npm-debug.log
+packages/*/lib
+# Jekyll Docs-specific
+/docs/_site
+/docs/Gemfile.lock
+# Unclassified
+/dist
+/lib
+/package-lock.json
+/tmp
+node_modules/
+/reports
