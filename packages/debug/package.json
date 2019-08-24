@@ -1,26 +1,41 @@
 {
-  "name": "debug",
+  "name": "@sfdx-falcon/debug",
+  "description": "Debugging and logging services for Salesforce CLI plugins. Part of the SFDX-Falcon Library.",
   "version": "0.0.0",
-  "description": "> TODO: description",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
+  "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "keywords": [
+    "debug",
+    "logging",
+    "salesforce",
+    "salesforce-cli",
+    "salesforce-cli-plugin",
+    "salesforcedx",
+    "sfdx-falcon",
+    "sfdx-falcon-library",
+    "sfdx-plugin"
+  ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
   "main": "lib/debug.js",
+  "types": "lib/debug.d.ts",
   "directories": {
     "lib": "lib",
-    "test": "__tests__"
+    "test": "test"
   },
   "files": [
-    "lib"
+    "lib",
+    "npm-shrinkwrap.json"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sfdx-isv/sfdx-falcon-library.git"
-  },
+  "repository": "https://github.com/sfdx-isv/sfdx-falcon-library.git",
   "scripts": {
+    "build": "rm -rf lib && tsc --build",
+    "prepack": "rm -rf lib && tsc --build",
     "test": "echo \"Error: run tests from root\" && exit 1"
-  },
-  "bugs": {
-    "url": "https://github.com/sfdx-isv/sfdx-falcon-library/issues"
   }
 }
