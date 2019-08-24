@@ -1,0 +1,22 @@
+{
+  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "declaration": true,
+    "lib": ["es2017"],
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "module": "commonjs",
+    "moduleResolution": "node",   
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es2017"
+  },
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
