@@ -1,7 +1,6 @@
 {
   "name": "root",
-  "description": "Root package for the SFDX-Falcon Library monorepo.",
-  "version": "0.0.0",
+  "description": "Root package for the SFDX-Falcon Library monorepo. DO NOT PUBLISH.",
   "private": true,
   "devDependencies": {
     "@oclif/dev-cli": "^1.22.2",
