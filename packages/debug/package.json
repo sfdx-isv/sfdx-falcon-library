@@ -33,6 +33,9 @@
     "npm-shrinkwrap.json"
   ],
   "repository": "https://github.com/sfdx-isv/sfdx-falcon-library.git",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "rm -rf lib && tsc --build",
     "prepack": "rm -rf lib && tsc --build",
