@@ -1,7 +1,7 @@
 {
   "name": "@sfdx-falcon/debug",
   "description": "Debugging and logging services for Salesforce CLI plugins. Part of the SFDX-Falcon Library.",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.2-alpha.0",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
