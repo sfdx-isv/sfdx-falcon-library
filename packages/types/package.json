@@ -40,10 +40,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "npm run clean && npm run compile",
-    "clean": "rm -rf lib",
-    "compile": "tsc -p tsconfig.build.json",
-    "prepack": "npm run clean && npm run compile",
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "build":    "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "prepack":  "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "test":     "echo \"Error: run tests from root\" && exit 1"
   }
 }
