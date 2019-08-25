@@ -6,13 +6,10 @@
     "outDir": "./lib",
     "rootDir": "./src"
   },
-  "references": [
-    {"path": "../types/tsconfig.build.json"}
-  ],
-  "paths": {
-    "@sfdx-falcon/types": ["../types/src"]
-  },
   "include": [
     "./src/**/*"
+  ],
+  "references": [
+    {"path": "../types/tsconfig.build.json"} // @SFDX-Falcon/types
   ]
 }
