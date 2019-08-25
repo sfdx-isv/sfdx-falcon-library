@@ -1,7 +1,9 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "description": "Root package for the SFDX-Falcon Library monorepo. DO NOT PUBLISH.",
   "dependencies": {
     "@salesforce/ts-types": "1.2.0",

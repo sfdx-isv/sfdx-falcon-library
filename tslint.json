@@ -1,5 +1,5 @@
 {
-  "extends": "@salesforce/dev-config/tslint",
+  "extends": "@salesforce/dev-config/tslint.json",
   "rules": {
     "comment-format": false,
     "typedef-whitespace": [
