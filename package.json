@@ -1,7 +1,8 @@
 {
   "name": "root",
-  "description": "Root package for the SFDX-Falcon Library monorepo. DO NOT PUBLISH.",
   "private": true,
+  "workspaces": ["packages/*"],
+  "description": "Root package for the SFDX-Falcon Library monorepo. DO NOT PUBLISH.",
   "dependencies": {
     "@salesforce/ts-types": "1.2.0",
     "@types/jsforce": "1.9.9"
