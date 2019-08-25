@@ -10,12 +10,8 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-//export * from `./core.ts`;
-
-export type ClassConstructor = any;  // tslint:disable-line: no-any
-
-//export * from `./enum`;
-//export * from `./metadata`;
-//export * from `./sobject`;
+// Re-export each of the type collections in this module.
+export  * from  './core';
+export  * from  './enums';
+export  * from  './metadata-api';
 
