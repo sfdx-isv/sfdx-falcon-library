@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -z $1 ]; then
+  lerna run build
+else
+#  (cd ./packages/"$1" && rm -rf ./lib && tsc -p tsconfig.build.json)
+#  (cd ./packages/"$1" && rm -rf ./lib && tsc --build)
+  (cd ./packages/"$1" && yarn run build)
+fi
