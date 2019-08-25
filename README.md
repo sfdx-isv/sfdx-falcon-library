@@ -22,3 +22,6 @@ Builds a single package, as specified by the `package-name` passed as an argumen
 
 ### `COMMAND+SHIFT+P --> "Restart TS Server`
 After building a package, VS Code's built in TypeScript linter can show false errors. This can be fixed by restarting the TS Server from inside the affected `.ts` source file.
+
+### `npm whoami`
+Prints the username that's currently logged into the NPM registry. This is the user who will be used during the `lerna publish` operation.
