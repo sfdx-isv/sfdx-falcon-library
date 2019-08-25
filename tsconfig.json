@@ -1,22 +1,12 @@
 {
-  "extends": "./node_modules/@salesforce/dev-config/tsconfig",
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "alwaysStrict": true,
-    "declaration": true,
-    "lib": ["es2017"],
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "module": "commonjs",
-    "moduleResolution": "node",   
-    "removeComments": false,
-    "sourceMap": true,
-    "target": "es2017"
-  },
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ]
+    "baseUrl": "./packages",
+    "paths": {
+      "@sfdx-falcon/debug": ["debug/src"],
+      "@sfdx-falcon/playground": ["playground/src"],
+      "@sfdx-falcon/types": ["types/src"],
+      "@sfdx-falcon/util": ["util/src"],
+    }
+  }
 }

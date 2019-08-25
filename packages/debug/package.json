@@ -5,7 +5,8 @@
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
-    "@salesforce/ts-types": "1.2.0"
+    "@salesforce/ts-types": "1.2.0",
+    "@sfdx-falcon/types": "^0.0.3-alpha.0"
   },
   "devDependencies": {
     "ts-node": "^8.3.0"
@@ -41,8 +42,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf lib && tsc --build",
-    "prepack": "rm -rf lib && tsc --build",
+    "build": "npm run clean && npm run compile",
+    "clean": "rm -rf lib",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepack": "npm run clean && npm run compile",
     "test": "echo \"Error: run tests from root\" && exit 1"
   }
 }

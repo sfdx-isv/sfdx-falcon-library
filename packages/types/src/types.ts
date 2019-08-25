@@ -11,7 +11,10 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-//export * from `./core`;
+//export * from `./core.ts`;
+
+export type ClassConstructor = any;  // tslint:disable-line: no-any
+
 //export * from `./enum`;
 //export * from `./metadata`;
 //export * from `./sobject`;
