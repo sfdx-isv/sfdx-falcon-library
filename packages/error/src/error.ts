@@ -10,12 +10,10 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import External Modules
-import {SfdxError}    from  '@salesforce/core';   // SFDX Error Object.
-import {isEmpty}      from  'lodash';             // Useful function for detecting empty objects.
-
-// Import Local Modules
-import {findJson}     from  '@sfdx-falcon/util';  // Utility function. Helps find JSON in an abitrary string.
+// Import External Libraries, Modules, and Types
+import {SfdxError}    from  '@salesforce/core';     // SFDX Error Object.
+import {JsonMap}      from  '@salesforce/ts-types'; // Type. Any JSON key-value structure.
+import {isEmpty}      from  'lodash';               // Useful function for detecting empty objects.
 
 // Require Modules
 const chalk = require('chalk'); // Makes it easier to generate colored CLI output via console.log.
@@ -701,5 +699,48 @@ export class ShellError extends SfdxFalconError {
     // Add a detail line to the Falcon Stack.
     //this.addToStack(`at ${this.shellError.code}: ${this.shellError.message}`);
     return;
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    findJson
+ * @param       {string} contentToSearch  Required. A string buffer that may contain JSON.
+ * @returns     {JsonMap}  A parsed JavaScript object found in the string buffer, or NULL.
+ * @description Given any string buffer, search that buffer to find a single JSON object. If
+ *              a parseable object is found, it is returned as an object. Otherwise returns NULL.
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+function findJson(contentToSearch:string):JsonMap {
+  if (typeof contentToSearch !== 'string') {
+    throw new SfdxFalconError ( `Expected 'contentToSearch' to be a string but got '${typeof contentToSearch}' instead.`
+                              , `TypeError`
+                              , `SFDX-Falcon:error`);
+  }
+  const possibleJson  = contentToSearch.substring(contentToSearch.indexOf('{'), contentToSearch.lastIndexOf('}')+1);
+  let foundJson     = safeParse(possibleJson);
+  if (foundJson.hasOwnProperty('unparsed')) {
+    foundJson = null;
+  }
+  return foundJson;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    safeParse
+ * @param       {string} contentToParse  Required. The content to be parsed.
+ * @returns     {JsonMap} A JavaScript object (JsonMap) based on the content to parse.
+ * @description Given any content to parse, returns a JavaScript object based on that content. If
+ *              the content is not parseable, it is returned as an object with one key: unparsed.
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+function safeParse(contentToParse:string):JsonMap {
+  if (contentToParse === '') {
+    contentToParse = '{}';
+  }
+  try {
+    return JSON.parse(contentToParse as string);
+  } catch (e) {
+    return {unparsed: `${contentToParse}`};
   }
 }
