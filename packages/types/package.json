@@ -5,13 +5,30 @@
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
-    "@salesforce/core": "^2.1.1",
+    "@salesforce/core": "2.1.1",
     "@salesforce/ts-types": "1.2.0",
-    "rxjs": "^6.5.2",
-    "yeoman-generator": "^4.0.1"
+    "inquirer": "7.0.0",
+    "rxjs": "6.5.2",
+    "yeoman-generator": "4.0.1"
   },
   "devDependencies": {
-    "ts-node": "^8.3.0"
+    "@oclif/dev-cli": "1.22.2",
+    "@oclif/test": "1.2.5",
+    "@salesforce/dev-config": "1.5.0",
+    "@types/chai": "4.2.0",
+    "@types/fs-extra": "8.0.0",
+    "@types/inquirer": "6.5.0",
+    "@types/jsforce": "1.9.9",
+    "@types/json2csv": "4.5.0",
+    "@types/lodash": "4.14.137",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.7.2",
+    "@types/shelljs": "0.8.5",
+    "@types/yeoman-environment": "2.3.2",
+    "@types/yeoman-generator": "3.1.4",
+    "@types/yosay": "0.0.29",
+    "ts-node": "8.3.0",
+    "typescript": "3.5.3"
   },
   "engines": {
     "node": ">=8.0.0"
