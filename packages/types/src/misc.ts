@@ -23,12 +23,6 @@ import  {StatusMessage}       from  './core';
 import  {StyledMessage}       from  './core';
 import  {Status}              from  './enum';
 
-import  {SfdxFalconResult}    from  '../sfdx-falcon-result';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-import  {StandardOrgInfo}     from  '../sfdx-falcon-util/sfdx'; // Class. Stores information about a standard (ie. non-scratch) org that is connected to the local Salesforce CLI.
-import  {ScratchOrgInfo}      from  '../sfdx-falcon-util/sfdx'; // Class. Stores information about a scratch orgs that is connected to the local Salesforce CLI.
-import  {SfdxFalconTableData} from  '../sfdx-falcon-util/ux';   // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
-
-
 //
 //
 //
@@ -280,14 +274,23 @@ export interface ConfirmationAnswers extends JsonMap {
 }
 
 /**
+ * Interface. Represents a single row of data for use in an SFDX-Falon Table.
+ */
+export interface SfdxFalconKeyValueTableDataRow {
+  option:   string;
+  value:    string;
+  height?:  number;
+}
+
+/**
+ * Type. Represents an array of SfdxFalconKeyValueTableDataRow object literals.
+ */
+export type SfdxFalconTableData = SfdxFalconKeyValueTableDataRow[];
+
+/**
  * Type. Defines a function that displays answers to a user.
  */
 export type AnswersDisplay<T extends object> = (userAnswers?:T) => Promise<void | SfdxFalconTableData>;
-
-/**
- * Type. Alias to a combination of Error or SfdxFalconResult.
- */
-export type ErrorOrResult = Error | SfdxFalconResult;
 
 /**
  * Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
@@ -615,16 +618,6 @@ export interface RawScratchOrgInfo {
   devHubOrgId?:             string;     // Why?
   isExpired?:               boolean;    // Why?
 }
-
-/**
- * Type. Alias for a Map with string keys holding StandardOrgInfo values.
- */
-export type StandardOrgInfoMap = Map<string, StandardOrgInfo>;
-
-/**
- * Type. Alias for a Map with string keys holding ScratchOrgInfo values.
- */
-export type ScratchOrgInfoMap = Map<string, ScratchOrgInfo>;
 
 /**
  * Interface. Represents the options that can be set when constructing a StandardOrgInfo object.
