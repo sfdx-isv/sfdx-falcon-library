@@ -26,6 +26,6 @@
     "object-literal-shorthand": [true, "never"],
     "one-line": [true, "check-open-brace", "check-whitespace"],
     "whitespace": [true, "check-branch", "check-separator"],
-    "quotemark": [true, "backtick"]
+    "quotemark": false
   }
 }

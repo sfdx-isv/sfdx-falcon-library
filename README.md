@@ -9,7 +9,10 @@ List of the most common commands used to managed this monorepo. Unless otherwise
 ???
 
 ### `yarn add <dependency> --dev -W`
-Adds a common dev dependency to the workspace. Dependencies added in this way are available to all packages in the workspace.
+Adds a common dev dependency to the entire workspace. Dependencies added in this way are available to all packages in the workspace.
+
+### `yarn add <dependency>`
+Adds a dependency to the package that the command is called inside of.
 
 ### `lerna run build`
 Builds all packages in the workspace by having Lerna execute `yarn run build` against each package.

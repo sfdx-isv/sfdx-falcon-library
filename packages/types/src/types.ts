@@ -12,6 +12,7 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Re-export each of the type collections in this module.
 export  * from  './core';
-export  * from  './enums';
+export  * from  './enum';
 export  * from  './metadata-api';
-
+export  * from  './misc';
+export  * from  './sobject';
