@@ -8,7 +8,21 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
+import  * as CoreValidator    from  './core';
+import  * as GitValidator     from  './git';
+import  * as TypeValidator    from  './type';
+import  * as YeomanValidator  from  './yeoman';
+
+/*
 export  * from  './type';
 export  * from  './core';
 export  * from  './git';
 export  * from  './yeoman';
+//*/
+
+export {
+  TypeValidator,
+  CoreValidator,
+  GitValidator,
+  YeomanValidator
+};
