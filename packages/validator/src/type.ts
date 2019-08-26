@@ -13,11 +13,11 @@
 import * as fs              from  'fs-extra';               // Extended set of File System utils.
 import  {isEmpty}           from  'lodash';                 // Useful function for detecting empty objects.
 
-// Import Internal Classes & Functions
+// Import SFDX-Falcon Library Classes & Functions
 import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug';   // Class. Specialized debug provider for SFDX-Falcon code.
 import  {SfdxFalconError}   from  '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
-// Import Internal Types
+// Import SFDX-Falcon Library Types
 import  {ClassConstructor}  from  '@sfdx-falcon/types';   // Type. Represents the constructor for a Class, ie. something that can be the right operand of the instanceof operator.
 
 // Set the File Local Debug Namespace
