@@ -33,8 +33,7 @@
     "node": ">=8.0.0"
   },
   "keywords": [
-    "debug",
-    "logging",
+    "error",
     "salesforce",
     "salesforce-cli",
     "salesforce-cli-plugin",
@@ -45,8 +44,8 @@
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
-  "main": "lib/debug.js",
-  "types": "lib/debug.d.ts",
+  "main": "lib/error.js",
+  "types": "lib/error.d.ts",
   "directories": {
     "lib": "lib",
     "test": "test"
