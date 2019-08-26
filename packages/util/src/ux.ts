@@ -1,11 +1,10 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          modules/sfdx-falcon-util/ux.ts
- * @copyright     Vivek M. Chawla - 2018
+ * @file          packages/util/src/ux.ts
+ * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Console UX utility helper library
  * @description   Exports classes that provide various console.log() based UX / display functions.
- * @version       1.0.0
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
