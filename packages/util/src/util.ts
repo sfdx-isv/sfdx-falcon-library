@@ -15,7 +15,7 @@ import * as path            from  'path';                 // Module. Node's path
 const uuid                  = require('uuid/v1');         // Generates a timestamp-based UUID
 
 // Import Internal Libraries
-import * as typeValidator   from  '@sfdx-falcon/validator/type';  // Library of SFDX Helper functions specific to SFDX-Falcon.
+import {TypeValidator}      from  '@sfdx-falcon/validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
 
 // Import Internal Classes & Functions
 import {SfdxFalconDebug}    from  '@sfdx-falcon/debug'; // Class. Internal Debug module
@@ -44,8 +44,8 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function convertPropertyToBoolean(targetObject:object, targetKey:string, retainUnconvertedValues=true):void {
   const dbgNsLocal = `${dbgNs}convertPropertyToBoolean`;
-  typeValidator.throwOnNullInvalidObject      (targetObject,  `${dbgNsLocal}`,  `targetObject`);
-  typeValidator.throwOnEmptyNullInvalidString (targetKey,     `${dbgNsLocal}`,  `targetKey`);
+  TypeValidator.throwOnNullInvalidObject      (targetObject,  `${dbgNsLocal}`,  `targetObject`);
+  TypeValidator.throwOnEmptyNullInvalidString (targetKey,     `${dbgNsLocal}`,  `targetKey`);
   if (typeof targetObject[targetKey] === 'string' || typeof targetObject[targetKey] === 'number') {
     const convertedValue = valueToBoolean(targetObject[targetKey]);
     if (typeof convertedValue === 'undefined' && retainUnconvertedValues === true) {
@@ -76,8 +76,8 @@ export function convertPropertyToBoolean(targetObject:object, targetKey:string, 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function convertPropertyToNumber(targetObject:object, targetKey:string, retainUnconvertedValues=true):void {
   const dbgNsLocal = `${dbgNs}convertPropertyToNumber`;
-  typeValidator.throwOnNullInvalidObject      (targetObject,  `${dbgNsLocal}`,  `targetObject`);
-  typeValidator.throwOnEmptyNullInvalidString (targetKey,     `${dbgNsLocal}`,  `targetKey`);
+  TypeValidator.throwOnNullInvalidObject      (targetObject,  `${dbgNsLocal}`,  `targetObject`);
+  TypeValidator.throwOnEmptyNullInvalidString (targetKey,     `${dbgNsLocal}`,  `targetKey`);
   if (typeof targetObject[targetKey] === 'string' || typeof targetObject[targetKey] === 'number' || targetObject[targetKey] === 'boolean') {
     const convertedValue = valueToNumber(targetObject[targetKey]);
     if (typeof convertedValue === 'undefined' && retainUnconvertedValues === true) {

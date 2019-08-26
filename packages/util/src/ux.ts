@@ -14,16 +14,16 @@ import  * as _                from 'lodash';                    // Useful collec
 import  pad                   = require('pad');                 // Provides consistent spacing when trying to align console output.
 
 // Import Internal Libraries
-import  * as typeValidator    from  '../sfdx-falcon-validators/type-validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
+import  {TypeValidator}       from  '@sfdx-falcon/validator';   // Library of SFDX Helper functions specific to SFDX-Falcon.
 
 // Import Internal Modules
-import  {SfdxFalconDebug}     from  '../sfdx-falcon-debug';     // Class. Specialized debug provider for SFDX-Falcon code.
-import  {SfdxFalconError}     from  '../sfdx-falcon-error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';       // Class. Specialized debug provider for SFDX-Falcon code.
+import  {SfdxFalconError}     from  '@sfdx-falcon/error';       // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import Internal Types
-import  {StatusMessage}       from  '../sfdx-falcon-types';     // Interface. Represents a "state aware" message. Contains a title, a message, and a type.
-import  {StatusMessageType}   from  '../sfdx-falcon-types';     // Enum. Represents the various types/states of a Status Message.
-import  {StyledMessage}       from  '../sfdx-falcon-types';     // Interface. Allows for specification of a message string and chalk-specific styling information.
+import  {StatusMessage}       from  '@sfdx-falcon/types';       // Interface. Represents a "state aware" message. Contains a title, a message, and a type.
+import  {StatusMessageType}   from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
+import  {StyledMessage}       from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
 
 // Requires
 const stripAnsi = require('strip-ansi');                        // Strips ANSI escape codes from strings.
@@ -126,10 +126,10 @@ export interface TableOptions {
 export function printStatusMessage(statusMessage:StatusMessage, padLength:number=0, separator:string=' : '):void {
 
   // Validate input
-  typeValidator.throwOnNullInvalidString(statusMessage.title,   `${dbgNs}printStatusMessage`, `statusMessage.title`);
-  typeValidator.throwOnNullInvalidString(statusMessage.message, `${dbgNs}printStatusMessage`, `statusMessage.message`);
-  typeValidator.throwOnNullInvalidString(statusMessage.type,    `${dbgNs}printStatusMessage`, `statusMessage.type`);
-  typeValidator.throwOnNullInvalidString(separator,             `${dbgNs}printStatusMessage`, `separator`);
+  TypeValidator.throwOnNullInvalidString(statusMessage.title,   `${dbgNs}printStatusMessage`, `statusMessage.title`);
+  TypeValidator.throwOnNullInvalidString(statusMessage.message, `${dbgNs}printStatusMessage`, `statusMessage.message`);
+  TypeValidator.throwOnNullInvalidString(statusMessage.type,    `${dbgNs}printStatusMessage`, `statusMessage.type`);
+  TypeValidator.throwOnNullInvalidString(separator,             `${dbgNs}printStatusMessage`, `separator`);
 
   // Make sure we move forward with Pad Length as an actual number.
   if (isNaN(padLength)) {
@@ -227,9 +227,9 @@ export function printStyledMessage(styledMessage:StyledMessage):void {
   }
 
   // Validate incoming arguments.
-  typeValidator.throwOnEmptyNullInvalidObject (styledMessage,         `${dbgNs}printStyledMessage`, `styledMessage`);
-  typeValidator.throwOnNullInvalidString      (styledMessage.message, `${dbgNs}printStyledMessage`, `styledMessage.message`);
-  typeValidator.throwOnNullInvalidString      (styledMessage.styling, `${dbgNs}printStyledMessage`, `styledMessage.styling`);
+  TypeValidator.throwOnEmptyNullInvalidObject (styledMessage,         `${dbgNs}printStyledMessage`, `styledMessage`);
+  TypeValidator.throwOnNullInvalidString      (styledMessage.message, `${dbgNs}printStyledMessage`, `styledMessage.message`);
+  TypeValidator.throwOnNullInvalidString      (styledMessage.styling, `${dbgNs}printStyledMessage`, `styledMessage.styling`);
 
   // If styling info was provided, use it. Otherwise just log an unadorned message to the console.
   if (styledMessage.styling) {
@@ -389,13 +389,11 @@ export class SfdxFalconKeyValueTable {
    * @param       {TableColumnKey[]} [tableColumnKeys] Optional. Overrides Column keys/labels.
    * @param       {Partial<TableOptions>} [tableOptions] Optional. Allows override of the Table
    *              Options that are used to initialize/render the table.
-   * @param       {boolean} [debugMode] Optional. Set to TRUE to enable debug output from inside
-   *              SfdxFalconKeyValueTable.
    * @description Constructs an SfdxFalconKeyValueTable object.
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────────────────────────┘
-  constructor(tableColumnKeys?:TableColumnKey[], tableOptions?:Partial<TableOptions>, debugMode?:boolean) {
+  constructor(tableColumnKeys?:TableColumnKey[], tableOptions?:Partial<TableOptions>) {
 
     // Define the table columns. Use defaults if not properly specified by caller.
     if (typeof tableColumnKeys === 'undefined' || tableColumnKeys.length !== 2) {
