@@ -8,7 +8,7 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-if (true) {}
+if (true) {} // NoOp statement. Stops JSDocs from attaching file header comments to the first export, below.
 
 /**
  * Enum. Represents the various CLI log level flag values.
