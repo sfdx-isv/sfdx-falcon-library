@@ -7,6 +7,7 @@
   "dependencies": {
     "@salesforce/ts-types": "1.2.0",
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
+    "@sfdx-falcon/error": "0.0.4-alpha.0",
     "@sfdx-falcon/types": "0.0.4-alpha.0",
     "fs-extra": "8.1.0",
     "lodash": "4.17.15"
