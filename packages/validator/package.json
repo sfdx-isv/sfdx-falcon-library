@@ -1,0 +1,67 @@
+{
+  "name": "@sfdx-falcon/validator",
+  "description": "Validation classes and functions. Part of the SFDX-Falcon Library.",
+  "version": "0.0.4-alpha.0",
+  "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
+  "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
+  "dependencies": {
+    "@salesforce/ts-types": "1.2.0",
+    "@sfdx-falcon/debug": "0.0.4-alpha.0",
+    "@sfdx-falcon/types": "0.0.4-alpha.0",
+    "fs-extra": "8.1.0",
+    "lodash": "4.17.15"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "1.22.2",
+    "@oclif/test": "1.2.5",
+    "@salesforce/dev-config": "1.5.0",
+    "@types/chai": "4.2.0",
+    "@types/fs-extra": "8.0.0",
+    "@types/inquirer": "6.5.0",
+    "@types/jsforce": "1.9.9",
+    "@types/json2csv": "4.5.0",
+    "@types/lodash": "4.14.137",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.7.2",
+    "@types/shelljs": "0.8.5",
+    "@types/yeoman-environment": "2.3.2",
+    "@types/yeoman-generator": "3.1.4",
+    "@types/yosay": "0.0.29",
+    "ts-node": "8.3.0",
+    "typescript": "3.5.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "keywords": [
+    "salesforce",
+    "salesforce-cli",
+    "salesforce-cli-plugin",
+    "salesforcedx",
+    "sfdx-falcon",
+    "sfdx-falcon-library",
+    "sfdx-plugin",
+    "validator"
+  ],
+  "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
+  "license": "MIT",
+  "main": "lib/validator.js",
+  "types": "lib/validator.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "lib",
+    "npm-shrinkwrap.json"
+  ],
+  "repository": "https://github.com/sfdx-isv/sfdx-falcon-library.git",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "prepack": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}
