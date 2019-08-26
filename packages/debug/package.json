@@ -46,7 +46,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json --verbose",
     "prepack": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
     "test": "echo \"Error: run tests from root\" && exit 1"
   }
