@@ -10,6 +10,12 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+/**
+ * `@sfdx-falcon/types` module.
+ * @module types
+ */
+
 // Re-export each of the type collections in this module.
 export  * from  './core';
 export  * from  './enum';
