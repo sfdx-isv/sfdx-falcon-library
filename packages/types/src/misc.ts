@@ -10,8 +10,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Modules/Types
 import  {Connection}  from  '@salesforce/core';
-import  {AnyJson}     from  '@salesforce/ts-types';
-import  {JsonMap}     from  '@salesforce/ts-types';
 import  {Observable}  from  'rxjs';
 import  {Observer}    from  'rxjs';
 import  {Subscriber}  from  'rxjs';
@@ -21,6 +19,8 @@ import  {Question}    from  'yeoman-generator';
 // Import Internal Modules/Types
 import  {StatusMessage}       from  './core';
 import  {StyledMessage}       from  './core';
+import  {AnyJson}             from  './core';
+import  {JsonMap}             from  './core';
 import  {Status}              from  './enum';
 
 //

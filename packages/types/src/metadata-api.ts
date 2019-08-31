@@ -9,7 +9,7 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Modules/Types
-import {JsonMap}  from  '@salesforce/ts-types';
+import {JsonMap}  from  './core';
 
 
 /**
