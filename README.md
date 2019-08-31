@@ -23,6 +23,12 @@ Equivalent to `lerna run build`.
 ### `./build <package-name>`
 Builds a single package, as specified by the `package-name` passed as an argument to the command.
 
+### `./install`
+Equivalent to `yarn install`.
+
+### `./install <package-name>`
+Installs the dependencies for a single package, as specified by the `package-name` passed as an argument to the command.
+
 ### `COMMAND+SHIFT+P --> "Restart TS Server`
 After building a package, VS Code's built in TypeScript linter can show false errors. This can be fixed by restarting the TS Server from inside the affected `.ts` source file.
 
