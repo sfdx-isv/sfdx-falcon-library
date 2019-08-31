@@ -1,6 +1,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          modules/sfdx-falcon-util/jsforce.ts
+ * @file          packages/util/src/jsforce.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Utility Module - JSForce

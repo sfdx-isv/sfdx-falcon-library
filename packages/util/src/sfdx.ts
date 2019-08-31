@@ -1,6 +1,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          modules/sfdx-falcon-util/sfdx.ts
+ * @file          packages/util/src/sfdx.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Utility Module - SFDX

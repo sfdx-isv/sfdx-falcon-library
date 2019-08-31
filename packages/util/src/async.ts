@@ -1,7 +1,7 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          sfdx-falcon-util/async.ts
- * @copyright     Vivek M. Chawla - 2018
+ * @file          packages/util/src/async.ts
+ * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Helper library for running async logic.
  * @description   Exports functions that make running async logic easier.
