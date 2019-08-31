@@ -14,11 +14,13 @@
 import  {Connection}                from  '@salesforce/core';     // Handles connections and requests to Salesforce Orgs.
 import  * as jsf                    from  'jsforce';              // Provides low-level services for interacting with Salesforce orgs.
 
-// Import Internal Libraries
+// Import SFDX-Falcon Libraries
 import  {TypeValidator}             from  '@sfdx-falcon/validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
 
-// Import Internal Classes & Functions
+// Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+
+// Import Internal Classes & Functions
 import  {resolveConnection}         from  './sfdx';               // Function. Takes either an alias or a connection and gives back a connection.
 
 // Import SFDX-Falcon Types

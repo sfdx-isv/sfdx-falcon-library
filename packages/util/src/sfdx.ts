@@ -17,7 +17,7 @@ import {cloneDeep}                from  'lodash';                 // Recursively
 import * as path                  from  'path';                   // Node's native tool for inspecting/manipulating file paths.
 const shell                       = require('shelljs');           // Cross-platform shell access - use for setting up Git repo.
 
-// Import Internal Libraries
+// Import SFDX-Falcon Libraries
 import {TypeValidator}            from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions

@@ -13,10 +13,10 @@ import {ConfigFile}         from  '@salesforce/core';     // Module. SFDX Core l
 import * as path            from  'path';                 // Module. Node's path library.
 const uuid                  = require('uuid/v1');         // Generates a timestamp-based UUID
 
-// Import Internal Libraries
+// Import SFDX-Falcon Libraries
 import {TypeValidator}      from  '@sfdx-falcon/validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
 
-// Import Internal Classes & Functions
+// Import SFDX-Falcon Classes & Functions
 import {SfdxFalconDebug}    from  '@sfdx-falcon/debug'; // Class. Internal Debug module
 import {SfdxFalconError}    from  '@sfdx-falcon/error'; // Class. Provides custom Error structures for SFDX-Falcon.
 

@@ -13,14 +13,14 @@ import  chalk                 from  'chalk';                    // Helps write c
 import  * as _                from 'lodash';                    // Useful collection of utility functions.
 import  pad                   = require('pad');                 // Provides consistent spacing when trying to align console output.
 
-// Import Internal Libraries
+// Import SFDX-Falcon Libraries
 import  {TypeValidator}       from  '@sfdx-falcon/validator';   // Library of SFDX Helper functions specific to SFDX-Falcon.
 
-// Import Internal Modules
+// Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';       // Class. Specialized debug provider for SFDX-Falcon code.
 import  {SfdxFalconError}     from  '@sfdx-falcon/error';       // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
-// Import Internal Types
+// Import SFDX-Falcon Types
 import  {StatusMessage}       from  '@sfdx-falcon/types';       // Interface. Represents a "state aware" message. Contains a title, a message, and a type.
 import  {StatusMessageType}   from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
 import  {StyledMessage}       from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.

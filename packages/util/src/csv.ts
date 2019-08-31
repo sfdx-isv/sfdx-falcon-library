@@ -16,7 +16,7 @@ import  * as  json2csv    from  'json2csv';             // Converts json into cs
 import  * as  path        from  'path';                 // Node's path library.
 import  {Readable}        from  'stream';               // Node's stream library.
 
-// Import SFDX-Falcon Modules
+// Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug} from  '@sfdx-falcon/debug';   // Class. Specialized debug provider for SFDX-Falcon code.
 import  {SfdxFalconError} from  '@sfdx-falcon/error';   // Class. Specialized Error object. Wraps SfdxError.
 

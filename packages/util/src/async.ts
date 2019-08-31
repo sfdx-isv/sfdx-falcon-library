@@ -9,7 +9,7 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import Internal Modules
+// Import SFDX-Falcon Classes & Functions
 import {SfdxFalconDebug}  from  '@sfdx-falcon/debug'; // Class. Specialized debug provider for SFDX-Falcon code.
 import {SfdxFalconError}  from  '@sfdx-falcon/error'; // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
