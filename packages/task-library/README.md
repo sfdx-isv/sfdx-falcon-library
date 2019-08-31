@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-const util = require('util');
+const task-library = require('task-library');
 
 // TODO: DEMONSTRATE API
 ```
