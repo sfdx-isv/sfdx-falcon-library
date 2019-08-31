@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ -z $1 ]; then
+  yarn install
+else
+  (cd ./packages/"$1" && yarn install)
+fi
