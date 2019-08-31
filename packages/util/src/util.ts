@@ -10,7 +10,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
 import {ConfigFile}         from  '@salesforce/core';     // Module. SFDX Core library.
-import {JsonMap}            from  '@salesforce/ts-types'; // Type. Any JSON key-value structure.
 import * as path            from  'path';                 // Module. Node's path library.
 const uuid                  = require('uuid/v1');         // Generates a timestamp-based UUID
 
@@ -20,6 +19,9 @@ import {TypeValidator}      from  '@sfdx-falcon/validator'; // Library of SFDX H
 // Import Internal Classes & Functions
 import {SfdxFalconDebug}    from  '@sfdx-falcon/debug'; // Class. Internal Debug module
 import {SfdxFalconError}    from  '@sfdx-falcon/error'; // Class. Provides custom Error structures for SFDX-Falcon.
+
+// Import SFDX-Falcon Types
+import {JsonMap}            from  '@sfdx-falcon/types'; // Interface. Any JSON-compatible object.
 
 // Set the File Local Debug Namespace
 const dbgNs = 'UTILITY:general:';
