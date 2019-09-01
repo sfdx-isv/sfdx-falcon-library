@@ -158,6 +158,24 @@ export function errMsgInvalidInstance(arg:unknown, classConstructor:AnyConstruct
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    errMsgInvalidNumber
+ * @param       {unknown} arg Required. The argument involved in the error.
+ * @param       {string}  argName Required. The variable name of the argument involved in the error.
+ * @returns     {string}  A standardized error message reporting an invalid `number` was provided.
+ * @description Given an argument and the name of that argument, returns a standardized error
+ *              message reporting an invalid `number` was provided.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function errMsgInvalidNumber(arg:unknown, argName:string):string {
+  if (isEmptyNullInvalidString(argName)) {
+    argName = 'the argument';
+  }
+  return `Expected ${argName} to be a valid number${typeof arg !== 'number' ? ` but got type '${typeof arg}' instead` : `${isNaN(arg) ? ` but got 'NaN' instead` : ``}` }.`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    errMsgInvalidObject
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
@@ -284,6 +302,24 @@ export function errMsgNullInvalidInstance(arg:unknown, classConstructor:AnyConst
   return `Expected ${argName} to be a non-null instance of '${expectedInstanceOf}'` +
          (actualInstanceOf ? ` but got an instance of '${actualInstanceOf}' instead` : ``) +
          `.`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    errMsgNullInvalidNumber
+ * @param       {unknown} arg Required. The argument involved in the error.
+ * @param       {string}  argName Required. The variable name of the argument involved in the error.
+ * @returns     {string}  A standardized error message reporting a `null` or invalid `number` was provided.
+ * @description Given an argument and the name of that argument, returns a standardized error
+ *              message reporting a `null` or invalid `number` was provided.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function errMsgNullInvalidNumber(arg:unknown, argName:string):string {
+  if (isEmptyNullInvalidString(argName)) {
+    argName = 'the argument';
+  }
+  return `Expected ${argName} to be a valid, non-null, number${typeof arg !== 'number' ? ` but got type '${typeof arg}' instead` : `${isNaN(arg) ? ` but got 'NaN' instead` : ``}` }.`;
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -422,6 +458,19 @@ export function isInvalidInstance(variable:unknown, classConstructor:AnyConstruc
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    isInvalidNumber
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks if the given variable is NOT a `number`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isInvalidNumber(variable:unknown):boolean {
+  return (typeof variable !== 'number' || isNaN(variable));
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    isInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
@@ -485,6 +534,19 @@ export function isNullInvalidBoolean(variable:unknown):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isNullInvalidInstance(variable:unknown, classConstructor:AnyConstructor):boolean {
   return (typeof variable !== 'object' || variable === null || ((variable instanceof classConstructor) !== true));
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    isNullInvalidNumber
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks if the given variable is NOT a `number`, or if it is `null`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isNullInvalidNumber(variable:unknown):boolean {
+  return (typeof variable !== 'number' || isNaN(variable) || variable === null);
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -627,6 +689,19 @@ export function isNotInvalidInstance(variable:unknown, classConstructor:AnyConst
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    isNotInvalidNumber
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks for the inverse of `isInvalidNumber()`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isNotInvalidNumber(variable:unknown):boolean {
+  return !isInvalidNumber(variable);
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    isNotInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
@@ -690,6 +765,19 @@ export function isNotNullInvalidBoolean(variable:unknown):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isNotNullInvalidInstance(variable:unknown, classConstructor:AnyConstructor):boolean {
   return !isNullInvalidInstance(variable, classConstructor);
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    isNotNullInvalidNumber
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks for the inverse of `isNullInvalidNumber()`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isNotNullInvalidNumber(variable:unknown):boolean {
+  return !isNullInvalidNumber(variable);
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -874,6 +962,27 @@ export function throwOnInvalidInstance(arg:unknown, classConstructor:AnyConstruc
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    throwOnInvalidNumber
+ * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
+ * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @returns     {void}
+ * @description Given an argument of unknown type, attempts to validate that the argument is a
+ *              `number`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function throwOnInvalidNumber(arg:unknown, dbgNsExt:string, argName?:string):void {
+  if (isInvalidNumber(arg)) {
+    throw new SfdxFalconError( errMsgInvalidNumber(arg, argName)
+                             , `TypeError`
+                             , `${dbgNsExt}`);
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    throwOnInvalidObject
  * @param       {unknown} arg Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
@@ -975,6 +1084,27 @@ export function throwOnNullInvalidBoolean(arg:unknown, dbgNsExt:string, argName?
 export function throwOnNullInvalidInstance(arg:unknown, classConstructor:AnyConstructor, dbgNsExt:string, argName:string):void {
   if (isNullInvalidInstance(arg, classConstructor))  {
     throw new SfdxFalconError( errMsgNullInvalidInstance(arg, classConstructor, argName)
+                             , `TypeError`
+                             , `${dbgNsExt}`);
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    throwOnNullInvalidNumber
+ * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
+ * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @returns     {void}
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `number`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function throwOnNullInvalidNumber(arg:unknown, dbgNsExt:string, argName?:string):void {
+  if (isNullInvalidNumber(arg)) {
+    throw new SfdxFalconError( errMsgNullInvalidNumber(arg, argName)
                              , `TypeError`
                              , `${dbgNsExt}`);
   }
