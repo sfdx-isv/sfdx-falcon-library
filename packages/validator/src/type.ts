@@ -105,9 +105,9 @@ export function errMsgInvalidArray(arg:unknown, argName:string):string {
  * @function    errMsgInvalidBoolean
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an invalid object was provided.
+ * @returns     {string}  A standardized error message reporting an invalid `boolean` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an invalid boolean was provided.
+ *              message reporting an invalid `boolean` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -116,6 +116,24 @@ export function errMsgInvalidBoolean(arg:unknown, argName:string):string {
     argName = 'the argument';
   }
   return `Expected ${argName} to be a boolean but got type '${typeof arg}' instead.`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    errMsgInvalidFunction
+ * @param       {unknown} arg Required. The argument involved in the error.
+ * @param       {string}  argName Required. The variable name of the argument involved in the error.
+ * @returns     {string}  A standardized error message reporting an invalid `function` was provided.
+ * @description Given an argument and the name of that argument, returns a standardized error
+ *              message reporting an invalid `function` was provided.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function errMsgInvalidFunction(arg:unknown, argName:string):string {
+  if (isEmptyNullInvalidString(argName)) {
+    argName = 'the argument';
+  }
+  return `Expected ${argName} to be a function but got type '${typeof arg}' instead.`;
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -263,6 +281,24 @@ export function errMsgNullInvalidBoolean(arg:unknown, argName:string):string {
     argName = 'the argument';
   }
   return `Expected ${argName} to be a non-null boolean${typeof arg !== 'boolean' ? ` but got type '${typeof arg}' instead.` : `.`}`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    errMsgNullInvalidFunction
+ * @param       {unknown} arg Required. The argument involved in the error.
+ * @param       {string}  argName Required. The variable name of the argument involved in the error.
+ * @returns     {string}  A standardized error message reporting a `null` or invalid `function` was provided.
+ * @description Given an argument and the name of that argument, returns a standardized error
+ *              message reporting a `null` or invalid `function` was provided.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function errMsgNullInvalidFunction(arg:unknown, argName:string):string {
+  if (isEmptyNullInvalidString(argName)) {
+    argName = 'the argument';
+  }
+  return `Expected ${argName} to be a non-null function${typeof arg !== 'function' ? ` but got type '${typeof arg}' instead.` : `.`}`;
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -443,6 +479,19 @@ export function isInvalidBoolean(variable:unknown):boolean {
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    isInvalidFunction
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks if the given variable is NOT a `function`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isInvalidFunction(variable:unknown):boolean {
+  return (typeof variable !== 'function');
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    isInvalidInstance
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
@@ -519,6 +568,19 @@ export function isNullInvalidArray(variable:unknown):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isNullInvalidBoolean(variable:unknown):boolean {
   return (typeof variable !== 'boolean' || variable === null);
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    isNullInvalidFunction
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks if the given variable is NOT a `function`, or if it is `null`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isNullInvalidFunction(variable:unknown):boolean {
+  return (typeof variable !== 'function' || variable === null);
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -674,6 +736,19 @@ export function isNotInvalidBoolean(variable:unknown):boolean {
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    isNotInvalidFunction
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks for the inverse of `isInvalidFunction()`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isNotInvalidFunction(variable:unknown):boolean {
+  return !isInvalidFunction(variable);
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    isNotInvalidInstance
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
@@ -750,6 +825,19 @@ export function isNotNullInvalidArray(variable:unknown):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isNotNullInvalidBoolean(variable:unknown):boolean {
   return !isNullInvalidBoolean(variable);
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    isNotNullInvalidFunction
+ * @param       {unknown} variable  Required. The variable whose type will be validated.
+ * @returns     {boolean}
+ * @description Checks for the inverse of `isNullInvalidFunction()`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function isNotNullInvalidFunction(variable:unknown):boolean {
+  return !isNullInvalidFunction(variable);
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -939,6 +1027,27 @@ export function throwOnInvalidBoolean(arg:unknown, dbgNsExt:string, argName?:str
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * @function    throwOnInvalidFunction
+ * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
+ * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @returns     {void}
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              `function`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function throwOnInvalidFunction(arg:unknown, dbgNsExt:string, argName?:string):void {
+  if (isInvalidFunction(arg)) {
+    throw new SfdxFalconError( errMsgInvalidFunction(arg, argName)
+                             , `TypeError`
+                             , `${dbgNsExt}`);
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @function    throwOnInvalidInstance
  * @param       {unknown} arg Required. The argument whose type will be validated.
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
@@ -1060,6 +1169,27 @@ export function throwOnNullInvalidArray(arg:unknown, dbgNsExt:string, argName?:s
 export function throwOnNullInvalidBoolean(arg:unknown, dbgNsExt:string, argName?:string):void {
   if (isNullInvalidBoolean(arg)) {
     throw new SfdxFalconError( errMsgNullInvalidBoolean(arg, argName)
+                             , `TypeError`
+                             , `${dbgNsExt}`);
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    throwOnNullInvalidFunction
+ * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
+ * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @returns     {void}
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `function`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function throwOnNullInvalidFunction(arg:unknown, dbgNsExt:string, argName?:string):void {
+  if (isNullInvalidFunction(arg)) {
+    throw new SfdxFalconError( errMsgNullInvalidFunction(arg, argName)
                              , `TypeError`
                              , `${dbgNsExt}`);
   }
