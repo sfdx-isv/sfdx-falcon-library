@@ -100,8 +100,9 @@ export const enum SfdxFalconResultType {
   FUNCTION  = 'FUNCTION',
   GENERATOR = 'GENERATOR',
   INQUIRER  = 'INQUIRER',
-  LISTR     = 'LISTR',
+  LISTR     = 'LISTR',    // TODO: Deprecate in favor of TASK.
   RECIPE    = 'RECIPE',
+  TASK      = 'TASK',
   UNKNOWN   = 'UNKNOWN',
   UTILITY   = 'UTILITY'
 }
