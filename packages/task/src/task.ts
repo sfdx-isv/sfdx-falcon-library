@@ -15,6 +15,7 @@ import  {ListrTaskWrapper}  from  'listr';  // ???
 import  {ListrTaskResult}   from  'listr';  // ???
 import  Listr               = require('listr');
 import  {Observable}        from  'rxjs';   // Class. Used to communicate status with Listr.
+import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
 
 // Import SFDX-Falcon Libraries
 import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
@@ -25,9 +26,12 @@ import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class
 import  {TaskProgressNotifications} from  '@sfdx-falcon/notifications'; // Class. Manages progress notification messages for SFDX-Falcon Tasks.
 import  {SfdxFalconResult}          from  '@sfdx-falcon/result';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
+
+
 // Import SFDX-Falcon Types
-import  {SfdxFalconResultType}  from  '@sfdx-falcon/result';  //  Enum. Represents the different types of sources where Results might come from.
-import  {Subscriber}            from  '@sfdx-falcon/types';   //  Type. Alias to an rxjs Subscriber<unknown> type.
+import  {SfdxFalconResultType}      from  '@sfdx-falcon/result';  // Enum. Represents the different types of sources where Results might come from.
+import  {ErrorOrResult}             from  '@sfdx-falcon/result';  // Type. Alias to a combination of Error or SfdxFalconResult.
+//import  {Subscriber}            from  '@sfdx-falcon/types';   //  Type. Alias to an rxjs Subscriber<unknown> type.
 
 
 // Set the File Local Debug Namespace
@@ -35,9 +39,11 @@ const dbgNs = '@sfdx-falcon:task:';
 SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 
 
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * Type. Alias for the "this" context from the caller.
  */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export type Context = any;  // tslint:disable-line: no-any
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -51,15 +57,19 @@ export interface ObservableTaskResultOptions {
   /** Runtime wrapper around the `ListrTask` that's being executed. Allows for runtime modification of various task properties. */
   listrTask:      ListrTaskWrapper;
   /** The RxJS Subscriber that this `ObservableTaskResult` should be hooked into */
-  subscriber:       Subscriber;
+  subscriber:     Subscriber<unknown>;
+  /** Shared Data object that the associated `SfdxFalconTask` should have access to. */
+  sharedData:     object;
   /** The Debug Namespace that should be used within this `ObservableTaskResult` instance */
-  dbgNsLocal:     string;
+  dbgNsExt:       string;
   /** The baseline status message for this `ObservableTaskResult`. */
-  statusMsg?:     string;
+  statusMsg:      string;
   /** The minimum amount of time, in seconds, that this `ObservableTaskResult` should run. Useful for keeping a status message on screen long enough for the user to see it. */
-  minRuntime?:    number;
+  minRuntime:     number;
   /** Specifies whether or not the status message shown by the `ListrTask` will be continually updated with an "elapsed seconds" counter. */
-  showTimer?:     boolean;
+  showTimer:      boolean;
+  /** The `SfdxFalconResult` that will be the parent of the Result associated with this `ObservableTaskResult` instance */
+  parentResult?:  SfdxFalconResult;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -82,6 +92,19 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> extends ListrTask<CTX> 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * Interface. Models the information stored as the "detail" of an `SfdxFalconResult` that's contained
+ * by an `ObservableTaskResult` object.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface TaskResultDetail {
+  sharedData:           object;
+  listrContext:         ListrContext;
+  listrTask:            ListrTaskWrapper;
+  statusMsg:            string;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @class       ObservableTaskResult
  * @description Creates the structure needed to wrap the output of any task as an `SfdxFalconResult`
  *              while also managing access to the Observer that Listr uses to monitor the progress
@@ -92,15 +115,18 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> extends ListrTask<CTX> 
 export class ObservableTaskResult {
 
   // Private class members
-  private _dbgNsLocal:          string;
-  private _extContext:          Context;
+  private _dbgNsExt:            string;
   private _listrContext:        ListrContext;
   private _listrTask:           ListrTaskWrapper;
-  private _subscriber:          Subscriber;
+  private _subscriber:          Subscriber<unknown>;
   private _sharedData:          object;
   private _statusMsg:           string;
+  private _minRunTime:          number;
+  private _showTimer:           boolean;
   private _parentResult:        SfdxFalconResult;
-  private _notificationTimeout: NodeJS.Timeout;
+  private _taskResult:          SfdxFalconResult;
+  private _taskResultDetail:    TaskResultDetail;
+  private _notificationTimer:   NodeJS.Timeout;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -111,13 +137,208 @@ export class ObservableTaskResult {
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  constructor(opts:ObservableTaskResult) {
+  constructor(opts:ObservableTaskResultOptions) {
 
+    // Set function-local debug namespace and examine incoming arguments.
+    const dbgNsLocal = `${dbgNs}ObservableTaskResult:constructor`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
   
+    // Validate the REQUIRED contents of the options object.
+    TypeValidator.throwOnEmptyNullInvalidObject (opts, `${dbgNsLocal}`, `opts`);
+    TypeValidator.throwOnNullInvalidObject      (opts.listrContext, `${dbgNsLocal}`,  `opts.listrContext`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts.listrTask,    `${dbgNsLocal}`,  `opts.listrTask`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts.subscriber,   `${dbgNsLocal}`,  `opts.subscriber`);
+    TypeValidator.throwOnNullInvalidObject      (opts.sharedData,   `${dbgNsLocal}`,  `opts.sharedData`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.dbgNsExt,     `${dbgNsLocal}`,  `opts.dbgNsExt`);
+    TypeValidator.throwOnNullInvalidString      (opts.statusMsg,    `${dbgNsLocal}`,  `opts.statusMsg`);
+    TypeValidator.throwOnNullInvalidNumber      (opts.minRuntime,   `${dbgNsLocal}`,  `opts.minRuntime`);
+    TypeValidator.throwOnNullInvalidBoolean     (opts.showTimer,    `${dbgNsLocal}`,  `opts.showTimer`);
 
+    // Validate the OPTIONAL contents of the options object.
+    if (opts.parentResult) TypeValidator.throwOnNullInvalidInstance(opts.parentResult, SfdxFalconResult, `${dbgNsLocal}`, `opts.parentResult`);
+
+    // Validate the DEEPER contents of the options object.
+    TypeValidator.throwOnNullInvalidInstance(opts.subscriber, Subscriber, `${dbgNsLocal}`, `opts.subscriber`);
+
+    // Initialize member variables.
+    this._dbgNsExt          = opts.dbgNsExt;
+    this._listrContext      = opts.listrContext;
+    this._listrTask         = opts.listrTask;
+    this._subscriber        = opts.subscriber;
+    this._sharedData        = opts.sharedData;
+    this._statusMsg         = opts.statusMsg;
+    this._minRunTime        = opts.minRuntime;
+    this._showTimer         = opts.showTimer;
+    this._parentResult      = opts.parentResult;
+
+    // Initialize an SFDX-Falcon Result object.
+    const taskResult = new SfdxFalconResult (this._dbgNsExt, SfdxFalconResultType.TASK,
+                                            { startNow:       true,     // Start the internal clock for this result on creation
+                                              bubbleError:    false,    // Let the parent Result handle errors (no bubbling)
+                                              bubbleFailure:  false});  // Let the parent Result handle failures (no bubbling)
+    SfdxFalconDebug.obj(`${dbgNsLocal}:taskResult:`, taskResult);
+
+    // Initialize the Task Result Detail.
+    this._taskResultDetail = {
+      sharedData:           this._sharedData,
+      listrContext:         this._listrContext,
+      listrTask:            this._listrTask,
+      statusMsg:            this._statusMsg
+    };
+    taskResult.setDetail(this._taskResultDetail);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:taskResult.detail:`, taskResult.detail);
+
+    // Set the initial Task Detail message.
+    if (this._showTimer) {
+      this._subscriber.next(`[0s] ${this._statusMsg}`);
+    }
+    else {
+      this._subscriber.next(`${this._statusMsg}`);
+    }
+
+    // Set up Task Progress Notifications and store a reference to the Timer.
+    this._notificationTimer = TaskProgressNotifications.start(this._statusMsg, 1000, taskResult, this._subscriber);
   }
 
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      finalizeFailure
+   * @param       {ErrorOrResult} errorOrResult Required.
+   * @returns     {void}
+   * @description Finalizes this `ObservableTaskResult` in a manner that
+   *              indicates the associated task was NOT successful.
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public finalizeFailure(errorOrResult:ErrorOrResult):void {
 
+    // Set function-local debug namespace and examine incoming arguments.
+    const dbgNsLocal = `${dbgNs}ObservableTaskResult:finalizeFailure`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Define a special "subscriber throw" function.
+    const subscriberThrow = (error:Error):void => {
+      try {
+        this._subscriber.error(SfdxFalconError.wrap(error));
+      }
+      catch (noSubscriberError) {
+        SfdxFalconDebug.debugObject('SUBSCRIBER_ERROR_FAILED:noSubscriberError:', noSubscriberError);
+        SfdxFalconDebug.debugObject('SUBSCRIBER_ERROR_FAILED:error', error);
+        throw SfdxFalconError.wrap(error);
+      }
+    };
+
+    // Validate incoming arguments.
+    if (TypeValidator.isEmptyNullInvalidObject(errorOrResult)) {
+      return subscriberThrow(new SfdxFalconError( `${TypeValidator.errMsgEmptyNullInvalidObject(errorOrResult, `errorOrResult`)}`
+                                                , `TypeError`
+                                                , `${dbgNsLocal}`));
+    }
+    if (TypeValidator.isInvalidInstance(errorOrResult, Error)
+        && TypeValidator.isInvalidInstance(errorOrResult, SfdxFalconResult)) {
+      return subscriberThrow(new SfdxFalconError( `Expected errorOrResult to be an instance of Error or SfdxFalconResult but got '${(errorOrResult.constructor) ? errorOrResult.constructor.name : 'unknown'}' instead.`
+                                                , `TypeError`
+                                                , `${dbgNsLocal}`));
+    }
+    
+    // Validate current state of key instance variables.
+    if (TypeValidator.isInvalidInstance(this._taskResult, SfdxFalconResult)) {
+      return subscriberThrow(new SfdxFalconError( `${TypeValidator.errMsgInvalidInstance(this._taskResult, SfdxFalconResult, `this._taskResult`)}`
+                                                , `TypeError`
+                                                , `${dbgNsLocal}`));
+    }
+    if (TypeValidator.isNullInvalidObject(this._taskResult.detail)) {
+      return subscriberThrow(new SfdxFalconError( `${TypeValidator.errMsgNullInvalidObject(this._taskResult.detail, `this._taskResult.detail`)}`
+                                                , `TypeError`
+                                                , `${dbgNsLocal}`));
+    }
+
+    // Finish any Task Progress Notifications attached to this Observable Task Result.
+    TaskProgressNotifications.finish(this._notificationTimer);
+
+    // Set the final ERROR state of the Task Result.
+    if (errorOrResult instanceof Error) {
+      this._taskResult.error(errorOrResult);
+    }
+    if (errorOrResult instanceof SfdxFalconResult) {
+      try {
+        this._taskResult.addChild(errorOrResult);
+      }
+      catch {
+        // No need to do anything here. We are just suppressing any
+        // bubbled errors from the previous addChild() call.
+      }
+    }
+    
+    // Add the Task Result as a child of the Parent Result (if present).
+    if (this._parentResult instanceof SfdxFalconResult) {
+      try {
+        this._parentResult.addChild(this._taskResult);
+      }
+      catch (bubbledError) {
+        // If we get here, it means the parent was set to Bubble Errors.
+        // That means that bubbledError should be an SfdxFalconResult
+        return subscriberThrow(SfdxFalconError.wrap(bubbledError.errObj));
+      }
+    }
+
+    // Finalize the Subscriber with "error"
+    if (errorOrResult instanceof Error) {
+      return subscriberThrow(SfdxFalconError.wrap(errorOrResult));
+    }
+    else {
+      if (TypeValidator.isNotInvalidInstance(errorOrResult.errObj, Error)) {
+        return subscriberThrow(SfdxFalconError.wrap(errorOrResult.errObj));
+      }
+      else {
+        const unexpectedError = new SfdxFalconError ( `Received an Error Result that did not contain an Error Object. See error.detail for more information.`
+                                                    , `MissingErrObj`
+                                                    , `${dbgNsLocal}`);
+        unexpectedError.setDetail(errorOrResult);
+        return subscriberThrow(unexpectedError);
+      }
+    }
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      finalizeSuccess
+   * @returns     {void}
+   * @description Finalizes this `ObservableTaskResult` in a manner that
+   *              indicates the associated task was successful.
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public finalizeSuccess():void {
+
+    // Set function-local debug namespace.
+    const dbgNsLocal = `${dbgNs}ObservableTaskResult:finalizeSuccess`;
+
+    // Set the final SUCCESS state of the Task Result.
+    this._taskResult.success();
+
+    // Add the Task Result as a child of the Parent Result (if present).
+    if (this._parentResult instanceof SfdxFalconResult) {
+      try {
+        this._parentResult.addChild(this._taskResult);
+      }
+      catch (bubbledError) {
+        // If we get here, it means the parent was set to Bubble Errors.
+        // It also means that the Task Result was NOT successful, despite this method being called.
+        // TODO: Not sure what the right behavior should be here.
+        SfdxFalconDebug.obj(`${dbgNsLocal}`, bubbledError);
+      }
+    }
+
+    // Finalize the Subscriber with "complete"
+    try {
+      this._subscriber.complete();
+    }
+    catch (noSubscriberError) {
+      SfdxFalconDebug.debugObject('SUBSCRIBER_COMPLETE_FAILED:noSubscriberError:', noSubscriberError);
+      throw SfdxFalconError.wrap(noSubscriberError);
+    }
+  }
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -161,7 +382,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
   constructor(opts:SfdxFalconTaskOptions) {
 
     // Set function-local debug namespace and examine incoming arguments.
-    const dbgNsLocal = `${dbgNs}constructor`;
+    const dbgNsLocal = `${dbgNs}SfdxFalconTask:constructor`;
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Make sure the caller passed in an options object.
