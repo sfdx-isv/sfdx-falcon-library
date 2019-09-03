@@ -7,8 +7,10 @@
   "dependencies": {
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
     "@sfdx-falcon/error": "0.0.4-alpha.0",
+    "@sfdx-falcon/notifications": "0.0.4-alpha.0",
     "@sfdx-falcon/result": "0.0.4-alpha.0",
     "@sfdx-falcon/types": "0.0.4-alpha.0",
+    "@sfdx-falcon/util": "0.0.4-alpha.0",
     "@sfdx-falcon/validator": "0.0.4-alpha.0",
     "listr": "0.14.3",
     "rxjs": "6.5.2"
@@ -22,6 +24,7 @@
     "@types/inquirer": "6.5.0",
     "@types/jsforce": "1.9.9",
     "@types/json2csv": "4.5.0",
+    "@types/listr": "0.14.2",
     "@types/lodash": "4.14.137",
     "@types/mocha": "5.2.7",
     "@types/node": "12.7.2",
