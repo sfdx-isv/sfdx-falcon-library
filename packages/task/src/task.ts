@@ -13,7 +13,7 @@ import  {ListrContext}      from  'listr';  // ???
 import  {ListrTask}         from  'listr';  // ???
 import  {ListrTaskWrapper}  from  'listr';  // ???
 import  {ListrTaskResult}   from  'listr';  // ???
-import  Listr               = require('listr');
+//import  Listr               = require('listr');
 import  {Observable}        from  'rxjs';   // Class. Used to communicate status with Listr.
 import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
 
@@ -25,8 +25,7 @@ import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class
 import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 import  {TaskProgressNotifications} from  '@sfdx-falcon/notifications'; // Class. Manages progress notification messages for SFDX-Falcon Tasks.
 import  {SfdxFalconResult}          from  '@sfdx-falcon/result';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-
-
+import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
 // Import SFDX-Falcon Types
 import  {SfdxFalconResultType}      from  '@sfdx-falcon/result';  // Enum. Represents the different types of sources where Results might come from.
@@ -88,6 +87,8 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> extends ListrTask<CTX> 
   minRuntime?:  number;
   /** Specifies whether or not the status message shown by the `SfdxFalconTask` will be continually updated with an "elapsed seconds" counter. */
   showTimer?:   boolean;
+  /** The `SfdxFalconResult` that will be the parent of the Result associated with this `SfdxFalconTask` instance */
+  parentResult?:  SfdxFalconResult;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -339,6 +340,22 @@ export class ObservableTaskResult {
       throw SfdxFalconError.wrap(noSubscriberError);
     }
   }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      remainingRuntime
+   * @returns     {number}
+   * @description Finds out how long it's been since the Task Result started and
+   *              subtracts that value from the minimum runtime (`_minRunTime`)
+   *              to compute the remaining runtime.
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public remainingRuntime():number {
+    const currentRuntime = this._taskResult.durationSecs;
+    const remainingRuntime = this._minRunTime - currentRuntime;
+    return (remainingRuntime <= 0) ? 0 : Math.ceil(remainingRuntime);
+  }
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -362,6 +379,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
   private _statusMsg:       string;
   private _minRuntime:      number;
   private _showTimer:       boolean;
+  private _parentResult:    SfdxFalconResult;
   private _otr:             ObservableTaskResult;
 
   // Public accessors.
@@ -399,8 +417,9 @@ export class SfdxFalconTask<CTX=ListrContext> {
     // Validate the contents of the resolved options.
     TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.title,      `${dbgNsLocal}`,  `resolvedOpts.title`);
     TypeValidator.throwOnNullInvalidFunction    (resolvedOpts.task,       `${dbgNsLocal}`,  `resolvedOpts.task`);
-    if (typeof resolvedOpts.skip    !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.skip,     `${dbgNsLocal}`,  `resolvedOpts.skip`);
-    if (typeof resolvedOpts.enabled !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `resolvedOpts.enabled`);
+    if (typeof resolvedOpts.skip          !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.skip,     `${dbgNsLocal}`,  `resolvedOpts.skip`);
+    if (typeof resolvedOpts.enabled       !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `resolvedOpts.enabled`);
+    if (typeof resolvedOpts.parentResult  !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.parentResult, SfdxFalconResult, `${dbgNsLocal}`,  `resolvedOpts.parentResult`);
     TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.context,    `${dbgNsLocal}`,  `resolvedOpts.context`);
     TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.dbgNsExt,   `${dbgNsLocal}`,  `resolvedOpts.dbgNsExt`);
     TypeValidator.throwOnNullInvalidString      (resolvedOpts.statusMsg,  `${dbgNsLocal}`,  `resolvedOpts.statusMsg`);
@@ -409,7 +428,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Initialize Listr-specific member variables.
     this._title           = resolvedOpts.title;
-    this._task            = resolvedOpts.task;
+    this._task            = resolvedOpts.task.bind(resolvedOpts.context);
     this._skip            = resolvedOpts.skip;
     this._enabled         = resolvedOpts.enabled;
 
@@ -419,11 +438,101 @@ export class SfdxFalconTask<CTX=ListrContext> {
     this._statusMsg       = resolvedOpts.statusMsg;
     this._minRuntime      = resolvedOpts.minRuntime;
     this._showTimer       = resolvedOpts.showTimer;
+    this._parentResult    = resolvedOpts.parentResult;
     
     // Make sure that the external context has a sharedData object.
     this.validateSharedData();
 
 
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      build
+   * @returns     {ListrTask}
+   * @description ???
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public build():ListrTask {
+
+    // Set function-local debug namespace.
+    const dbgNsLocal = `${dbgNs}SfdxFalconTask:build`;
+
+    // Build the specialized Observer based task.
+    this._task = (listrContext:ListrContext, thisTask:ListrTaskWrapper) => {
+      return new Observable((subscriber:Subscriber<unknown>) => {
+
+        // Initialize an OTR (Observable Task Result).
+        this._otr = new ObservableTaskResult({
+          listrContext:   listrContext,
+          listrTask:      thisTask,
+          subscriber:     subscriber,
+          sharedData:     this.sharedData,
+          dbgNsExt:       this._dbgNsExt,
+          statusMsg:      this._statusMsg,
+          minRuntime:     this._minRuntime,
+          showTimer:      this._showTimer,
+          parentResult:   this._parentResult
+        });
+
+        // Wrap the execution of the caller-defined task as a promise.
+        Promise.resolve(this._task(listrContext, thisTask))
+        .then(async () => {
+
+          // Make sure the task appears to run for the minimum runtime.
+          await AsyncUtil.waitASecond(this._otr.remainingRuntime());
+
+          // Finalize the OTR as a SUCCESS.
+          this._otr.finalizeSuccess();
+        })
+        .catch(async (rejectedResult:unknown) => {
+
+          // Make sure the task appears to run for the minimum runtime.
+          await AsyncUtil.waitASecond(this._otr.remainingRuntime());
+
+          // Declare variables used to construct an Error.
+          let errorMessage:string;
+          let errorCause:Error;
+          let errorDetail:unknown;
+
+          // Determine the Error Message, Cause, and Detail based on what kind of Rejected Result we got.
+          if (rejectedResult instanceof SfdxFalconResult) {
+            errorMessage  = `Task Function failed and returned the SfdxFalconResult '${rejectedResult.name}'.`;
+            errorCause    = rejectedResult.errObj;
+            errorDetail   = rejectedResult;
+          }
+          else if (rejectedResult instanceof Error) {
+            errorMessage  = `Task Function failed with the following error: ${rejectedResult.message}`;
+            errorCause    = rejectedResult;
+            errorDetail   = {};
+          }
+          else {
+            errorMessage  = `Task Function failed with an unexpected result.`;
+            errorCause    = undefined;
+            errorDetail   = {rejectedResult: rejectedResult};
+          }
+
+          // Construct the Task Error.
+          const taskError = new SfdxFalconError ( `${errorMessage}`
+                                                , `TaskFunctionError`
+                                                , `${dbgNsLocal}`
+                                                , errorCause);
+          taskError.setDetail(errorDetail);
+
+          // Finalize the OTR as a FAILURE.
+          this._otr.finalizeFailure(taskError);
+        });
+      });
+    };
+
+    // Construct and return a ListrTask
+    return {
+      title:    this._title,
+      enabled:  this._enabled,
+      skip:     this._skip,
+      task:     this._task
+    } as ListrTask;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
