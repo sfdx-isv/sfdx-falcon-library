@@ -1,0 +1,12 @@
+#!/bin/bash
+YELLOW='\033[0;93m'
+NC='\033[0m'
+
+# Make sure the caller specified a command to run (eg. "playground:falcontask")
+if [ -z $1 ]; then
+  printf "${YELLOW}Aborting Playground Request. No command specified.${NC}\n\n"
+  exit 1
+else
+  printf "${YELLOW}Attempting to run ${1}...${NC}\n\n"
+  (cd ./playground && yarn run build && ./bin/run ${1})
+fi
