@@ -12,6 +12,7 @@
 lerna-debug.log
 npm-debug.log
 packages/*/lib
+playground/lib
 # Jekyll Docs-specific
 /docs/_site
 /docs/Gemfile.lock
