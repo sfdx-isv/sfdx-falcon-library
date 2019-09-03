@@ -68,8 +68,9 @@
     "test": "test"
   },
   "files": [
-    "lib",
-    "npm-shrinkwrap.json"
+    "/lib",
+    "/messages",
+    "/npm-shrinkwrap.json"
   ],
   "repository": "https://github.com/sfdx-isv/sfdx-falcon-library.git",
   "publishConfig": {
