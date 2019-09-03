@@ -5,10 +5,44 @@
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
-    "@salesforce/ts-types": "1.2.0"
+    "@sfdx-falcon/debug": "0.0.4-alpha.0",
+    "@sfdx-falcon/error": "0.0.4-alpha.0",
+    "@sfdx-falcon/notifications": "0.0.4-alpha.0",
+    "@sfdx-falcon/result": "0.0.4-alpha.0",
+    "@sfdx-falcon/task": "0.0.4-alpha.0",
+    "@sfdx-falcon/types": "0.0.4-alpha.0",
+    "@sfdx-falcon/util": "0.0.4-alpha.0",
+    "@sfdx-falcon/validator": "0.0.4-alpha.0",
+    "listr": "0.14.3",
+    "tslib": "1.10.0"
   },
   "devDependencies": {
-    "ts-node": "8.3.0"
+    "@oclif/dev-cli": "1.22.2",
+    "@oclif/test": "1.2.5",
+    "@salesforce/dev-config": "1.5.0",
+    "@types/chai": "4.2.0",
+    "@types/fs-extra": "8.0.0",
+    "@types/inquirer": "6.5.0",
+    "@types/jsforce": "1.9.9",
+    "@types/json2csv": "4.5.0",
+    "@types/listr": "0.14.2",
+    "@types/lodash": "4.14.137",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.7.2",
+    "@types/shelljs": "0.8.5",
+    "@types/yeoman-environment": "2.3.2",
+    "@types/yeoman-generator": "3.1.4",
+    "@types/yosay": "0.0.29",
+    "chai": "4.2.0",
+    "cross-spawn": "6.0.5",
+    "del": "5.0.0",
+    "globby": "10.0.1",
+    "mocha": "6.2.0",
+    "mocha-junit-reporter": "1.23.1",
+    "nyc": "14.1.1",
+    "sinon": "7.4.1",
+    "ts-node": "8.3.0",
+    "typescript": "3.5.3"
   },
   "engines": {
     "node": ">=8.0.0"
