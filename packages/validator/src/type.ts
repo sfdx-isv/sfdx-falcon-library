@@ -164,13 +164,16 @@ export function errMsgInvalidInstance(arg:unknown, classConstructor:AnyConstruct
   // Figure out the name of the Actual Instance.
   let actualInstanceOf = '';
   if (typeof arg !== 'undefined' && arg !== null) {
-    if (arg.constructor) {
+    if (typeof arg === 'object' && arg.constructor) {
       actualInstanceOf = arg.constructor.name;
+    }
+    else {
+      actualInstanceOf = `${typeof arg}`;
     }
   }
   // Build and return the Error Message.
   return `Expected ${argName} to be an instance of '${expectedInstanceOf}'`
-       + actualInstanceOf ? ` but got an instance of ${actualInstanceOf} instead` : ``
+       + (actualInstanceOf ? ` but got an instance of '${actualInstanceOf}' instead` : ``)
        + `.`;
 }
 
@@ -330,8 +333,11 @@ export function errMsgNullInvalidInstance(arg:unknown, classConstructor:AnyConst
   // Figure out the name of the Actual Instance.
   let actualInstanceOf = '';
   if (typeof arg !== 'undefined' && arg !== null) {
-    if (arg.constructor) {
+    if (typeof arg === 'object' && arg.constructor) {
       actualInstanceOf = arg.constructor.name;
+    }
+    else {
+      actualInstanceOf = `${typeof arg}`;
     }
   }
   // Build and return the Error Message.
