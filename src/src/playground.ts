@@ -1,5 +1,5 @@
-export default {};
-/*
+
+
 import {SfdxFalconTask} from '@sfdx-falcon/task';
 import Listr = require('listr');
 
@@ -76,4 +76,3 @@ try {
 catch (error) {
   console.log(`Error! Details: %O`, error);
 }
-//*/

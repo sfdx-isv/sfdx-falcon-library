@@ -17,6 +17,7 @@
     {"path": "../result/tsconfig.build.json"},        // @SFDX-Falcon/result
     {"path": "../notifications/tsconfig.build.json"}, // @SFDX-Falcon/notifications
     {"path": "../util/tsconfig.build.json"},          // @SFDX-Falcon/util
-    {"path": "../task/tsconfig.build.json"}           // @SFDX-Falcon/task
+    {"path": "../task/tsconfig.build.json"},          // @SFDX-Falcon/task
+    {"path": "../command/tsconfig.build.json"}        // @SFDX-Falcon/command
   ]
 }
