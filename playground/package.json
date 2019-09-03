@@ -96,7 +96,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json --verbose && oclif-dev manifest",
+    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json && oclif-dev manifest",
     "prepack": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json && oclif-dev manifest",
     "test": "echo \"Error: run tests from root\" && exit 1"
   }
