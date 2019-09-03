@@ -10,9 +10,9 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  * as  csv2json    from  'csv-parser';           // Streaming CSV parser that aims for maximum speed as well as compatibility with the csv-spectrum CSV acid test suite.
-import  * as  fse         from  'fs-extra';             // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
-import  * as  json2csv    from  'json2csv';             // Converts json into csv with column titles and proper line endings.
+import  * as  Csv2Json    from  'csv-parser';           // Streaming CSV parser that aims for maximum speed as well as compatibility with the csv-spectrum CSV acid test suite.
+import  * as  Fse         from  'fs-extra';             // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
+import  * as  Json2Csv    from  'json2csv';             // Converts json into csv with column titles and proper line endings.
 import  * as  path        from  'path';                 // Node's path library.
 import  {Readable}        from  'stream';               // Node's stream library.
 
@@ -21,7 +21,9 @@ import  {SfdxFalconDebug} from  '@sfdx-falcon/debug';   // Class. Specialized de
 import  {SfdxFalconError} from  '@sfdx-falcon/error';   // Class. Specialized Error object. Wraps SfdxError.
 
 // Import SFDX-Falcon Types
-import  {JsonMap}         from  '@sfdx-falcon/types';   // Any JSON-compatible object.
+import  {Csv2JsonOptions} from  '@sfdx-falcon/types';   // Type. Represents the options that are available when converting CSV to JSON. See https://www.npmjs.com/package/csv-parser for documentation.
+import  {Json2CsvOptions} from  '@sfdx-falcon/types';   // Type. Represents the options that are available when converting JSON to CSV. See https://www.npmjs.com/package/json2csv for documentation.
+import  {JsonMap}         from  '@sfdx-falcon/types';   // Interface. Any JSON-compatible object.
 
 // Set the File Local Debug Namespace
 const dbgNs = 'UTILITY:csv:';
@@ -44,12 +46,12 @@ export interface CsvFileOptions {
 /**
  * Type. Represents the options that are available when converting CSV to JSON. See https://www.npmjs.com/package/csv-parser for documentation.
  */
-export type Csv2JsonOptions = csv2json.Options;
+//export type Csv2JsonOptions = Csv2Json.Options;
 
 /**
  * Type. Represents the options that are available when converting JSON to CSV. See https://www.npmjs.com/package/json2csv for documentation.
  */
-export type Json2CsvOptions = import('json2csv/JSON2CSVBase').json2csv.Options<JsonMap>;
+//export type Json2CsvOptions = import('json2csv/JSON2CSVBase').json2csv.Options<JsonMap>;
 
 /**
  * Interface. Represents the collection of functions that should be applied to CSV data during transformation.
@@ -452,7 +454,7 @@ export async function buildCsvData(jsonData:JsonMap[], opts:Json2CsvOptions):Pro
   validateJsonDataArgument(jsonData);
   
   // Parse the JSON Data into CSV Data.
-  const csvData:string = await json2csv.parseAsync(jsonData, opts)
+  const csvData:string = await Json2Csv.parseAsync(jsonData, opts)
   .catch(json2csvError => {
     throw new SfdxFalconError ( `Could not parse JSON to CSV. ${json2csvError.message}`
                               , `Json2CsvParseError`
@@ -528,14 +530,14 @@ export async function parseFile(csvFilePath:string, opts:Csv2JsonOptions={}):Pro
 
   // Wrap the file system stream read in a promise.
   return new Promise((resolve, reject) => {
-    fse.createReadStream(csvFilePath)
+    Fse.createReadStream(csvFilePath)
     .on('error', (error:Error) => {
       reject(new SfdxFalconError( `Unable to read '${csvFilePath}'.  ${error.message}`
                                 , `FileStreamError`
                                 , `${dbgNs}parseFile`
                                 , error));
     })
-    .pipe(csv2json(opts))
+    .pipe(Csv2Json(opts))
     .on('data', (data:JsonMap) => results.push(data))
     .on('end',  () => {
       SfdxFalconDebug.obj(`${dbgNs}parseFile:results:`, results, `results: `);
@@ -587,8 +589,8 @@ export async function parseString(csvData:string, opts:Csv2JsonOptions={}):Promi
       }
     });
 
-    // Pipe the CSV Data Stream to the csv2json converter.
-    csvDataStream.pipe(csv2json(opts))
+    // Pipe the CSV Data Stream to the Csv2Json converter.
+    csvDataStream.pipe(Csv2Json(opts))
     .on('data', (data:JsonMap) => results.push(data))
     .on('end',  () => {
       SfdxFalconDebug.obj(`${dbgNsLocal}:results:`, results);
@@ -657,7 +659,7 @@ export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string
   });
 
   // Create the target file. If the file already exists, it will not be modified.
-  await fse.createFile(csvFilePath)
+  await Fse.createFile(csvFilePath)
   .catch(fseError => {
     throw new SfdxFalconError ( `Could not write '${csvFilePath}' to the local filesystem. ${fseError.message}`
                               , `FileWriteError`
@@ -666,7 +668,7 @@ export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string
   });
   
   // Create a writeable filesystem stream that will direct output to the location specified by the caller.
-  const csvFileStream = fse.createWriteStream(csvFilePath, {encoding: 'utf8'});
+  const csvFileStream = Fse.createWriteStream(csvFilePath, {encoding: 'utf8'});
 
   // Set options that will be passed through to the Node.js Transform stream.
   // https://nodejs.org/api/stream.html#stream_new_stream_duplex_options
@@ -675,7 +677,7 @@ export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string
   };
 
   // Create an async JSON-to-CSV parser.
-  const asyncParser = new json2csv.AsyncParser(opts, transformOpts);
+  const asyncParser = new Json2Csv.AsyncParser(opts, transformOpts);
 
   // Establish the datastream pipeline.
   asyncParser.fromInput(jsonObjectStream).toOutput(csvFileStream).promise()
@@ -732,14 +734,14 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
 
   // Wrap the file system stream read in a promise.
   return new Promise((resolve, reject) => {
-    fse.createReadStream(csvFilePath)
+    Fse.createReadStream(csvFilePath)
     .on('error', (error:Error) => {
       reject(new SfdxFalconError( `Unable to read '${csvFilePath}'.  ${error.message}`
                                 , `FileStreamError`
                                 , `${dbgNs}transformFile`
                                 , error));
     })
-    .pipe(csv2json(opts))
+    .pipe(Csv2Json(opts))
     .on('headers', (headers:string[]) => {
       if (typeof tranformationFunctions.onHeaders === 'function') {
         try {
@@ -820,7 +822,7 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function writeCsvToFile(csvData:string, csvFilePath:string):Promise<void> {
-  fse.outputFile(csvFilePath, csvData)
+  Fse.outputFile(csvFilePath, csvData)
   .catch(fseError => {
     throw new SfdxFalconError ( `Could not write '${csvFilePath}' to the local filesystem. ${fseError.message}`
                               , `FileWriteError`

@@ -15,10 +15,13 @@
     "csv-parser": "2.3.0",
     "falcon-listr-update-renderer": "0.4.2",
     "fs-extra": "8.1.0",
+    "json2csv": "4.5.2",
     "lodash": "4.17.15",
     "pad": "3.2.0",
     "shelljs": "0.8.3",
+    "tslib": "1.10.0",
     "strip-ansi": "5.2.0",
+    "unzipper": "0.10.4",
     "uuid": "3.3.3"
   },
   "devDependencies": {

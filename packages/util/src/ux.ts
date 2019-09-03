@@ -10,7 +10,7 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
 import  chalk                 from  'chalk';                    // Helps write colored text to the console.
-import  * as _                from 'lodash';                    // Useful collection of utility functions.
+import  * as _                from  'lodash';                   // Useful collection of utility functions.
 import  pad                   = require('pad');                 // Provides consistent spacing when trying to align console output.
 
 // Import SFDX-Falcon Libraries

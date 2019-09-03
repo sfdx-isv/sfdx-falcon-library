@@ -23,6 +23,34 @@ import {SfdxFalconError}    from  '@sfdx-falcon/error'; // Class. Provides custo
 // Import SFDX-Falcon Types
 import {JsonMap}            from  '@sfdx-falcon/types'; // Interface. Any JSON-compatible object.
 
+// Import all Utility exports for re-export to anyone importing the @sfdx-falcon:util module.
+import  * as AsyncUtil      from  './async';
+import  * as BulkApiUtil    from  './bulk-api';
+import  * as CsvUtil        from  './csv';
+import  * as GitUtil        from  './git';
+import  * as JsForceUtil    from  './jsforce';
+import  * as ListrUtil      from  './listr';
+import  * as MdapiUtil      from  './mdapi';
+import  * as SfdxUtil       from  './sfdx';
+import  * as UxUtil         from  './ux';
+import  * as YeomanUtil     from  './yeoman';
+import  * as ZipUtil        from  './zip';
+
+// Export all of the Utilities we just imported, above.
+export {
+  AsyncUtil,
+  BulkApiUtil,
+  CsvUtil,
+  GitUtil,
+  JsForceUtil,
+  ListrUtil,
+  MdapiUtil,
+  SfdxUtil,
+  UxUtil,
+  YeomanUtil,
+  ZipUtil
+};
+
 // Set the File Local Debug Namespace
 const dbgNs = 'UTILITY:general:';
 SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
