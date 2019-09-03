@@ -10,6 +10,7 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Modules/Types
 import  {Connection}  from  '@salesforce/core';
+import  * as Csv2Json from  'csv-parser';
 import  {Observable}  from  'rxjs';
 import  {Observer}    from  'rxjs';
 import  {Subscriber}  from  'rxjs';
@@ -28,7 +29,7 @@ import  {Status}              from  './enum';
 //
 //
 //─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-// Fundamental Types
+// Various External Types
 //─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 //
 //
@@ -36,11 +37,45 @@ import  {Status}              from  './enum';
 //
 
 
+/**
+ * Type. Represents the options that are available when converting CSV to JSON. See https://www.npmjs.com/package/csv-parser for documentation.
+ */
+export type Csv2JsonOptions = Csv2Json.Options;
 
+/**
+ * Type. Represents the options that are available when converting JSON to CSV. See https://www.npmjs.com/package/json2csv for documentation.
+ */
+export interface Json2CsvOptions<T=unknown> {
+  fields?: Array<string | Json2CsvFieldInfo<T>>;
+  ndjson?: boolean;
+  unwind?: string | string[];
+  unwindBlank?: boolean;
+  flatten?: boolean;
+  defaultValue?: string;
+  quote?: string;
+  doubleQuote?: string;
+  delimiter?: string;
+  eol?: string;
+  excelStrings?: boolean;
+  header?: boolean;
+  includeEmptyRows?: boolean;
+  withBOM?: boolean;
+}
 
-
-
-
+// Local types that support Json2CsvOptions
+type FieldValueCallback<T> = FieldValueCallbackWithoutField<T> | FieldValueCallbackWithField<T>;
+type FieldValueCallbackWithoutField<T> = (row:T) => any; // tslint:disable-line: no-any
+type FieldValueCallbackWithField<T> = (row:T, field:FieldValueCallbackInfo) => any; // tslint:disable-line: no-any
+interface FieldValueCallbackInfo {
+  label: string;
+  default?: string;
+}
+interface Json2CsvFieldInfo<T> {
+  label?: string;
+  default?: string;
+  value: string | FieldValueCallback<T>;
+  stringify?: boolean;
+}
 
 //
 //
