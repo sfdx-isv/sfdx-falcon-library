@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "playground/"
+    "playground"
   ],
   "description": "Root package for the SFDX-Falcon Library monorepo. DO NOT PUBLISH.",
   "dependencies": {
