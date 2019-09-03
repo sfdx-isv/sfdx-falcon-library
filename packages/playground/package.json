@@ -1,12 +1,15 @@
 {
   "name": "@sfdx-falcon/playground",
   "description": "Scaffolding and sample code for Salesforce CLI plugin developers to experiment with parts of the SFDX-Falcon Library.",
+  "private": true,
   "version": "0.0.4-alpha.0",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
     "@oclif/command": "1.5.18",
+    "@oclif/config": "1.13.3",
     "@oclif/errors": "1.2.2",
+    "@oclif/plugin-help": "2.2.1",
     "@salesforce/command": "2.1.0",
     "@salesforce/core": "2.1.1",
     "@sfdx-falcon/command": "0.0.4-alpha.0",
@@ -64,6 +67,18 @@
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "sfdx",
+    "topics": {
+      "playground": {
+        "description": "Playground Commands"
+      }
+    },
+    "devPlugins": [
+      "@oclif/plugin-help"
+    ]
+  },
   "main": "lib/playground.js",
   "types": "lib/playground.d.ts",
   "directories": {
@@ -71,16 +86,18 @@
     "test": "test"
   },
   "files": [
-    "lib",
-    "npm-shrinkwrap.json"
+    "/lib",
+    "/messages",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
   ],
   "repository": "https://github.com/sfdx-isv/sfdx-falcon-library.git",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json --verbose",
-    "prepack": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json --verbose && oclif-dev manifest",
+    "prepack": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json && oclif-dev manifest",
     "test": "echo \"Error: run tests from root\" && exit 1"
   }
 }
