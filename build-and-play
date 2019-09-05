@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+const path              = require('path');
+const yargs             = require('yargs');
+const {spawnSync}       = require('child_process');
+const userArgs          = process.argv.slice(2);
+const playgroundDir     = path.join(__dirname, 'playground');
+const playgroundBinDir  = path.join(playgroundDir, 'bin');
+
+const parsedArgs = [];
+for (let i=0; i<userArgs.length; i++) {
+  if (userArgs[i].startsWith('-')
+      && typeof userArgs[i+1] !== 'undefined'
+      && userArgs[i+1].startsWith('-') !== true) {
+    parsedArgs.push(`${userArgs[i]} ${userArgs[i+1]}`);
+    i++;
+  }
+  else {
+    parsedArgs.push(`${userArgs[i]}`);
+  }
+}
+
+console.log(userArgs);
+//console.log(yargs.parse(userArgs));
+console.log(parsedArgs);
+
+process.chdir(playgroundDir);
+spawnSync('yarn build', {shell: true, stdio: 'inherit'});
+spawnSync('./bin/run', userArgs, {shell: false, stdio: 'inherit'});
+
+//require(path.join(playgroundDir, 'node-modules', '@oclif/command')).run()
+//.catch(require(path.join(playgroundDir, 'node-modules', '@oclif/errors/handle')));
