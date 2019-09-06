@@ -1,31 +1,24 @@
 #!/usr/bin/env node
+const chalk             = require('chalk');
 const path              = require('path');
-const yargs             = require('yargs');
 const {spawnSync}       = require('child_process');
 const userArgs          = process.argv.slice(2);
 const playgroundDir     = path.join(__dirname, 'playground');
-const playgroundBinDir  = path.join(playgroundDir, 'bin');
 
-const parsedArgs = [];
-for (let i=0; i<userArgs.length; i++) {
-  if (userArgs[i].startsWith('-')
-      && typeof userArgs[i+1] !== 'undefined'
-      && userArgs[i+1].startsWith('-') !== true) {
-    parsedArgs.push(`${userArgs[i]} ${userArgs[i+1]}`);
-    i++;
-  }
-  else {
-    parsedArgs.push(`${userArgs[i]}`);
-  }
-}
-
-console.log(userArgs);
-//console.log(yargs.parse(userArgs));
-console.log(parsedArgs);
-
+// Change the process directory to the Playground
 process.chdir(playgroundDir);
+
+// Echo the fact that we're going to build @sfdx-falcon/playground
+console.log(chalk`{yellow \nAttempting to build @sfdx-falcon/playground...\n}`);
+
+// Build the Playground package, which should force a build of ALL monorepo packages.
 spawnSync('yarn build', {shell: true, stdio: 'inherit'});
+
+// Echo the command we're about to run.
+console.log(chalk`{yellow \nAttempting to run ${userArgs[0]}...\n}`);
+
+// Execute the command using the OCLIF command runner.
 spawnSync('./bin/run', userArgs, {shell: false, stdio: 'inherit'});
 
-//require(path.join(playgroundDir, 'node-modules', '@oclif/command')).run()
-//.catch(require(path.join(playgroundDir, 'node-modules', '@oclif/errors/handle')));
+// Echo the fact that command execution is complete.
+console.log(chalk`{yellow \nExecution of ${userArgs[0]} is complete\n}`);

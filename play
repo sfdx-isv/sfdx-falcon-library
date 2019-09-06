@@ -8,6 +8,6 @@ if [ -z $1 ]; then
   exit 1
 else
   (cd ./playground && yarn run build)
-  printf "\n${YELLOW}Attempting to run ${1}...${NC}\n\n"
-  (cd ./playground && ./bin/run ${1})
+  printf "\n${YELLOW}Attempting to run $@...${NC}\n\n"
+  (cd ./playground && ./bin/run ${@})
 fi
