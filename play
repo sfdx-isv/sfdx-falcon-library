@@ -1,13 +1,24 @@
-#!/bin/bash
-YELLOW='\033[0;93m'
-NC='\033[0m'
+#!/usr/bin/env node
+const chalk             = require('chalk');
+const path              = require('path');
+const {spawnSync}       = require('child_process');
+const userArgs          = process.argv.slice(2);
+const playgroundDir     = path.join(__dirname, 'playground');
 
-# Make sure the caller specified a command to run (eg. "playground:falcontask")
-if [ -z $1 ]; then
-  printf "${YELLOW}Aborting Playground Request. No command specified.${NC}\n\n"
-  exit 1
-else
-  (cd ./playground && yarn run build)
-  printf "\n${YELLOW}Attempting to run $@...${NC}\n\n"
-  (cd ./playground && ./bin/run ${@})
-fi
+// Change the process directory to the Playground
+process.chdir(playgroundDir);
+
+// Echo the fact that we're going to build @sfdx-falcon/playground
+console.log(chalk`{yellow \nAttempting to build @sfdx-falcon/playground...\n}`);
+
+// Build the Playground package, which should force a build of ALL monorepo packages.
+spawnSync('yarn build', {shell: true, stdio: 'inherit'});
+
+// Echo the command we're about to run.
+console.log(chalk`{yellow \nAttempting to run ${userArgs[0]}...\n}`);
+
+// Execute the command using the OCLIF command runner.
+spawnSync('./bin/run', userArgs, {shell: false, stdio: 'inherit'});
+
+// Echo the fact that command execution is complete.
+console.log(chalk`{yellow \nExecution of ${userArgs[0]} is complete\n}`);
