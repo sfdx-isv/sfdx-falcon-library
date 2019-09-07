@@ -40,10 +40,31 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * Type. Alias for the "this" context from the caller.
+ * Type. Alias for the `this` context from the caller.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export type Context = any;  // tslint:disable-line: no-any
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Type. Represents an externally defined `Task` function. Extends the standard `ListrTask` function type by adding a `sharedData` parameter after the `thisTask` parameter.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export type ExtTaskFunction<CTX=ListrContext> = (listrContext:CTX, thisTask:ListrTaskWrapper<CTX>, sharedData:object) => Promise<void>;
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Type. Represents an externally defined `Skip` function. Extends the standard `ListrSkip` function type by adding a `sharedData` parameter after the `listrContext` parameter.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export type ExtSkipFunction<CTX=ListrContext> = (ctx:CTX, sharedData:object) => void | boolean | string | Promise<boolean>;
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Type. Represents an externally defined `Enabled` function. Extends the standard `ListrEnabled` function type by adding a `sharedData` parameter after the `listrContext` parameter.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export type ExtEnabledFunction<CTX=ListrContext> = (ctx:CTX, sharedData:object) => boolean | Promise<boolean> | Observable<boolean>;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -76,11 +97,19 @@ export interface ObservableTaskResultOptions {
  * Interface. Options that can be set during the construction of an `SfdxFalconTask` object.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface SfdxFalconTaskOptions<CTX=ListrContext> extends ListrTask<CTX> {
+export interface SfdxFalconTaskOptions<CTX=ListrContext> {
+  /** The title of the task. */
+  title:        string;
   /** The context (ie. `this`) that the `SfdxFalconTask` being created should be hooked into. */
   context:      Context;
   /** The "external" Debug Namespace that should be used within this `SfdxFalconTask` instance */
   dbgNsExt:     string;
+  /** The task that the user wants to execute. Must be contained within a promise. */
+  task:         ExtTaskFunction<CTX>;
+  /** Function that determines whether this task should be skipped. */
+  skip?:        ExtSkipFunction<CTX>;
+  /** Function that determines whether this task should be enabled. */
+  enabled?:     ExtEnabledFunction<CTX>;
   /** The baseline status message for this `SfdxFalconTask`. */
   statusMsg?:   string;
   /** The minimum amount of time, in seconds, that this `SfdxFalconTask` should run. Useful for keeping a status message on screen long enough for the user to see it. */
@@ -173,11 +202,11 @@ export class ObservableTaskResult {
     this._parentResult      = opts.parentResult;
 
     // Initialize an SFDX-Falcon Result object.
-    const taskResult = new SfdxFalconResult (this._dbgNsExt, SfdxFalconResultType.TASK,
+    this._taskResult = new SfdxFalconResult (this._dbgNsExt, SfdxFalconResultType.TASK,
                                             { startNow:       true,     // Start the internal clock for this result on creation
                                               bubbleError:    false,    // Let the parent Result handle errors (no bubbling)
                                               bubbleFailure:  false});  // Let the parent Result handle failures (no bubbling)
-    SfdxFalconDebug.obj(`${dbgNsLocal}:taskResult:`, taskResult);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_taskResult:`, this._taskResult);
 
     // Initialize the Task Result Detail.
     this._taskResultDetail = {
@@ -186,8 +215,8 @@ export class ObservableTaskResult {
       listrTask:            this._listrTask,
       statusMsg:            this._statusMsg
     };
-    taskResult.setDetail(this._taskResultDetail);
-    SfdxFalconDebug.obj(`${dbgNsLocal}:taskResult.detail:`, taskResult.detail);
+    this._taskResult.setDetail(this._taskResultDetail);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_taskResult.detail:`, this._taskResult.detail);
 
     // Set the initial Task Detail message.
     if (this._showTimer) {
@@ -198,7 +227,7 @@ export class ObservableTaskResult {
     }
 
     // Set up Task Progress Notifications and store a reference to the Timer.
-    this._notificationTimer = TaskProgressNotifications.start(this._statusMsg, 1000, taskResult, this._subscriber);
+    this._notificationTimer = TaskProgressNotifications.start(this._statusMsg, 1000, this._taskResult, this._subscriber);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -215,6 +244,7 @@ export class ObservableTaskResult {
 
     // Set function-local debug namespace and examine incoming arguments.
     const dbgNsLocal = `${dbgNs}ObservableTaskResult:finalizeFailure`;
+    SfdxFalconDebug.msg(`${dbgNsLocal}:`, `finalizeFailure() has been called`);
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Define a special "subscriber throw" function.
@@ -223,9 +253,10 @@ export class ObservableTaskResult {
         this._subscriber.error(SfdxFalconError.wrap(error));
       }
       catch (noSubscriberError) {
-        SfdxFalconDebug.debugObject('SUBSCRIBER_ERROR_FAILED:noSubscriberError:', noSubscriberError);
-        SfdxFalconDebug.debugObject('SUBSCRIBER_ERROR_FAILED:error', error);
-        throw SfdxFalconError.wrap(error);
+
+        // The only reason we should get here is if this._subscriber lost its Subscriber reference.
+        // If that happens, handle it gracefully by just sending a Debug message and nothing else.
+        SfdxFalconDebug.obj(`${dbgNsLocal}:subscriberThrow:noSubscriberError`, noSubscriberError);
       }
     };
 
@@ -314,6 +345,10 @@ export class ObservableTaskResult {
 
     // Set function-local debug namespace.
     const dbgNsLocal = `${dbgNs}ObservableTaskResult:finalizeSuccess`;
+    SfdxFalconDebug.msg(`${dbgNsLocal}:`, `finalizeSuccess() has been called`);
+
+    // Finish any Task Progress Notifications attached to this Observable Task Result.
+    TaskProgressNotifications.finish(this._notificationTimer);
 
     // Set the final SUCCESS state of the Task Result.
     this._taskResult.success();
@@ -325,7 +360,8 @@ export class ObservableTaskResult {
       }
       catch (bubbledError) {
         // If we get here, it means the parent was set to Bubble Errors.
-        // It also means that the Task Result was NOT successful, despite this method being called.
+        // It also means that the Task Result was NOT successful, despite
+        // the fact that somebody called the finalizeSuccess() method.
         // TODO: Not sure what the right behavior should be here.
         SfdxFalconDebug.obj(`${dbgNsLocal}`, bubbledError);
       }
@@ -334,10 +370,13 @@ export class ObservableTaskResult {
     // Finalize the Subscriber with "complete"
     try {
       this._subscriber.complete();
+      SfdxFalconDebug.msg(`${dbgNsLocal}`, `Subscriber.complete() has been called`);
     }
     catch (noSubscriberError) {
-      SfdxFalconDebug.debugObject('SUBSCRIBER_COMPLETE_FAILED:noSubscriberError:', noSubscriberError);
-      throw SfdxFalconError.wrap(noSubscriberError);
+
+      // The only reason we should get here is if this._subscriber lost its Subscriber reference.
+      // If that happens, handle it gracefully by just sending a Debug message and nothing else.
+      SfdxFalconDebug.obj(`${dbgNsLocal}:noSubscriberError:`, noSubscriberError);
     }
   }
 
@@ -369,9 +408,12 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
   // Listr-specific members.
   private _title:           string;
-  private _task:            (ctx:CTX, task:ListrTaskWrapper<CTX>) => void | ListrTaskResult<CTX>;
-  private _skip:            (ctx:CTX) => void | boolean | string | Promise<boolean>;
-  private _enabled:         (ctx:CTX) => boolean | Promise<boolean> | Observable<boolean>;
+  private _extTask:         ExtTaskFunction<CTX>;
+  private _extSkip:         ExtSkipFunction<CTX>;
+  private _extEnabled:      ExtEnabledFunction<CTX>;
+  private _task:            (listrCtx:CTX, thisTask:ListrTaskWrapper<CTX>) => void | ListrTaskResult<CTX>;
+  private _skip:            (listrCtx:CTX) => void | boolean | string | Promise<boolean>;
+  private _enabled:         (listrCtx:CTX) => boolean | Promise<boolean> | Observable<boolean>;
 
   // SFDX-Falcon Task-specific members.
   private _callingContext:  Context;
@@ -382,8 +424,8 @@ export class SfdxFalconTask<CTX=ListrContext> {
   private _parentResult:    SfdxFalconResult;
   private _otr:             ObservableTaskResult;
 
-  // Public accessors.
-  public get sharedData():object {
+  // Private accessors.
+  private get _sharedData():object {
     this.validateSharedData();
     return this._callingContext.sharedData;
   }
@@ -428,9 +470,10 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Initialize Listr-specific member variables.
     this._title           = resolvedOpts.title;
-    this._task            = resolvedOpts.task.bind(resolvedOpts.context);
-    this._skip            = resolvedOpts.skip;
-    this._enabled         = resolvedOpts.enabled;
+//    this._extTask         = resolvedOpts.task.bind(resolvedOpts.context);
+    this._extTask         = resolvedOpts.task;
+    this._extSkip         = resolvedOpts.skip;
+    this._extEnabled      = resolvedOpts.enabled;
 
     // Initialize SFDX-Falcon Task-specific variables.
     this._callingContext  = resolvedOpts.context;
@@ -442,8 +485,6 @@ export class SfdxFalconTask<CTX=ListrContext> {
     
     // Make sure that the external context has a sharedData object.
     this.validateSharedData();
-
-
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -468,7 +509,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
           listrContext:   listrContext,
           listrTask:      thisTask,
           subscriber:     subscriber,
-          sharedData:     this.sharedData,
+          sharedData:     this._sharedData,
           dbgNsExt:       this._dbgNsExt,
           statusMsg:      this._statusMsg,
           minRuntime:     this._minRuntime,
@@ -476,17 +517,43 @@ export class SfdxFalconTask<CTX=ListrContext> {
           parentResult:   this._parentResult
         });
 
-        // Wrap the execution of the caller-defined task as a promise.
-        Promise.resolve(this._task(listrContext, thisTask))
+        // Initialize the External Task that's associated with this instance.
+        let extTaskPromise:Promise<void>;
+        try {
+          extTaskPromise = this._extTask(listrContext, thisTask, this._sharedData);
+        }
+        catch (error) {
+          const extTaskSetupError = new SfdxFalconError ( `External Task could not be initialized. ${error.message}`
+                                                        , `TaskFunctionInitError`
+                                                        , `${dbgNsLocal}`
+                                                        , error);
+          extTaskSetupError.setDetail(this._extTask);
+          return this._otr.finalizeFailure(extTaskSetupError);
+        }
+
+        // Make sure the External Task returned a Promise.
+        if ((extTaskPromise instanceof Promise) !== true) {
+          const invalidExtTaskFunctionError = new SfdxFalconError ( `SFDX-Falcon Task Functions must be asynchronous and return Promise<void>`
+                                                                  , `InvalidTaskFunction`
+                                                                  , `${dbgNsLocal}`);
+          invalidExtTaskFunctionError.setDetail(this._extTask);
+          return this._otr.finalizeFailure(invalidExtTaskFunctionError);
+        }
+
+        // Set THEN and CATCH callbacks for the External Task.
+        extTaskPromise
         .then(async () => {
+          SfdxFalconDebug.msg(`${dbgNsLocal}:`, `extTaskPromise() has been RESOVLED.`);
 
           // Make sure the task appears to run for the minimum runtime.
           await AsyncUtil.waitASecond(this._otr.remainingRuntime());
 
           // Finalize the OTR as a SUCCESS.
-          this._otr.finalizeSuccess();
+          return this._otr.finalizeSuccess();
         })
         .catch(async (rejectedResult:unknown) => {
+          SfdxFalconDebug.msg(`${dbgNsLocal}:`, `extTaskPromise() has been REJECTED.`);
+          SfdxFalconDebug.obj(`${dbgNsLocal}:rejectedResult:`, {rejectedResult: rejectedResult});
 
           // Make sure the task appears to run for the minimum runtime.
           await AsyncUtil.waitASecond(this._otr.remainingRuntime());
@@ -521,17 +588,25 @@ export class SfdxFalconTask<CTX=ListrContext> {
           taskError.setDetail(errorDetail);
 
           // Finalize the OTR as a FAILURE.
-          this._otr.finalizeFailure(taskError);
+          return this._otr.finalizeFailure(taskError);
         });
       });
     };
 
+    // Build the SKIP and ENABLED functions
+    if (typeof this._extSkip === 'function') {
+      this._skip    = (listrContext:ListrContext) => this._extSkip(listrContext, this._sharedData);
+    }
+    if (typeof this._extEnabled === 'function') {
+      this._enabled = (listrContext:ListrContext) => this._extEnabled(listrContext, this._sharedData);
+    }
+    
     // Construct and return a ListrTask
     return {
       title:    this._title,
+      task:     this._task,
       enabled:  this._enabled,
-      skip:     this._skip,
-      task:     this._task
+      skip:     this._skip
     } as ListrTask;
   }
 
