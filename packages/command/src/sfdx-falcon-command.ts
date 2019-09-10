@@ -17,13 +17,13 @@ import {SfdxError}                    from  '@salesforce/core';     // Generaliz
 import * as path                      from  'path';                 // Helps resolve local paths at runtime.
 
 // Import Internal Modules
-import {SfdxFalconDebug}              from  '@sfdx-falcon/debug';         // Class. Internal debugging framework for SFDX-Falcon.
-import {SfdxFalconError}              from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import {TaskProgressNotifications}    from  '@sfdx-falcon/notifications'; // Class. Manages progress notifications inside Falcon.
-import {SfdxFalconResult}             from  '@sfdx-falcon/result';        // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
-import {SfdxFalconResultType}         from  '@sfdx-falcon/result';        // Enum. Represents the different types of sources where Results might come from.
-import {SfdxFalconJsonResponse}       from  '@sfdx-falcon/types';         // Interface. Represents the JSON reponse returned by SFDX-Falcon Commands.
-import {CoreValidator}                from  '@sfdx-falcon/validator';    // Core validation function to check that local path values don't have invalid chars.
+import {SfdxFalconDebug}              from  '@sfdx-falcon/debug';     // Class. Internal debugging framework for SFDX-Falcon.
+import {SfdxFalconError}              from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import {SfdxFalconResult}             from  '@sfdx-falcon/result';    // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
+import {SfdxFalconResultType}         from  '@sfdx-falcon/result';    // Enum. Represents the different types of sources where Results might come from.
+import {TaskProgressNotifications}    from  '@sfdx-falcon/task';      // Class. Manages progress notifications inside Falcon.
+import {SfdxFalconJsonResponse}       from  '@sfdx-falcon/types';     // Interface. Represents the JSON reponse returned by SFDX-Falcon Commands.
+import {CoreValidator}                from  '@sfdx-falcon/validator'; // Core validation function to check that local path values don't have invalid chars.
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
