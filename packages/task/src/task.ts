@@ -9,11 +9,10 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  {ListrContext}      from  'listr';  // ???
-import  {ListrTask}         from  'listr';  // ???
-import  {ListrTaskWrapper}  from  'listr';  // ???
-import  {ListrTaskResult}   from  'listr';  // ???
-//import  Listr               = require('listr');
+import  {ListrContext}      from  'listr';  // Type. Used by the context object that Listr passes from Task to Task in a single execution context.
+import  {ListrTask}         from  'listr';  // Interface. Represents a Task object as defined by Listr.
+import  {ListrTaskWrapper}  from  'listr';  // Class. An instantiated ListrTask that will eventually be in the process of being executed.
+import  {ListrTaskResult}   from  'listr';  // Type. Possible return values from the execution of a Listr Task.
 import  {Observable}        from  'rxjs';   // Class. Used to communicate status with Listr.
 import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
 
@@ -23,15 +22,12 @@ import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Libra
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import  {TaskProgressNotifications} from  '@sfdx-falcon/notifications'; // Class. Manages progress notification messages for SFDX-Falcon Tasks.
 import  {SfdxFalconResult}          from  '@sfdx-falcon/result';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
 // Import SFDX-Falcon Types
 import  {SfdxFalconResultType}      from  '@sfdx-falcon/result';  // Enum. Represents the different types of sources where Results might come from.
 import  {ErrorOrResult}             from  '@sfdx-falcon/result';  // Type. Alias to a combination of Error or SfdxFalconResult.
-//import  {Subscriber}            from  '@sfdx-falcon/types';   //  Type. Alias to an rxjs Subscriber<unknown> type.
-
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:task:';
@@ -50,7 +46,7 @@ export type Context = any;  // tslint:disable-line: no-any
  * Type. Represents an externally defined `Task` function. Extends the standard `ListrTask` function type by adding a `sharedData` parameter after the `thisTask` parameter.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export type ExtTaskFunction<CTX=ListrContext> = (listrContext:CTX, thisTask:ListrTaskWrapper<CTX>, sharedData:object) => Promise<void>;
+export type ExtTaskFunction<CTX=ListrContext> = (listrContext:CTX, thisTask:ListrTaskWrapper<CTX>, taskStatus:TaskStatusMessage, sharedData:object) => Promise<void>;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -127,10 +123,34 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface TaskResultDetail {
+  /** Reference to the `sharedData` object from the calling context's scope. */
   sharedData:           object;
+  /** Special local task execution context managed by Listr */
   listrContext:         ListrContext;
+  /** Reference to the specific Listr Task that is associated with the `SfdxFalconTask` for which this detail is connected. */
   listrTask:            ListrTaskWrapper;
-  statusMsg:            string;
+  /** Reference to the `TaskStatusMessages` object used by the  `TaskProgressNotifications` class to power status messages for the `SfdxFalconTask` for which this detail is connected. */
+  statusMsgs:           TaskStatusMessages;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Represents the full suite of Task Status Message strings that are used by the
+ * `TaskProgressNotifications.progressNotification()` function to display status messages to the
+ * user while a `ListrTask` is running.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+interface TaskStatusMessages {
+  /** The default status message. This message is shown when a task starts running. */
+  defaultMessage:   string;
+  /** Determines whether the status message should prepend the elapsed runtime in front of the status message. */
+  showTimer:        boolean;
+  /** The status message that's currently being displayed by the running task. */
+  currentMessage?:  string;
+  /** The status message that was previouly in use. Will be `null` if the status message has not been updated. */
+  prevMessage?:     string;
+  /** The status message that should be used the next time the Task Progress notification function executes. */
+  nextMessage?:     string;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -150,13 +170,20 @@ export class ObservableTaskResult {
   private _listrTask:           ListrTaskWrapper;
   private _subscriber:          Subscriber<unknown>;
   private _sharedData:          object;
-  private _statusMsg:           string;
   private _minRunTime:          number;
   private _showTimer:           boolean;
   private _parentResult:        SfdxFalconResult;
   private _taskResult:          SfdxFalconResult;
   private _taskResultDetail:    TaskResultDetail;
+  private _taskStatusMessage:   TaskStatusMessage;
+  private _taskStatusMessages:  TaskStatusMessages;
   private _notificationTimer:   NodeJS.Timeout;
+
+  // Public accessors
+  /** Represents the Status Message for the associated `SfdxFalconTask`. Allows external logic to read and set status messages. */
+  public get status():TaskStatusMessage {
+    return this._taskStatusMessage;
+  }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -196,10 +223,21 @@ export class ObservableTaskResult {
     this._listrTask         = opts.listrTask;
     this._subscriber        = opts.subscriber;
     this._sharedData        = opts.sharedData;
-    this._statusMsg         = opts.statusMsg;
     this._minRunTime        = opts.minRuntime;
     this._showTimer         = opts.showTimer;
     this._parentResult      = opts.parentResult;
+
+    // Initialize the Task Status Messages object.
+    this._taskStatusMessages  = {
+      defaultMessage: opts.statusMsg,
+      currentMessage: opts.statusMsg,
+      showTimer:      this._showTimer,
+      prevMessage:    null,
+      nextMessage:    null
+    };
+
+    // Initialize the Task Status Message object.
+    this._taskStatusMessage = new TaskStatusMessage(this._taskStatusMessages);
 
     // Initialize an SFDX-Falcon Result object.
     this._taskResult = new SfdxFalconResult (this._dbgNsExt, SfdxFalconResultType.TASK,
@@ -213,21 +251,21 @@ export class ObservableTaskResult {
       sharedData:           this._sharedData,
       listrContext:         this._listrContext,
       listrTask:            this._listrTask,
-      statusMsg:            this._statusMsg
+      statusMsgs:           this._taskStatusMessages
     };
     this._taskResult.setDetail(this._taskResultDetail);
     SfdxFalconDebug.obj(`${dbgNsLocal}:_taskResult.detail:`, this._taskResult.detail);
 
     // Set the initial Task Detail message.
     if (this._showTimer) {
-      this._subscriber.next(`[0s] ${this._statusMsg}`);
+      this._subscriber.next(`[0s] ${this._taskStatusMessages.defaultMessage}`);
     }
     else {
-      this._subscriber.next(`${this._statusMsg}`);
+      this._subscriber.next(`${this._taskStatusMessages.defaultMessage}`);
     }
 
     // Set up Task Progress Notifications and store a reference to the Timer.
-    this._notificationTimer = TaskProgressNotifications.start(this._statusMsg, 1000, this._taskResult, this._subscriber);
+    this._notificationTimer = TaskProgressNotifications.start(this._taskStatusMessages, 1000, this._taskResult, this._subscriber);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -470,7 +508,6 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Initialize Listr-specific member variables.
     this._title           = resolvedOpts.title;
-//    this._extTask         = resolvedOpts.task.bind(resolvedOpts.context);
     this._extTask         = resolvedOpts.task;
     this._extSkip         = resolvedOpts.skip;
     this._extEnabled      = resolvedOpts.enabled;
@@ -520,7 +557,9 @@ export class SfdxFalconTask<CTX=ListrContext> {
         // Initialize the External Task that's associated with this instance.
         let extTaskPromise:Promise<void>;
         try {
-          extTaskPromise = this._extTask(listrContext, thisTask, this._sharedData);
+          
+          // Hoist the External Task function into the Listr task we're creating.
+          extTaskPromise = this._extTask(listrContext, thisTask, this._otr.status, this._sharedData);
         }
         catch (error) {
           const extTaskSetupError = new SfdxFalconError ( `External Task could not be initialized. ${error.message}`
@@ -620,13 +659,210 @@ export class SfdxFalconTask<CTX=ListrContext> {
    */
   //───────────────────────────────────────────────────────────────────────────┘
   private validateSharedData():void {
+    const dbgNsLocal = `${dbgNs}validateSharedData`;
     if (typeof this._callingContext !== 'object' || typeof this._callingContext.sharedData !== 'object') {
       throw new SfdxFalconError ( `Expected there to be a 'sharedData' object available in the calling scope. `
                                 + `${typeof this._callingContext === 'object' ? `Found type '${typeof this._callingContext.sharedData}' instead. ` : ``}`
                                 + `You must provide a reference to the calling context when creating SfdxFalconTask objects. `
                                 + `You must also ensure that the calling context has defined an object named 'sharedData'.`
                                 , `InvalidSharedData`
-                                , `${dbgNs}validateSharedData`);
+                                , `${dbgNsLocal}`);
     }
   }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @class       TaskProgressNotifications
+ * @description Manages progress notification messages for SFDX-Falcon Tasks.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export class TaskProgressNotifications {
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      start
+   * @param       {TaskStatusMessages}  taskStatusMessages  Required. Object
+   *              containing the collection of strings that will be used to
+   *              control the status message set by each interval-based push
+   *              to the `Subscriber.next()` method.
+   * @param       {number}  interval  Requiredl The interval in milliseconds.
+   *              Use 1000 if you want a per-second progress count.
+   * @param       {SfdxFalconResult}  result  Required. The `SfdxFalconResult`
+   *              that determines the elapsed time used by the Progress
+   *              Progress Notification function.
+   * @param       {Subscriber<unknown>} subscriber  Required. Subscription to
+   *              an Observable object.
+   * @returns     {NodeJS.Timeout}  Result of a call to setTimeout().
+   * @description Starts a progress notification interval timeout that is able
+   *              to provide regular updates to an Observable object.
+   * @public @static
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public static start(taskStatusMessages:TaskStatusMessages, interval:number, result:SfdxFalconResult, subscriber:Subscriber<unknown>):NodeJS.Timeout {
+
+    // Set function-local debug namespace and examine incoming arguments.
+    const dbgNsLocal = `${dbgNs}TaskProgressNotifications:start`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Validate incoming arguments.
+    TypeValidator.throwOnNullInvalidObject      (taskStatusMessages,  `${dbgNsLocal}`,  `taskStatusMessages`);
+    TypeValidator.throwOnNullInvalidNumber      (interval,            `${dbgNsLocal}`,  `interval`);
+    TypeValidator.throwOnEmptyNullInvalidObject (subscriber,          `${dbgNsLocal}`,  `subscriber`);
+    TypeValidator.throwOnInvalidInstance        (result, SfdxFalconResult, `${dbgNsLocal}`, `result`);
+
+    // Initialize the timeoutRefs array if this is the first time star() is called.
+    if (TypeValidator.isNullInvalidArray(TaskProgressNotifications.timeoutRefs)) {
+      TaskProgressNotifications.timeoutRefs = new Array();
+    }
+
+    // Set the interval and save a ref to it.
+    const timeoutRef = setInterval(progressNotification, interval, result, taskStatusMessages, subscriber);
+    TaskProgressNotifications.timeoutRefs.push(timeoutRef);
+
+    // return the timeoutRef
+    return timeoutRef;
+  }
+  
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      finish
+   * @param       {NodeJS.Timeout}  timeoutObj  Required. The timeout that will
+   *              be cleared.
+   * @returns     {void}
+   * @description Given a Timeout object (ie. the thing that's returned from a
+   *              call to setInterval() or setTimeout()), clears that timeout
+   *              so that it doesn't execute (or execute again).
+   * @public @static
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public static finish(timeoutObj:NodeJS.Timeout):void {
+
+    // Set an interval for the progressNotification function and return to caller.
+    if (timeoutObj) {
+      clearInterval(timeoutObj);
+    }
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      killAll
+   * @returns     {void}
+   * @description Kills (calls clearInterval()) on ALL of the Timeout Refs that
+   *              have been created as part of the SFDX-Falcon notification
+   *              system.
+   * @public @static
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public static killAll():void {
+    if (TypeValidator.isNotEmptyNullInvalidArray(TaskProgressNotifications.timeoutRefs)) {
+      for (const timeoutRef of TaskProgressNotifications.timeoutRefs) {
+          clearInterval(timeoutRef);
+      }
+    }
+  }
+
+  // Private Members
+  /** Holds a reference to every timeout object created as part of the SFDX-Falcon notification process. */
+  private static timeoutRefs: NodeJS.Timeout[];
+
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    progressNotification
+ * @param       {SfdxFalconStatus}  status  Required. Helps determine current running time.
+ * @param       {TaskStatusMessages}  taskStatusMessages Required. Determines what gets displayed
+ *              as part of the status message and whether or not the runtime gets shown.
+ * @param       {Subscriber}  subscriber  Required. `Subscriber` to an `Observable` object.
+ * @returns     {void}
+ * @description Computes the current Run Time from a `SfdxFalconResult` object and composes a
+ *              message that `updateSubscriber()` will handle.
+ * @private
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+function progressNotification(result:SfdxFalconResult, taskStatusMessages:TaskStatusMessages, subscriber:Subscriber<unknown>):void {
+
+  // Detect if the current Status Message should be updated.
+  if (typeof taskStatusMessages.nextMessage === 'string' && taskStatusMessages.nextMessage) {
+    taskStatusMessages.prevMessage    = taskStatusMessages.currentMessage;
+    taskStatusMessages.currentMessage = taskStatusMessages.nextMessage;
+    taskStatusMessages.nextMessage    = null;
+  }
+  else {
+
+    // Current message should NOT be upated.  If showTimer is also FALSE, just exit.
+    if (taskStatusMessages.showTimer !== true) {
+      return;
+    }
+  }
+
+  // Create the Status Message. Prepend with task duration if showTimer is TRUE.
+  const statusMessage = `${taskStatusMessages.showTimer ? `[${result.durationString}]` : ``} ${taskStatusMessages.currentMessage}`;
+
+  // Update the Subscriber so it knows to display the updated Status Message.
+  updateSubscriber(subscriber, `${statusMessage}`);
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @class       TaskStatusMessage
+ * @description Simple data storage class used by the the `TaskProgressNotification` class to create
+ *              task status messages as part of the operation of an `ObservableTaskResult` instance.
+ * @private
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+class TaskStatusMessage {
+
+  // Private class members
+  private readonly  _taskStatusMessages:  TaskStatusMessages;
+
+  // Public accessors
+  public get message():string {
+    return this._taskStatusMessages.currentMessage;
+  }
+  public set message(msg:string) {
+    TypeValidator.throwOnNullInvalidString(msg, `${dbgNs}TaskStatusMessage:message:msg:`, `msg`);
+    this._taskStatusMessages.nextMessage = msg;
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @constructs  TaskStatusMessage
+   * @param       {TaskStatusMessages}  taskStatusMessages  Required. Object
+   *              containing Task Status Messages. Must be the same object that
+   *              will be passed to `TaskProgressNotifications.start()` to allow
+   *              external control of what is displayed for the status message
+   *              of the associated `SfdxFalconTask`.
+   * @description Constructs a `TaskStatusMessage` object.
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  constructor(taskStatusMessages:TaskStatusMessages) {
+    const dbgNsLocal = `${dbgNs}TaskStatusMessage:constructor`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+    TypeValidator.throwOnEmptyNullInvalidObject(taskStatusMessages, `${dbgNsLocal}`, `taskStatusMessages`);
+    this._taskStatusMessages = taskStatusMessages;
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    updateSubscriber
+ * @param       {Subscriber<unknown>} subscriber  Required. `Subscriber` to an `Observable` object.
+ * @param       {string}  message Required. The message to be passed to the `next()` callback of the
+ *              `Observer` that the `Subscriber` is watching.
+ * @returns     {void}
+ * @description Given an RxJS `Subscriber` object and a message, posts the provided message to the
+ *              `next()` callback of the `Observer` that the `Subscriber` is watching, but **ONLY**
+ *              if we can verify that the caller provided a valid `Subscriber` object.
+ * @private
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+function updateSubscriber(subscriber:Subscriber<unknown>, message:string):void {
+  if (TypeValidator.isEmptyNullInvalidObject(subscriber))   return;
+  if (TypeValidator.isNullInvalidFunction(subscriber.next)) return;
+  if (TypeValidator.isNullInvalidString(message))           return;
+  subscriber.next(message);
 }
