@@ -7,7 +7,6 @@
   "dependencies": {
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
     "@sfdx-falcon/error": "0.0.4-alpha.0",
-    "@sfdx-falcon/notifications": "0.0.4-alpha.0",
     "@sfdx-falcon/result": "0.0.4-alpha.0",
     "@sfdx-falcon/types": "0.0.4-alpha.0",
     "@sfdx-falcon/util": "0.0.4-alpha.0",

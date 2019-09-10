@@ -15,7 +15,6 @@
     {"path": "../packages/debug/tsconfig.build.json"},          // @SFDX-Falcon/debug
     {"path": "../packages/validator/tsconfig.build.json"},      // @SFDX-Falcon/validator
     {"path": "../packages/result/tsconfig.build.json"},         // @SFDX-Falcon/result
-    {"path": "../packages/notifications/tsconfig.build.json"},  // @SFDX-Falcon/notifications
     {"path": "../packages/util/tsconfig.build.json"},           // @SFDX-Falcon/util
     {"path": "../packages/task/tsconfig.build.json"},           // @SFDX-Falcon/task
     {"path": "../packages/command/tsconfig.build.json"}         // @SFDX-Falcon/command

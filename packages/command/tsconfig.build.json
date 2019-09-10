@@ -15,7 +15,6 @@
     {"path": "../debug/tsconfig.build.json"},         // @SFDX-Falcon/debug
     {"path": "../validator/tsconfig.build.json"},     // @SFDX-Falcon/validator
     {"path": "../result/tsconfig.build.json"},        // @SFDX-Falcon/result
-    {"path": "../notifications/tsconfig.build.json"}, // @SFDX-Falcon/notifications
     {"path": "../util/tsconfig.build.json"}           // @SFDX-Falcon/util
   ]
 }
