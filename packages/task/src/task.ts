@@ -17,13 +17,14 @@ import  {Observable}        from  'rxjs';   // Class. Used to communicate status
 import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
 
 // Import SFDX-Falcon Libraries
+import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Library. Async utility helper functions.
+import  {YeomanUtil}                from  '@sfdx-falcon/util';          // Library. Helper functions and classes related to Yeoman Generators.
 import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 import  {SfdxFalconResult}          from  '@sfdx-falcon/result';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
 // Import SFDX-Falcon Types
 import  {SfdxFalconResultType}      from  '@sfdx-falcon/result';  // Enum. Represents the different types of sources where Results might come from.
@@ -46,21 +47,21 @@ export type Context = any;  // tslint:disable-line: no-any
  * Type. Represents an externally defined `Task` function. Extends the standard `ListrTask` function type by adding a `sharedData` parameter after the `thisTask` parameter.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export type ExtTaskFunction<CTX=ListrContext> = (listrContext:CTX, thisTask:ListrTaskWrapper<CTX>, taskStatus:TaskStatusMessage, sharedData:object) => Promise<void>;
+export type ExtTaskFunction<CTX=ListrContext> = (taskCtx?:CTX, taskObj?:ListrTaskWrapper<CTX>, taskStatus?:TaskStatusMessage, extCtx?:ExternalContext) => Promise<void>;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * Type. Represents an externally defined `Skip` function. Extends the standard `ListrSkip` function type by adding a `sharedData` parameter after the `listrContext` parameter.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export type ExtSkipFunction<CTX=ListrContext> = (ctx:CTX, sharedData:object) => void | boolean | string | Promise<boolean>;
+export type ExtSkipFunction<CTX=ListrContext> = (ctx?:CTX, extCtx?:ExternalContext) => void | boolean | string | Promise<boolean>;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * Type. Represents an externally defined `Enabled` function. Extends the standard `ListrEnabled` function type by adding a `sharedData` parameter after the `listrContext` parameter.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export type ExtEnabledFunction<CTX=ListrContext> = (ctx:CTX, sharedData:object) => boolean | Promise<boolean> | Observable<boolean>;
+export type ExtEnabledFunction<CTX=ListrContext> = (ctx?:CTX, extCtx?:ExternalContext) => boolean | Promise<boolean> | Observable<boolean>;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -68,14 +69,14 @@ export type ExtEnabledFunction<CTX=ListrContext> = (ctx:CTX, sharedData:object) 
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface ObservableTaskResultOptions {
+  /** Collection of external context mechanisms. Passed directly */
+  extCtx:         ExternalContext;
   /** The `ListrContext` associated with the execution of a `ListrTask` at runtime. Passed as the first parameter into all `ListrTask` functions. */
-  listrContext:   ListrContext;
+  taskCtx:        ListrContext;
   /** Runtime wrapper around the `ListrTask` that's being executed. Allows for runtime modification of various task properties. */
-  listrTask:      ListrTaskWrapper;
+  taskObj:        ListrTaskWrapper;
   /** The RxJS Subscriber that this `ObservableTaskResult` should be hooked into */
   subscriber:     Subscriber<unknown>;
-  /** Shared Data object that the associated `SfdxFalconTask` should have access to. */
-  sharedData:     object;
   /** The Debug Namespace that should be used within this `ObservableTaskResult` instance */
   dbgNsExt:       string;
   /** The baseline status message for this `ObservableTaskResult`. */
@@ -84,8 +85,36 @@ export interface ObservableTaskResultOptions {
   minRuntime:     number;
   /** Specifies whether or not the status message shown by the `ListrTask` will be continually updated with an "elapsed seconds" counter. */
   showTimer:      boolean;
-  /** The `SfdxFalconResult` that will be the parent of the Result associated with this `ObservableTaskResult` instance */
-  parentResult?:  SfdxFalconResult;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Collection of key data structures that represent the overall context of the external
+ * environment inside which an `SfdxFalconTask` is running.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface ExternalContext {
+  /** Provides a mechanism for internal task logic to share information with the external context. */
+  sharedData?:       object;
+  /** Reference to an `SfdxFalconResult` object that should be used as the parent of the `ObservableTaskResult` that will be created as part of an `SfdxFalconTask`. */
+  parentResult?:     SfdxFalconResult;
+  /** Reference to a `GeneratorStatus` object. Allows a task to directly specify `success`, `error`, and `warning` messages when running inside of an `SfdxFalconGenerator`. */
+  generatorStatus?:  YeomanUtil.GeneratorStatus;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Specifies which elements of `ExternalContext` are required to be present to ensure
+ * that an error won't be thrown upon construction of an `SfdxFalconTask` object.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface ExternalContextRequirements {
+  /** Determines whether or not the `sharedData` context item is required. Ensures that a shared data `object` must be part of the Context when a `SfdxFalconTask` is constructed. */
+  sharedData?:       boolean;
+  /** Determines whether or not the `parentResult` context item is required. Ensures that an `SfdxFalconResult` object must be part of the Context when a `SfdxFalconTask` is constructed. */
+  parentResult?:     boolean;
+  /** Determines whether or not the `generatorStatus` context item is required. Ensures that a `GeneratorStatus` object must be part of the Context when a `SfdxFalconTask` is constructed. */
+  generatorStatus?:  boolean;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -96,8 +125,10 @@ export interface ObservableTaskResultOptions {
 export interface SfdxFalconTaskOptions<CTX=ListrContext> {
   /** The title of the task. */
   title:        string;
-  /** The context (ie. `this`) that the `SfdxFalconTask` being created should be hooked into. */
-  ctxExt:       Context;
+  /** Collection of external context mechanisms that this `SfdxFalconTask` can use to communicate in/out with the calling code. */
+  extCtx?:      ExternalContext;
+  /** Defines which `ExternalContext` items are required by this task. Task constructor will throw an error if required `ExternalContext` items are not present. */
+  extCtxReqs?:  ExternalContextRequirements;
   /** The "external" Debug Namespace that should be used within this `SfdxFalconTask` instance */
   dbgNsExt:     string;
   /** The task that the user wants to execute. Must be contained within a promise. */
@@ -112,8 +143,6 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> {
   minRuntime?:  number;
   /** Specifies whether or not the status message shown by the `SfdxFalconTask` will be continually updated with an "elapsed seconds" counter. */
   showTimer?:   boolean;
-  /** The `SfdxFalconResult` that will be the parent of the Result associated with this `SfdxFalconTask` instance */
-  parentResult?:  SfdxFalconResult;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -123,14 +152,14 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface TaskResultDetail {
-  /** Reference to the `sharedData` object from the calling context's scope. */
-  sharedData:           object;
+  /** Reference to the `ExternalContext` object which may contain a variety of objects that connect back to the environment the `ObservableTaskResult` runs in. */
+  extCtx:     ExternalContext;
   /** Special local task execution context managed by Listr */
-  listrContext:         ListrContext;
+  taskCtx:    ListrContext;
   /** Reference to the specific Listr Task that is associated with the `SfdxFalconTask` for which this detail is connected. */
-  listrTask:            ListrTaskWrapper;
+  taskObj:    ListrTaskWrapper;
   /** Reference to the `TaskStatusMessages` object used by the  `TaskProgressNotifications` class to power status messages for the `SfdxFalconTask` for which this detail is connected. */
-  statusMsgs:           TaskStatusMessages;
+  statusMsgs: TaskStatusMessages;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -166,13 +195,13 @@ export class ObservableTaskResult {
 
   // Private class members
   private _dbgNsExt:            string;
-  private _listrContext:        ListrContext;
-  private _listrTask:           ListrTaskWrapper;
+  private _extCtx:              ExternalContext;
+  private _taskCtx:             ListrContext;
+  private _taskObj:             ListrTaskWrapper;
   private _subscriber:          Subscriber<unknown>;
-  private _sharedData:          object;
   private _minRunTime:          number;
   private _showTimer:           boolean;
-  private _parentResult:        SfdxFalconResult;
+//  private _parentResult:        SfdxFalconResult;
   private _taskResult:          SfdxFalconResult;
   private _taskResultDetail:    TaskResultDetail;
   private _taskStatusMessage:   TaskStatusMessage;
@@ -201,31 +230,32 @@ export class ObservableTaskResult {
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
   
     // Validate the REQUIRED contents of the options object.
-    TypeValidator.throwOnEmptyNullInvalidObject (opts, `${dbgNsLocal}`, `opts`);
-    TypeValidator.throwOnNullInvalidObject      (opts.listrContext, `${dbgNsLocal}`,  `opts.listrContext`);
-    TypeValidator.throwOnEmptyNullInvalidObject (opts.listrTask,    `${dbgNsLocal}`,  `opts.listrTask`);
-    TypeValidator.throwOnEmptyNullInvalidObject (opts.subscriber,   `${dbgNsLocal}`,  `opts.subscriber`);
-    TypeValidator.throwOnNullInvalidObject      (opts.sharedData,   `${dbgNsLocal}`,  `opts.sharedData`);
-    TypeValidator.throwOnEmptyNullInvalidString (opts.dbgNsExt,     `${dbgNsLocal}`,  `opts.dbgNsExt`);
-    TypeValidator.throwOnNullInvalidString      (opts.statusMsg,    `${dbgNsLocal}`,  `opts.statusMsg`);
-    TypeValidator.throwOnNullInvalidNumber      (opts.minRuntime,   `${dbgNsLocal}`,  `opts.minRuntime`);
-    TypeValidator.throwOnNullInvalidBoolean     (opts.showTimer,    `${dbgNsLocal}`,  `opts.showTimer`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts,              `${dbgNsLocal}`,  `ObservableTaskResultOptions`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.dbgNsExt,     `${dbgNsLocal}`,  `ObservableTaskResultOptions.dbgNsExt`);
+    TypeValidator.throwOnNullInvalidObject      (opts.extCtx,       `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx`);
+    TypeValidator.throwOnNullInvalidObject      (opts.taskCtx,      `${dbgNsLocal}`,  `ObservableTaskResultOptions.taskCtx`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts.taskObj,      `${dbgNsLocal}`,  `ObservableTaskResultOptions.taskObj`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts.subscriber,   `${dbgNsLocal}`,  `ObservableTaskResultOptions.subscriber`);
+    TypeValidator.throwOnNullInvalidString      (opts.statusMsg,    `${dbgNsLocal}`,  `ObservableTaskResultOptions.statusMsg`);
+    TypeValidator.throwOnNullInvalidNumber      (opts.minRuntime,   `${dbgNsLocal}`,  `ObservableTaskResultOptions.minRuntime`);
+    TypeValidator.throwOnNullInvalidBoolean     (opts.showTimer,    `${dbgNsLocal}`,  `ObservableTaskResultOptions.showTimer`);
 
-    // Validate the OPTIONAL contents of the options object.
-    if (opts.parentResult) TypeValidator.throwOnNullInvalidInstance(opts.parentResult, SfdxFalconResult, `${dbgNsLocal}`, `opts.parentResult`);
-
+    // Validate the OPTIONAL contents of the External Context options object.
+    if (opts.extCtx.sharedData)       TypeValidator.throwOnNullInvalidObject  (opts.extCtx.sharedData,                                  `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx.sharedData`);
+    if (opts.extCtx.parentResult)     TypeValidator.throwOnNullInvalidInstance(opts.extCtx.parentResult,    SfdxFalconResult,           `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx.parentResult`);
+    if (opts.extCtx.generatorStatus)  TypeValidator.throwOnNullInvalidInstance(opts.extCtx.generatorStatus, YeomanUtil.GeneratorStatus, `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx.generatorStatus`);
+    
     // Validate the DEEPER contents of the options object.
     TypeValidator.throwOnNullInvalidInstance(opts.subscriber, Subscriber, `${dbgNsLocal}`, `opts.subscriber`);
 
     // Initialize member variables.
     this._dbgNsExt          = opts.dbgNsExt;
-    this._listrContext      = opts.listrContext;
-    this._listrTask         = opts.listrTask;
+    this._extCtx            = opts.extCtx;
+    this._taskCtx           = opts.taskCtx;
+    this._taskObj           = opts.taskObj;
     this._subscriber        = opts.subscriber;
-    this._sharedData        = opts.sharedData;
     this._minRunTime        = opts.minRuntime;
     this._showTimer         = opts.showTimer;
-    this._parentResult      = opts.parentResult;
 
     // Initialize the Task Status Messages object.
     this._taskStatusMessages  = {
@@ -248,10 +278,10 @@ export class ObservableTaskResult {
 
     // Initialize the Task Result Detail.
     this._taskResultDetail = {
-      sharedData:           this._sharedData,
-      listrContext:         this._listrContext,
-      listrTask:            this._listrTask,
-      statusMsgs:           this._taskStatusMessages
+      extCtx:     this._extCtx,
+      taskCtx:    this._taskCtx,
+      taskObj:    this._taskObj,
+      statusMsgs: this._taskStatusMessages
     };
     this._taskResult.setDetail(this._taskResultDetail);
     SfdxFalconDebug.obj(`${dbgNsLocal}:_taskResult.detail:`, this._taskResult.detail);
@@ -341,9 +371,9 @@ export class ObservableTaskResult {
     }
     
     // Add the Task Result as a child of the Parent Result (if present).
-    if (this._parentResult instanceof SfdxFalconResult) {
+    if (this._extCtx.parentResult instanceof SfdxFalconResult) {
       try {
-        this._parentResult.addChild(this._taskResult);
+        this._extCtx.parentResult.addChild(this._taskResult);
       }
       catch (bubbledError) {
         // If we get here, it means the parent was set to Bubble Errors.
@@ -392,9 +422,9 @@ export class ObservableTaskResult {
     this._taskResult.success();
 
     // Add the Task Result as a child of the Parent Result (if present).
-    if (this._parentResult instanceof SfdxFalconResult) {
+    if (this._extCtx.parentResult instanceof SfdxFalconResult) {
       try {
-        this._parentResult.addChild(this._taskResult);
+        this._extCtx.parentResult.addChild(this._taskResult);
       }
       catch (bubbledError) {
         // If we get here, it means the parent was set to Bubble Errors.
@@ -454,19 +484,12 @@ export class SfdxFalconTask<CTX=ListrContext> {
   private _enabled:         (listrCtx:CTX) => boolean | Promise<boolean> | Observable<boolean>;
 
   // SFDX-Falcon Task-specific members.
-  private _ctxExt:          Context;
+  private _extCtx:          ExternalContext;
   private _dbgNsExt:        string;
   private _statusMsg:       string;
   private _minRuntime:      number;
   private _showTimer:       boolean;
-  private _parentResult:    SfdxFalconResult;
   private _otr:             ObservableTaskResult;
-
-  // Private accessors.
-  private get _sharedData():object {
-    this.validateSharedData();
-    return this._ctxExt.sharedData;
-  }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -488,19 +511,28 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Build a set of resolved options by mixing what the caller supplied with our defaults.
     const resolvedOpts = {
-      statusMsg:  '',
-      minRuntime: 0,
-      showTimer:  false,
-      ...opts
+      extCtx:     {},             // Not every task will need/want to utilize External Context
+      extCtxReqs: {               // Not every task will need/want to utilize External Context
+        sharedData:       false,
+        parentResult:     false,
+        generatorStatus:  false
+      },
+      statusMsg:  '',             // Not every task will need/want to use status messages.
+      minRuntime: 0,              // Not every task will need/want to include any processing delay.
+      showTimer:  false,          // Not every task will need/want the timer.
+      ...opts                     // Mixin the options provided by the caller.
     } as SfdxFalconTaskOptions;
 
     // Validate the contents of the resolved options.
-    TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.title,      `${dbgNsLocal}`,  `resolvedOpts.title`);
-    TypeValidator.throwOnNullInvalidFunction    (resolvedOpts.task,       `${dbgNsLocal}`,  `resolvedOpts.task`);
-    if (typeof resolvedOpts.skip          !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.skip,     `${dbgNsLocal}`,  `resolvedOpts.skip`);
-    if (typeof resolvedOpts.enabled       !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `resolvedOpts.enabled`);
-    if (typeof resolvedOpts.parentResult  !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.parentResult, SfdxFalconResult, `${dbgNsLocal}`,  `resolvedOpts.parentResult`);
-    TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.ctxExt,     `${dbgNsLocal}`,  `resolvedOpts.ctxExt`);
+    TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.title,      `${dbgNsLocal}`,  `SfdxFalconTaskOptions.title`);
+    TypeValidator.throwOnNullInvalidFunction    (resolvedOpts.task,       `${dbgNsLocal}`,  `SfdxFalconTaskOptions.task`);
+    if (typeof resolvedOpts.skip          !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.skip,     `${dbgNsLocal}`,  `SfdxFalconTaskOptions.skip`);
+    if (typeof resolvedOpts.enabled       !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.enabled`);
+    TypeValidator.throwOnNullInvalidObject      (resolvedOpts.extCtx,     `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx`);
+    TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.extCtxReqs, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtxReqs`);
+    if (resolvedOpts.extCtxReqs.sharedData)       TypeValidator.throwOnNullInvalidObject  (resolvedOpts.extCtx.sharedData,                                  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.sharedData`);
+    if (resolvedOpts.extCtxReqs.parentResult)     TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.parentResult,    SfdxFalconResult,           `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.parentResult`);
+    if (resolvedOpts.extCtxReqs.generatorStatus)  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.generatorStatus, YeomanUtil.GeneratorStatus, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.generatorStatus`);
     TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.dbgNsExt,   `${dbgNsLocal}`,  `resolvedOpts.dbgNsExt`);
     TypeValidator.throwOnNullInvalidString      (resolvedOpts.statusMsg,  `${dbgNsLocal}`,  `resolvedOpts.statusMsg`);
     TypeValidator.throwOnNullInvalidNumber      (resolvedOpts.minRuntime, `${dbgNsLocal}`,  `resolvedOpts.minRuntime`);
@@ -513,22 +545,20 @@ export class SfdxFalconTask<CTX=ListrContext> {
     this._extEnabled      = resolvedOpts.enabled;
 
     // Initialize SFDX-Falcon Task-specific variables.
-    this._ctxExt          = resolvedOpts.ctxExt;
+    this._extCtx          = resolvedOpts.extCtx;
     this._dbgNsExt        = resolvedOpts.dbgNsExt;
     this._statusMsg       = resolvedOpts.statusMsg;
     this._minRuntime      = resolvedOpts.minRuntime;
     this._showTimer       = resolvedOpts.showTimer;
-    this._parentResult    = resolvedOpts.parentResult;
-    
-    // Make sure that the external context has a sharedData object.
-    this.validateSharedData();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      build
    * @returns     {ListrTask}
-   * @description ???
+   * @description Builds an Observable `ListrTask` object based on the info
+   *              that the caller provided to us when this `SfdxFalconTask`
+   *              object was constructed.
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
@@ -538,20 +568,19 @@ export class SfdxFalconTask<CTX=ListrContext> {
     const dbgNsLocal = `${dbgNs}SfdxFalconTask:build`;
 
     // Build the specialized Observer based task.
-    this._task = (listrContext:ListrContext, thisTask:ListrTaskWrapper) => {
+    this._task = (taskCtx:ListrContext, taskObj:ListrTaskWrapper) => {
       return new Observable((subscriber:Subscriber<unknown>) => {
 
         // Initialize an OTR (Observable Task Result).
         this._otr = new ObservableTaskResult({
-          listrContext:   listrContext,
-          listrTask:      thisTask,
+          taskCtx:        taskCtx,
+          taskObj:        taskObj,
           subscriber:     subscriber,
-          sharedData:     this._sharedData,
+          extCtx:         this._extCtx,
           dbgNsExt:       this._dbgNsExt,
           statusMsg:      this._statusMsg,
           minRuntime:     this._minRuntime,
-          showTimer:      this._showTimer,
-          parentResult:   this._parentResult
+          showTimer:      this._showTimer
         });
 
         // Initialize the External Task that's associated with this instance.
@@ -559,7 +588,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
         try {
           
           // Hoist the External Task function into the Listr task we're creating.
-          extTaskPromise = this._extTask(listrContext, thisTask, this._otr.status, this._sharedData);
+          extTaskPromise = this._extTask(taskCtx, taskObj, this._otr.status, this._extCtx);
         }
         catch (error) {
           const extTaskSetupError = new SfdxFalconError ( `External Task could not be initialized. ${error.message}`
@@ -634,10 +663,10 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Build the SKIP and ENABLED functions
     if (typeof this._extSkip === 'function') {
-      this._skip    = (listrContext:ListrContext) => this._extSkip(listrContext, this._sharedData);
+      this._skip    = (taskCtx:ListrContext) => this._extSkip(taskCtx, this._extCtx);
     }
     if (typeof this._extEnabled === 'function') {
-      this._enabled = (listrContext:ListrContext) => this._extEnabled(listrContext, this._sharedData);
+      this._enabled = (taskCtx:ListrContext) => this._extEnabled(taskCtx, this._extCtx);
     }
     
     // Construct and return a ListrTask
@@ -647,27 +676,6 @@ export class SfdxFalconTask<CTX=ListrContext> {
       enabled:  this._enabled,
       skip:     this._skip
     } as ListrTask;
-  }
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @method      validateSharedData
-   * @returns     {void}
-   * @description Checks if the external context referenced by this instance
-   *              has an associated `sharedData` object.
-   * @private
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-  private validateSharedData():void {
-    const dbgNsLocal = `${dbgNs}validateSharedData`;
-    if (typeof this._ctxExt !== 'object' || typeof this._ctxExt.sharedData !== 'object') {
-      throw new SfdxFalconError ( `Expected there to be a 'sharedData' object available in the external context. `
-                                + `${typeof this._ctxExt === 'object' ? `Found type '${typeof this._ctxExt.sharedData}' instead. ` : ``}`
-                                + `You must provide a reference to the external context when creating SfdxFalconTask objects. `
-                                + `You must also ensure that the external context has defined an object named 'sharedData'.`
-                                , `InvalidExternalContext`
-                                , `${dbgNsLocal}`);
-    }
   }
 }
 
