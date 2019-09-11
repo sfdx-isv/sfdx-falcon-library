@@ -530,9 +530,9 @@ export class SfdxFalconTask<CTX=ListrContext> {
     if (typeof resolvedOpts.enabled       !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.enabled`);
     TypeValidator.throwOnNullInvalidObject      (resolvedOpts.extCtx,     `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx`);
     TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.extCtxReqs, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtxReqs`);
-    if (resolvedOpts.extCtxReqs.sharedData)       TypeValidator.throwOnNullInvalidObject  (resolvedOpts.extCtx.sharedData,                                  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.sharedData`);
-    if (resolvedOpts.extCtxReqs.parentResult)     TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.parentResult,    SfdxFalconResult,           `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.parentResult`);
-    if (resolvedOpts.extCtxReqs.generatorStatus)  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.generatorStatus, YeomanUtil.GeneratorStatus, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.generatorStatus`);
+    if (resolvedOpts.extCtxReqs.sharedData      || typeof resolvedOpts.extCtx.sharedData      !== 'undefined')  TypeValidator.throwOnNullInvalidObject  (resolvedOpts.extCtx.sharedData,                                  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.sharedData`);
+    if (resolvedOpts.extCtxReqs.parentResult    || typeof resolvedOpts.extCtx.parentResult    !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.parentResult,    SfdxFalconResult,           `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.parentResult`);
+    if (resolvedOpts.extCtxReqs.generatorStatus || typeof resolvedOpts.extCtx.generatorStatus !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.generatorStatus, YeomanUtil.GeneratorStatus, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.generatorStatus`);
     TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.dbgNsExt,   `${dbgNsLocal}`,  `resolvedOpts.dbgNsExt`);
     TypeValidator.throwOnNullInvalidString      (resolvedOpts.statusMsg,  `${dbgNsLocal}`,  `resolvedOpts.statusMsg`);
     TypeValidator.throwOnNullInvalidNumber      (resolvedOpts.minRuntime, `${dbgNsLocal}`,  `resolvedOpts.minRuntime`);
