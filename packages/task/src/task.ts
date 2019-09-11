@@ -97,7 +97,7 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> {
   /** The title of the task. */
   title:        string;
   /** The context (ie. `this`) that the `SfdxFalconTask` being created should be hooked into. */
-  context:      Context;
+  ctxExt:       Context;
   /** The "external" Debug Namespace that should be used within this `SfdxFalconTask` instance */
   dbgNsExt:     string;
   /** The task that the user wants to execute. Must be contained within a promise. */
@@ -454,7 +454,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
   private _enabled:         (listrCtx:CTX) => boolean | Promise<boolean> | Observable<boolean>;
 
   // SFDX-Falcon Task-specific members.
-  private _callingContext:  Context;
+  private _ctxExt:          Context;
   private _dbgNsExt:        string;
   private _statusMsg:       string;
   private _minRuntime:      number;
@@ -465,7 +465,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
   // Private accessors.
   private get _sharedData():object {
     this.validateSharedData();
-    return this._callingContext.sharedData;
+    return this._ctxExt.sharedData;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -490,7 +490,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
     const resolvedOpts = {
       statusMsg:  '',
       minRuntime: 0,
-      showTimer:  true,
+      showTimer:  false,
       ...opts
     } as SfdxFalconTaskOptions;
 
@@ -500,7 +500,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
     if (typeof resolvedOpts.skip          !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.skip,     `${dbgNsLocal}`,  `resolvedOpts.skip`);
     if (typeof resolvedOpts.enabled       !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `resolvedOpts.enabled`);
     if (typeof resolvedOpts.parentResult  !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.parentResult, SfdxFalconResult, `${dbgNsLocal}`,  `resolvedOpts.parentResult`);
-    TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.context,    `${dbgNsLocal}`,  `resolvedOpts.context`);
+    TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.ctxExt,     `${dbgNsLocal}`,  `resolvedOpts.ctxExt`);
     TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.dbgNsExt,   `${dbgNsLocal}`,  `resolvedOpts.dbgNsExt`);
     TypeValidator.throwOnNullInvalidString      (resolvedOpts.statusMsg,  `${dbgNsLocal}`,  `resolvedOpts.statusMsg`);
     TypeValidator.throwOnNullInvalidNumber      (resolvedOpts.minRuntime, `${dbgNsLocal}`,  `resolvedOpts.minRuntime`);
@@ -513,7 +513,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
     this._extEnabled      = resolvedOpts.enabled;
 
     // Initialize SFDX-Falcon Task-specific variables.
-    this._callingContext  = resolvedOpts.context;
+    this._ctxExt          = resolvedOpts.ctxExt;
     this._dbgNsExt        = resolvedOpts.dbgNsExt;
     this._statusMsg       = resolvedOpts.statusMsg;
     this._minRuntime      = resolvedOpts.minRuntime;
@@ -660,12 +660,12 @@ export class SfdxFalconTask<CTX=ListrContext> {
   //───────────────────────────────────────────────────────────────────────────┘
   private validateSharedData():void {
     const dbgNsLocal = `${dbgNs}validateSharedData`;
-    if (typeof this._callingContext !== 'object' || typeof this._callingContext.sharedData !== 'object') {
-      throw new SfdxFalconError ( `Expected there to be a 'sharedData' object available in the calling scope. `
-                                + `${typeof this._callingContext === 'object' ? `Found type '${typeof this._callingContext.sharedData}' instead. ` : ``}`
-                                + `You must provide a reference to the calling context when creating SfdxFalconTask objects. `
-                                + `You must also ensure that the calling context has defined an object named 'sharedData'.`
-                                , `InvalidSharedData`
+    if (typeof this._ctxExt !== 'object' || typeof this._ctxExt.sharedData !== 'object') {
+      throw new SfdxFalconError ( `Expected there to be a 'sharedData' object available in the external context. `
+                                + `${typeof this._ctxExt === 'object' ? `Found type '${typeof this._ctxExt.sharedData}' instead. ` : ``}`
+                                + `You must provide a reference to the external context when creating SfdxFalconTask objects. `
+                                + `You must also ensure that the external context has defined an object named 'sharedData'.`
+                                , `InvalidExternalContext`
                                 , `${dbgNsLocal}`);
     }
   }
