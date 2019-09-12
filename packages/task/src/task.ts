@@ -77,8 +77,6 @@ export interface ObservableTaskResultOptions {
   taskObj:        ListrTaskWrapper;
   /** The RxJS Subscriber that this `ObservableTaskResult` should be hooked into */
   subscriber:     Subscriber<unknown>;
-  /** The Debug Namespace that should be used within this `ObservableTaskResult` instance */
-  dbgNsExt:       string;
   /** The baseline status message for this `ObservableTaskResult`. */
   statusMsg:      string;
   /** The minimum amount of time, in seconds, that this `ObservableTaskResult` should run. Useful for keeping a status message on screen long enough for the user to see it. */
@@ -94,12 +92,14 @@ export interface ObservableTaskResultOptions {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface ExternalContext {
+  /** The Debug Namespace that should be used within this `ObservableTaskResult` instance */
+  dbgNs:            string;
   /** Provides a mechanism for internal task logic to share information with the external context. */
-  sharedData?:       object;
+  sharedData?:      object;
   /** Reference to an `SfdxFalconResult` object that should be used as the parent of the `ObservableTaskResult` that will be created as part of an `SfdxFalconTask`. */
-  parentResult?:     SfdxFalconResult;
+  parentResult?:    SfdxFalconResult;
   /** Reference to a `GeneratorStatus` object. Allows a task to directly specify `success`, `error`, and `warning` messages when running inside of an `SfdxFalconGenerator`. */
-  generatorStatus?:  YeomanUtil.GeneratorStatus;
+  generatorStatus?: YeomanUtil.GeneratorStatus;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -126,11 +126,9 @@ export interface SfdxFalconTaskOptions<CTX=ListrContext> {
   /** The title of the task. */
   title:        string;
   /** Collection of external context mechanisms that this `SfdxFalconTask` can use to communicate in/out with the calling code. */
-  extCtx?:      ExternalContext;
+  extCtx:       ExternalContext;
   /** Defines which `ExternalContext` items are required by this task. Task constructor will throw an error if required `ExternalContext` items are not present. */
   extCtxReqs?:  ExternalContextRequirements;
-  /** The "external" Debug Namespace that should be used within this `SfdxFalconTask` instance */
-  dbgNsExt:     string;
   /** The task that the user wants to execute. Must be contained within a promise. */
   task:         ExtTaskFunction<CTX>;
   /** Function that determines whether this task should be skipped. */
@@ -194,14 +192,12 @@ interface TaskStatusMessages {
 export class ObservableTaskResult {
 
   // Private class members
-  private _dbgNsExt:            string;
   private _extCtx:              ExternalContext;
   private _taskCtx:             ListrContext;
   private _taskObj:             ListrTaskWrapper;
   private _subscriber:          Subscriber<unknown>;
   private _minRunTime:          number;
   private _showTimer:           boolean;
-//  private _parentResult:        SfdxFalconResult;
   private _taskResult:          SfdxFalconResult;
   private _taskResultDetail:    TaskResultDetail;
   private _taskStatusMessage:   TaskStatusMessage;
@@ -231,8 +227,8 @@ export class ObservableTaskResult {
   
     // Validate the REQUIRED contents of the options object.
     TypeValidator.throwOnEmptyNullInvalidObject (opts,              `${dbgNsLocal}`,  `ObservableTaskResultOptions`);
-    TypeValidator.throwOnEmptyNullInvalidString (opts.dbgNsExt,     `${dbgNsLocal}`,  `ObservableTaskResultOptions.dbgNsExt`);
     TypeValidator.throwOnNullInvalidObject      (opts.extCtx,       `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.extCtx.dbgNs, `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx.dbgNs`);
     TypeValidator.throwOnNullInvalidObject      (opts.taskCtx,      `${dbgNsLocal}`,  `ObservableTaskResultOptions.taskCtx`);
     TypeValidator.throwOnEmptyNullInvalidObject (opts.taskObj,      `${dbgNsLocal}`,  `ObservableTaskResultOptions.taskObj`);
     TypeValidator.throwOnEmptyNullInvalidObject (opts.subscriber,   `${dbgNsLocal}`,  `ObservableTaskResultOptions.subscriber`);
@@ -246,10 +242,9 @@ export class ObservableTaskResult {
     if (opts.extCtx.generatorStatus)  TypeValidator.throwOnNullInvalidInstance(opts.extCtx.generatorStatus, YeomanUtil.GeneratorStatus, `${dbgNsLocal}`,  `ObservableTaskResultOptions.extCtx.generatorStatus`);
     
     // Validate the DEEPER contents of the options object.
-    TypeValidator.throwOnNullInvalidInstance(opts.subscriber, Subscriber, `${dbgNsLocal}`, `opts.subscriber`);
+    TypeValidator.throwOnNullInvalidInstance(opts.subscriber, Subscriber, `${dbgNsLocal}`, `ObservableTaskResultOptions.subscriber`);
 
     // Initialize member variables.
-    this._dbgNsExt          = opts.dbgNsExt;
     this._extCtx            = opts.extCtx;
     this._taskCtx           = opts.taskCtx;
     this._taskObj           = opts.taskObj;
@@ -270,7 +265,7 @@ export class ObservableTaskResult {
     this._taskStatusMessage = new TaskStatusMessage(this._taskStatusMessages);
 
     // Initialize an SFDX-Falcon Result object.
-    this._taskResult = new SfdxFalconResult (this._dbgNsExt, SfdxFalconResultType.TASK,
+    this._taskResult = new SfdxFalconResult (this._extCtx.dbgNs, SfdxFalconResultType.TASK,
                                             { startNow:       true,     // Start the internal clock for this result on creation
                                               bubbleError:    false,    // Let the parent Result handle errors (no bubbling)
                                               bubbleFailure:  false});  // Let the parent Result handle failures (no bubbling)
@@ -485,7 +480,6 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
   // SFDX-Falcon Task-specific members.
   private _extCtx:          ExternalContext;
-  private _dbgNsExt:        string;
   private _statusMsg:       string;
   private _minRuntime:      number;
   private _showTimer:       boolean;
@@ -511,8 +505,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Build a set of resolved options by mixing what the caller supplied with our defaults.
     const resolvedOpts = {
-      extCtx:     {},             // Not every task will need/want to utilize External Context
-      extCtxReqs: {               // Not every task will need/want to utilize External Context
+      extCtxReqs: {               // Default all to FALSE since not every task will need/want to utilize every item of External Context.
         sharedData:       false,
         parentResult:     false,
         generatorStatus:  false
@@ -524,19 +517,19 @@ export class SfdxFalconTask<CTX=ListrContext> {
     } as SfdxFalconTaskOptions;
 
     // Validate the contents of the resolved options.
-    TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.title,      `${dbgNsLocal}`,  `SfdxFalconTaskOptions.title`);
-    TypeValidator.throwOnNullInvalidFunction    (resolvedOpts.task,       `${dbgNsLocal}`,  `SfdxFalconTaskOptions.task`);
+    TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.title,        `${dbgNsLocal}`,  `SfdxFalconTaskOptions.title`);
+    TypeValidator.throwOnNullInvalidFunction    (resolvedOpts.task,         `${dbgNsLocal}`,  `SfdxFalconTaskOptions.task`);
     if (typeof resolvedOpts.skip          !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.skip,     `${dbgNsLocal}`,  `SfdxFalconTaskOptions.skip`);
     if (typeof resolvedOpts.enabled       !== 'undefined')  TypeValidator.throwOnNullInvalidFunction(resolvedOpts.enabled,  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.enabled`);
-    TypeValidator.throwOnNullInvalidObject      (resolvedOpts.extCtx,     `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx`);
-    TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.extCtxReqs, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtxReqs`);
+    TypeValidator.throwOnNullInvalidObject      (resolvedOpts.extCtx,       `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx`);
+    TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.extCtx.dbgNs, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.dbgNs`);
+    TypeValidator.throwOnEmptyNullInvalidObject (resolvedOpts.extCtxReqs,   `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtxReqs`);
     if (resolvedOpts.extCtxReqs.sharedData      || typeof resolvedOpts.extCtx.sharedData      !== 'undefined')  TypeValidator.throwOnNullInvalidObject  (resolvedOpts.extCtx.sharedData,                                  `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.sharedData`);
     if (resolvedOpts.extCtxReqs.parentResult    || typeof resolvedOpts.extCtx.parentResult    !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.parentResult,    SfdxFalconResult,           `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.parentResult`);
     if (resolvedOpts.extCtxReqs.generatorStatus || typeof resolvedOpts.extCtx.generatorStatus !== 'undefined')  TypeValidator.throwOnNullInvalidInstance(resolvedOpts.extCtx.generatorStatus, YeomanUtil.GeneratorStatus, `${dbgNsLocal}`,  `SfdxFalconTaskOptions.extCtx.generatorStatus`);
-    TypeValidator.throwOnEmptyNullInvalidString (resolvedOpts.dbgNsExt,   `${dbgNsLocal}`,  `resolvedOpts.dbgNsExt`);
-    TypeValidator.throwOnNullInvalidString      (resolvedOpts.statusMsg,  `${dbgNsLocal}`,  `resolvedOpts.statusMsg`);
-    TypeValidator.throwOnNullInvalidNumber      (resolvedOpts.minRuntime, `${dbgNsLocal}`,  `resolvedOpts.minRuntime`);
-    TypeValidator.throwOnNullInvalidBoolean     (resolvedOpts.showTimer,  `${dbgNsLocal}`,  `resolvedOpts.showTimer`);
+    TypeValidator.throwOnNullInvalidString      (resolvedOpts.statusMsg,    `${dbgNsLocal}`,  `SfdxFalconTaskOptions.statusMsg`);
+    TypeValidator.throwOnNullInvalidNumber      (resolvedOpts.minRuntime,   `${dbgNsLocal}`,  `SfdxFalconTaskOptions.minRuntime`);
+    TypeValidator.throwOnNullInvalidBoolean     (resolvedOpts.showTimer,    `${dbgNsLocal}`,  `SfdxFalconTaskOptions.showTimer`);
 
     // Initialize Listr-specific member variables.
     this._title           = resolvedOpts.title;
@@ -546,7 +539,6 @@ export class SfdxFalconTask<CTX=ListrContext> {
 
     // Initialize SFDX-Falcon Task-specific variables.
     this._extCtx          = resolvedOpts.extCtx;
-    this._dbgNsExt        = resolvedOpts.dbgNsExt;
     this._statusMsg       = resolvedOpts.statusMsg;
     this._minRuntime      = resolvedOpts.minRuntime;
     this._showTimer       = resolvedOpts.showTimer;
@@ -577,7 +569,6 @@ export class SfdxFalconTask<CTX=ListrContext> {
           taskObj:        taskObj,
           subscriber:     subscriber,
           extCtx:         this._extCtx,
-          dbgNsExt:       this._dbgNsExt,
           statusMsg:      this._statusMsg,
           minRuntime:     this._minRuntime,
           showTimer:      this._showTimer
