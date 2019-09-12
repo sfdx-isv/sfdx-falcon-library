@@ -50,21 +50,25 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function addGitRemote(extCtx:ExternalContext, targetDir:string, gitRemoteUri:string):ListrTask {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
+  // Define function-local and external debug namespaces.
   const funcName    = `addGitRemote`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
 
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Define an SfdxFalconTask object.
   const sfdxFalconTask = new SfdxFalconTask({
     extCtx:     extCtx,
-    title:      `Adding the Git Remote...`,
+    title:      `Adding the Git Remote`,
     statusMsg:  `Adding the Git Remote ${gitRemoteUri} to the local repository`,
     minRuntime: 3,
-    showTimer:  true,
+    showTimer:  false,
     enabled:    () => (typeof targetDir === 'string' && targetDir !== '' && typeof gitRemoteUri === 'string' && gitRemoteUri !== ''),
     skip:  (listrContext:ListrContextFinalizeGit) => {
       if (listrContext.gitInstalled !== true) {
@@ -77,13 +81,11 @@ export function addGitRemote(extCtx:ExternalContext, targetDir:string, gitRemote
     task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitRemoteAddOrigin(targetDir, gitRemoteUri);
-        SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
-        _taskObj.title += 'Done!';
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:shellString:`, shellString);
         _taskCtx.gitRemoteAdded = true;
 
       }
       catch (gitRemoteAddError) {
-        _taskObj.title += 'Failed';
         _taskCtx.gitRemoteAdded = false;
         throw gitRemoteAddError;
       }
@@ -187,19 +189,23 @@ export function cloneGitRemote(extCtx:ExternalContext, gitRemoteUri:string, targ
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function commitProjectFiles(extCtx:ExternalContext, targetDir:string, commitMessage:string):ListrTask {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
+  // Define function-local and external debug namespaces.
   const funcName    = `commitProjectFiles`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
 
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Define an SfdxFalconTask object.
   const sfdxFalconTask = new SfdxFalconTask({
     extCtx:     extCtx,
     title:      `Committing Files`,
-    statusMsg:  `Committing files with this message: '${commitMessage}'`,
+    statusMsg:  `Committing files with message: '${commitMessage}'`,
     minRuntime: 3,
     showTimer:  false,
     enabled:() => (typeof targetDir === 'string' && targetDir !== ''),
@@ -211,11 +217,11 @@ export function commitProjectFiles(extCtx:ExternalContext, targetDir:string, com
     task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitCommit(targetDir, commitMessage);
-        SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString, `shellString: `);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:shellString:`, shellString, `shellString: `);
         _taskCtx.projectFilesCommitted = true;
       }
       catch (gitCommitError) {
-        SfdxFalconDebug.obj(`${dbgNsLocal}:gitCommitError:`, gitCommitError);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:gitCommitError:`, gitCommitError);
         _taskCtx.projectFilesCommitted = false;
         _taskObj.skip('Nothing to Commit');
         // NOTE: We will NOT re-throw the error because we want the task to finalize
@@ -245,16 +251,20 @@ export function commitProjectFiles(extCtx:ExternalContext, targetDir:string, com
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function finalizeGit(extCtx:ExternalContext, targetDir:string, gitRemoteUri:string='', gitCommitMsg:string='Initial Commit'):ListrObject {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
+  // Define function-local and external debug namespaces.
   const funcName    = `finalizeGit`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
+
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Make sure the caller provided a Target Directory.
-  TypeValidator.throwOnEmptyNullInvalidString(targetDir, `${dbgNsLocal}`, `targetDir`);
-
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  TypeValidator.throwOnEmptyNullInvalidString(targetDir, `${dbgNsExt}`, `targetDir`);
 
   // Build and return a Listr Object.
   return new Listr(
@@ -291,13 +301,17 @@ export function finalizeGit(extCtx:ExternalContext, targetDir:string, gitRemoteU
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function gitRuntimeCheck(extCtx:ExternalContext):ListrTask {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
+  // Define function-local and external debug namespaces.
   const funcName    = `gitRuntimeCheck`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
 
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Define an SfdxFalconTask object.
   const sfdxFalconTask = new SfdxFalconTask({
@@ -311,7 +325,7 @@ export function gitRuntimeCheck(extCtx:ExternalContext):ListrTask {
         _taskCtx.gitInstalled = false;
         throw new SfdxFalconError( 'Git must be installed in your local environment.'
                                  , 'GitNotFound'
-                                 , `${dbgNs}gitRuntimeCheck`);
+                                 , `${dbgNsExt}:task`);
       }
     }
   });
@@ -333,13 +347,17 @@ export function gitRuntimeCheck(extCtx:ExternalContext):ListrTask {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function initializeGit(extCtx:ExternalContext, targetDir:string):ListrTask {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
+  // Define function-local and external debug namespaces.
   const funcName    = `initializeGit`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
 
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Define an SfdxFalconTask object.
   const sfdxFalconTask = new SfdxFalconTask({
@@ -347,7 +365,7 @@ export function initializeGit(extCtx:ExternalContext, targetDir:string):ListrTas
     title:      `Initializing Git in Target Directory`,
     statusMsg:  `Running git init in ${targetDir}`,
     minRuntime: 3,
-    showTimer:  true,
+    showTimer:  false,
     enabled:() => (typeof targetDir === 'string' && targetDir !== ''),
     skip:   (listrContext:ListrContextFinalizeGit) => {
       if (listrContext.gitInstalled !== true) {
@@ -357,11 +375,11 @@ export function initializeGit(extCtx:ExternalContext, targetDir:string):ListrTas
     task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitInit(targetDir);
-        SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:shellString:`, shellString);
         _taskCtx.gitInitialized = true;
       }
       catch (gitInitError) {
-        SfdxFalconDebug.obj(`${dbgNsLocal}:gitInitError:`, gitInitError);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:gitInitError:`, gitInitError);
         _taskCtx.gitInitialized = false;
         throw gitInitError;
       }
@@ -386,13 +404,17 @@ export function initializeGit(extCtx:ExternalContext, targetDir:string):ListrTas
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string):ListrTask {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
+  // Define function-local and external debug namespaces.
   const funcName    = `reValidateGitRemote`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
 
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   const sfdxFalconTask = new SfdxFalconTask({
     extCtx:     extCtx,
@@ -409,11 +431,11 @@ export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string)
     task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       return GitUtil.checkGitRemoteStatus(gitRemoteUri, 3)
       .then((successResult:ShellExecResult) => {
-        SfdxFalconDebug.obj(`${dbgNsLocal}:successResult:`, successResult);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:successResult:`, successResult);
         _taskCtx.gitRemoteIsValid = true;
       })
       .catch((errorResult:ShellExecResult) => {
-        SfdxFalconDebug.obj(`${dbgNsLocal}:errorResult:`, errorResult);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:errorResult:`, errorResult);
 
         // Error code 2 (Git remote reachable but empty) is the ideal state.
         // Consider that a success result.
@@ -427,7 +449,7 @@ export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string)
         _taskObj.title += errorResult.message;
         throw new SfdxFalconError ( `Git Remote is invalid. ${errorResult.message}. `
                                   , `GitRemoteError`
-                                  , `${dbgNs}reValidateGitRemote`);
+                                  , `${dbgNsExt}:task`);
       });
     }
   });
@@ -450,13 +472,17 @@ export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string)
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function stageProjectFiles(extCtx:ExternalContext, targetDir:string):ListrTask {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
-  const funcName    = `addGitRemote`;
+  // Define function-local and external debug namespaces.
+  const funcName    = `stageProjectFiles`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
 
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Define an SfdxFalconTask object.
   const sfdxFalconTask = new SfdxFalconTask({
@@ -464,7 +490,7 @@ export function stageProjectFiles(extCtx:ExternalContext, targetDir:string):List
     title:      `Staging Files`,
     statusMsg:  `Staging all new and modified files (git -A) in ${targetDir}`,
     minRuntime: 3,
-    showTimer:  true,
+    showTimer:  false,
     enabled:() => (typeof targetDir === 'string' && targetDir !== ''),
     skip:   (listrContext:ListrContextFinalizeGit) => {
       if (listrContext.gitInstalled !== true) {
@@ -474,11 +500,11 @@ export function stageProjectFiles(extCtx:ExternalContext, targetDir:string):List
     task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitAdd(targetDir);
-        SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:shellString:`, shellString);
         _taskCtx.projectFilesStaged = true;
       }
       catch (gitAddError) {
-        SfdxFalconDebug.obj(`${dbgNsLocal}:gitAddError:`, gitAddError);
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:gitAddError:`, gitAddError);
         _taskCtx.projectFilesStaged = false;
         throw gitAddError;
       }
