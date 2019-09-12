@@ -11,6 +11,7 @@
 // Import External Libraries, Modules, and Types
 import  {ListrTask}                 from  'listr';    // Interface. Represents a Task object as defined by Listr.
 import  Listr =                     require('listr'); // Provides asynchronous list with status of task completion.
+import * as path                    from  'path';     // Node's built-in path library.
 
 // Import SFDX-Falcon Libraries
 import  {GitUtil}                   from  '@sfdx-falcon/util';          // Library. Git utility helper functions.
@@ -27,6 +28,7 @@ import  {ExternalContext}           from  '@sfdx-falcon/task';          // Inter
 import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';         // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
 import  {ListrObject}               from  '@sfdx-falcon/types';         // Interface. Represents a "runnable" Listr object (ie. an object that has the run() method attached).
 import  {ShellExecResult}           from  '@sfdx-falcon/types';         // Interface. Represents the result of a call to shell.execL().
+import { waitASecond } from '@sfdx-falcon/util/lib/async';
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:task-library:git:';
@@ -72,17 +74,17 @@ export function addGitRemote(extCtx:ExternalContext, targetDir:string, gitRemote
         return 'Git Remote is Invalid';
       }
     },
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitRemoteAddOrigin(targetDir, gitRemoteUri);
         SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
-        _thisTask.title += 'Done!';
-        _listrContext.gitRemoteAdded = true;
+        _taskObj.title += 'Done!';
+        _taskCtx.gitRemoteAdded = true;
 
       }
       catch (gitRemoteAddError) {
-        _thisTask.title += 'Failed';
-        _listrContext.gitRemoteAdded = false;
+        _taskObj.title += 'Failed';
+        _taskCtx.gitRemoteAdded = false;
         throw gitRemoteAddError;
       }
     }
@@ -109,105 +111,63 @@ export function addGitRemote(extCtx:ExternalContext, targetDir:string, gitRemote
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function cloneGitRemote(extCtx:ExternalContext, gitRemoteUri:string, targetDirectory:string, gitCloneDirectory:string=''):ListrObject {
 
-  // Define function-local debug namespace and reflect/validate incoming arguments.
-  const funcName    = `addGitRemote`;
+  // Define function-local and external debug namespaces.
+  const funcName    = `cloneGitRemote`;
   const dbgNsLocal  = `${dbgNs + funcName}`;
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
+
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
   // Validate incoming arguments.
-  TypeValidator.throwOnEmptyNullInvalidObject (extCtx,            `${dbgNsLocal}`, `extCtx`);
-  TypeValidator.throwOnEmptyNullInvalidString (gitRemoteUri,      `${dbgNsLocal}`, `gitRemoteUri`);
-  TypeValidator.throwOnEmptyNullInvalidString (targetDirectory,   `${dbgNsLocal}`, `targetDirectory`);
-  TypeValidator.throwOnNullInvalidString      (gitCloneDirectory, `${dbgNsLocal}`, `gitCloneDirectory`);
-
-  // Append the name of this function to the debug namespace from the External Context.
-  extCtx.dbgNs += `:${funcName}`;
+  TypeValidator.throwOnEmptyNullInvalidObject (extCtx,            `${dbgNsExt}`, `extCtx`);
+  TypeValidator.throwOnEmptyNullInvalidString (gitRemoteUri,      `${dbgNsExt}`, `gitRemoteUri`);
+  TypeValidator.throwOnEmptyNullInvalidString (targetDirectory,   `${dbgNsExt}`, `targetDirectory`);
+  TypeValidator.throwOnNullInvalidString      (gitCloneDirectory, `${dbgNsExt}`, `gitCloneDirectory`);
 
   // Define an SfdxFalconTask object.
   const sfdxFalconTask = new SfdxFalconTask({
     extCtx:     extCtx,
-    title:      `Adding the Git Remote...`,
-    statusMsg:  `Adding the Git Remote ${gitRemoteUri} to the local repository`,
-    minRuntime: 3,
-    showTimer:  true,
-    enabled:    () => (typeof targetDir === 'string' && targetDir !== '' && typeof gitRemoteUri === 'string' && gitRemoteUri !== ''),
-    skip:  (listrContext:ListrContextFinalizeGit) => {
-      if (listrContext.gitInstalled !== true) {
-        return true;
-      }
-      if (listrContext.gitRemoteIsValid !== true) {
-        return 'Git Remote is Invalid';
-      }
-    },
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
-      try {
-        const shellString = GitUtil.gitRemoteAddOrigin(targetDir, gitRemoteUri);
-        SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
-        _thisTask.title += 'Done!';
-        _listrContext.gitRemoteAdded = true;
-
-      }
-      catch (gitRemoteAddError) {
-        _thisTask.title += 'Failed';
-        _listrContext.gitRemoteAdded = false;
-        throw gitRemoteAddError;
-      }
+    title:      `Cloning ${gitRemoteUri}`,
+    statusMsg:  `Cloning repository to ${path.join(targetDirectory, gitCloneDirectory)}`,
+    minRuntime: 8,
+    showTimer:  false,
+    enabled:  () => (gitRemoteUri && targetDirectory ? true : false),
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
+      await waitASecond(5);
+      GitUtil.gitClone(gitRemoteUri, targetDirectory, gitCloneDirectory)
+      .then(async (shellExecResult:ShellExecResult) => {
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:shellExecResult:`, shellExecResult);
+        _taskCtx.gitRemoteCloned = true;
+      })
+      .catch(async (shellExecError:ShellExecResult) => {
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:shellExecError:`, shellExecError);
+        _taskCtx.gitRemoteCloned = false;
+        throw new SfdxFalconError ( `Could not clone repository: ${shellExecError.message}`
+                                  , `GitCloneFailure`
+                                  , `${dbgNsExt}`
+                                  , SfdxFalconError.wrap(shellExecError));
+      });
     }
   });
-
-  // Build the SFDX-Falcon Task to return a Listr Task.
-  return sfdxFalconTask.build();
-
-
 
   // Build and return a Listr Task Object.
   return new Listr(
     // TASK GROUP: Git Clone Tasks
-    [{
-      title:    `Cloning ${gitRemoteUri}...`,
-      enabled:  () => (gitRemoteUri && targetDirectory),
-      task:     (listrContext, thisTask:ListrTask) => {
-        return new Observable(observer => {
-          // Initialize an OTR (Observable Task Result).
-          const otr = initObservableTaskResult(`${dbgNs}cloneGitRemote`, listrContext, thisTask, observer, this.sharedData, this.generatorResult,
-                      `Cloning repository to ${path.join(targetDirectory, gitCloneDirectory)}`);
-
-          // Define the Task Logic to be executed.
-          const asyncTask = async () => {
-            await waitASecond(5);
-            SfdxFalconDebug.str(`${dbgNs}cloneGitRemote:gitRemoteUri:`,       gitRemoteUri,       `gitRemoteUri: `);
-            SfdxFalconDebug.str(`${dbgNs}cloneGitRemote:targetDirectory:`,    targetDirectory,    `targetDirectory: `);
-            SfdxFalconDebug.str(`${dbgNs}cloneGitRemote:gitCloneDirectory:`,  gitCloneDirectory,  `gitCloneDirectory: `);
-            return gitHelper.gitClone(gitRemoteUri, targetDirectory, gitCloneDirectory);
-            //return;
-          };
-
-          // Execute the Task Logic.
-          asyncTask()
-            .then(async (shellExecResult:ShellExecResult) => {
-              await waitASecond(3);
-              thisTask.title += 'Done!';
-              listrContext.gitRemoteCloned = true;
-              finalizeObservableTaskResult(otr);
-            })
-            .catch(async (shellExecError:ShellExecResult) => {
-              await waitASecond(3);
-              thisTask.title += 'Failed';
-              listrContext.gitRemoteCloned = false;
-              finalizeObservableTaskResult(otr,
-                new SfdxFalconError( `Could not clone repository: ${shellExecError.message}`
-                                   , `GitCloneFailure`
-                                   , `${dbgNs}cloneGitRemote`
-                                   , SfdxFalconError.wrap(shellExecError)));
-            });
-        });
-      }
-    }],
+    [
+      sfdxFalconTask.build()
+    ],
     // TASK GROUP OPTIONS: Git Clone Tasks
     {
-      concurrent: false,
-      collapse:   false,
-      renderer:   ListrUtil.chooseListrRenderer()
+      concurrent:   false,
+      // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+      collapse:     false,
+      exitOnError:  true,
+      renderer:     ListrUtil.chooseListrRenderer()
     }
   );
 }
@@ -248,16 +208,16 @@ export function commitProjectFiles(extCtx:ExternalContext, targetDir:string, com
         return true;
       }
     },
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitCommit(targetDir, commitMessage);
         SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString, `shellString: `);
-        _listrContext.projectFilesCommitted = true;
+        _taskCtx.projectFilesCommitted = true;
       }
       catch (gitCommitError) {
         SfdxFalconDebug.obj(`${dbgNsLocal}:gitCommitError:`, gitCommitError);
-        _listrContext.projectFilesCommitted = false;
-        _thisTask.skip('Nothing to Commit');
+        _taskCtx.projectFilesCommitted = false;
+        _taskObj.skip('Nothing to Commit');
         // NOTE: We will NOT re-throw the error because we want the task to finalize
         // *without* forcing the Subscriber to end with error().
       }
@@ -343,12 +303,12 @@ export function gitRuntimeCheck(extCtx:ExternalContext):ListrTask {
   const sfdxFalconTask = new SfdxFalconTask({
     extCtx:     extCtx,
     title:      `Looking for Git`,
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       if (GitUtil.isGitInstalled() === true) {
-        _listrContext.gitInstalled = true;
+        _taskCtx.gitInstalled = true;
       }
       else {
-        _listrContext.gitInstalled = false;
+        _taskCtx.gitInstalled = false;
         throw new SfdxFalconError( 'Git must be installed in your local environment.'
                                  , 'GitNotFound'
                                  , `${dbgNs}gitRuntimeCheck`);
@@ -394,15 +354,15 @@ export function initializeGit(extCtx:ExternalContext, targetDir:string):ListrTas
         return true;
       }
     },
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitInit(targetDir);
         SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
-        _listrContext.gitInitialized = true;
+        _taskCtx.gitInitialized = true;
       }
       catch (gitInitError) {
         SfdxFalconDebug.obj(`${dbgNsLocal}:gitInitError:`, gitInitError);
-        _listrContext.gitInitialized = false;
+        _taskCtx.gitInitialized = false;
         throw gitInitError;
       }
     }
@@ -446,11 +406,11 @@ export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string)
         return true;
       }
     },
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       return GitUtil.checkGitRemoteStatus(gitRemoteUri, 3)
       .then((successResult:ShellExecResult) => {
         SfdxFalconDebug.obj(`${dbgNsLocal}:successResult:`, successResult);
-        _listrContext.gitRemoteIsValid = true;
+        _taskCtx.gitRemoteIsValid = true;
       })
       .catch((errorResult:ShellExecResult) => {
         SfdxFalconDebug.obj(`${dbgNsLocal}:errorResult:`, errorResult);
@@ -458,13 +418,13 @@ export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string)
         // Error code 2 (Git remote reachable but empty) is the ideal state.
         // Consider that a success result.
         if (errorResult.code === 2) {
-          _listrContext.gitRemoteIsValid = true;
+          _taskCtx.gitRemoteIsValid = true;
           return;
         }
 
         // Any non-zero error code other than 2 is a failure.
-        _listrContext.gitRemoteIsValid = false;
-        _thisTask.title += errorResult.message;
+        _taskCtx.gitRemoteIsValid = false;
+        _taskObj.title += errorResult.message;
         throw new SfdxFalconError ( `Git Remote is invalid. ${errorResult.message}. `
                                   , `GitRemoteError`
                                   , `${dbgNs}reValidateGitRemote`);
@@ -511,15 +471,15 @@ export function stageProjectFiles(extCtx:ExternalContext, targetDir:string):List
         return true;
       }
     },
-    task: async (_listrContext, _thisTask, _taskStatus, _extCtx) => {
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
       try {
         const shellString = GitUtil.gitAdd(targetDir);
         SfdxFalconDebug.obj(`${dbgNsLocal}:shellString:`, shellString);
-        _listrContext.projectFilesStaged = true;
+        _taskCtx.projectFilesStaged = true;
       }
       catch (gitAddError) {
         SfdxFalconDebug.obj(`${dbgNsLocal}:gitAddError:`, gitAddError);
-        _listrContext.projectFilesStaged = false;
+        _taskCtx.projectFilesStaged = false;
         throw gitAddError;
       }
     }
