@@ -1,0 +1,82 @@
+{
+  "name": "@sfdx-falcon/environment",
+  "description": "Generates a detailed abstraction of the local SFDX Environment, making it easier to consume SFDX resources in your own code. Part of the SFDX-Falcon Library.",
+  "version": "0.0.4-alpha.0",
+  "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
+  "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
+  "dependencies": {
+    "@salesforce/core": "2.1.1",
+    "@sfdx-falcon/command": "0.0.4-alpha.0",
+    "@sfdx-falcon/debug": "0.0.4-alpha.0",
+    "@sfdx-falcon/error": "0.0.4-alpha.0",
+    "@sfdx-falcon/result": "0.0.4-alpha.0",
+    "@sfdx-falcon/task": "0.0.4-alpha.0",
+    "@sfdx-falcon/task-library": "0.0.4-alpha.0",
+    "@sfdx-falcon/types": "0.0.4-alpha.0",
+    "@sfdx-falcon/util": "0.0.4-alpha.0",
+    "@sfdx-falcon/validator": "0.0.4-alpha.0"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "1.22.2",
+    "@oclif/test": "1.2.5",
+    "@salesforce/dev-config": "1.5.0",
+    "@types/chai": "4.2.0",
+    "@types/fs-extra": "8.0.0",
+    "@types/inquirer": "6.5.0",
+    "@types/jsforce": "1.9.9",
+    "@types/json2csv": "4.5.0",
+    "@types/listr": "0.14.2",
+    "@types/lodash": "4.14.137",
+    "@types/mocha": "5.2.7",
+    "@types/node": "12.7.2",
+    "@types/shelljs": "0.8.5",
+    "@types/yeoman-environment": "2.3.2",
+    "@types/yeoman-generator": "3.1.4",
+    "@types/yosay": "0.0.29",
+    "chai": "4.2.0",
+    "cross-spawn": "6.0.5",
+    "del": "5.0.0",
+    "globby": "10.0.1",
+    "mocha": "6.2.0",
+    "mocha-junit-reporter": "1.23.1",
+    "nyc": "14.1.1",
+    "sinon": "7.4.1",
+    "ts-node": "8.3.0",
+    "typescript": "3.5.3"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "keywords": [
+    "git-environment",
+    "salesforce",
+    "salesforce-cli",
+    "salesforce-cli-plugin",
+    "salesforcedx",
+    "sfdx-falcon",
+    "sfdx-falcon-library",
+    "sfdx-plugin",
+    "sfdx-environment"
+  ],
+  "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "lib",
+    "npm-shrinkwrap.json"
+  ],
+  "repository": "https://github.com/sfdx-isv/sfdx-falcon-library.git",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json --verbose",
+    "prepack": "rm -rf lib && rm -rf tsconfig.build.tsbuildinfo && tsc -b tsconfig.build.json",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}
