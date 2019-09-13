@@ -34,24 +34,15 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * Interface. Represents the elements of the SFDX Environment that are required by the calling code.
+ * Interface. Represents elements of the local Git Environment that are required by the calling code.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface SfdxEnvironmentRequirements {
-  /** Requires that Standard Orgs (ie. anything that's not a scratch orgs) be processed at initialization. */
-  standardOrgs:     boolean;
-  /** Requires that Scratch Orgs be processed at initialization. */
-  scratchOrgs:      boolean;
-  /** Requires that DevHub Orgs be processed at initialization. */
-  devHubOrgs:       boolean;
-  /** Requires that EnvHub Orgs be processed at initialization. */
-  envHubOrgs:       boolean;
-  /** Requires that first-generation Managed Package Orgs be processed at initialization. */
-  managedPkgOrgs:   boolean;
-  /** Requires that first-generation Unmanaged Package Orgs be processed at initialization. */
-  unmanagedPkgOrgs: boolean;
+export interface GitEnvironmentRequirements {
+  requireGit:       boolean;
+  gitRemoteUri:     string;
+  localFile:        string;
+  localDirectory:   string;
 }
-
 
 
 
