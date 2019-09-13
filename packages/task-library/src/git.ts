@@ -274,7 +274,7 @@ export function finalizeGit(extCtx:ExternalContext, targetDir:string, gitRemoteU
       initializeGit(extCtx, targetDir),
       stageProjectFiles(extCtx, targetDir),
       commitProjectFiles(extCtx, targetDir, gitCommitMsg),
-      reValidateGitRemote(extCtx, gitRemoteUri),
+      validateGitRemote(extCtx, gitRemoteUri),
       addGitRemote(extCtx, targetDir, gitRemoteUri)
     ],
     {
@@ -286,6 +286,70 @@ export function finalizeGit(extCtx:ExternalContext, targetDir:string, gitRemoteU
       renderer:     ListrUtil.chooseListrRenderer()
     }
   ) as ListrObject;
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    gitEnvironmentCheck
+ * @param       {ExternalContext} extCtx  Required. Defines the context of the external environment
+ *              that this function is being called from.
+ * @param       {string}  [gitRemoteUri='']  Optional. URI of a Git remote that the calling code
+ *              expects to be available for READ access by the default Git user on the local system.
+ * @returns     {ListrObject}  A "runnable" Listr Object
+ * @description Returns a Listr-compatible Task Object that verifies the presence of the Git
+ *              executable in the local environment and checks if a Git Remote is reachable, if
+ *              one is provided.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function gitEnvironmentCheck(extCtx:ExternalContext, gitRemoteUri:string=''):ListrObject {
+
+  // Define function-local and external debug namespaces.
+  const funcName    = `gitEnvironmentCheck`;
+  const dbgNsLocal  = `${dbgNs + funcName}`;
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
+
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
+
+  // Build and return a Listr Object.
+  return new Listr(
+    [
+      {
+        // PARENT_TASK: (Git Validation/Initialization)
+        title:  `Inspecting Environment`,
+        task:   () => {
+          return new Listr(
+            [
+              // SUBTASKS: Check for Git executable and for valid Git Remote URI.
+              gitRuntimeCheck(extCtx),
+              validateCloneableGitRemote(extCtx, gitRemoteUri)
+            ],
+            {
+              // SUBTASK OPTIONS: (Git Init Tasks)
+              concurrent:   false,
+              // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+              collapse:     true,
+              exitOnError:  true,
+              renderer:     ListrUtil.chooseListrRenderer()
+            }
+          );
+        }
+      }
+    ],
+    {
+      // PARENT_TASK OPTIONS: (Git Validation/Initialization)
+      concurrent:   false,
+      // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+      collapse:     false,
+      exitOnError:  true,
+      renderer:     ListrUtil.chooseListrRenderer()
+    }
+  );
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -390,73 +454,6 @@ export function initializeGit(extCtx:ExternalContext, targetDir:string):ListrTas
   return sfdxFalconTask.build();
 }
 
-// ────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @function    reValidateGitRemote
- * @param       {ExternalContext} extCtx  Required. Defines the context of the external environment
- *              that this function is being called from.
- * @param       {string}  gitRemoteUri
- * @returns     {ListrTask}  A Listr-compatible Task Object
- * @description Returns a Listr-compatible Task Object that attempts to re-validate the presence of
- *              a Git Remote at the Git Remote URI provided.
- * @public
- */
-// ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function reValidateGitRemote(extCtx:ExternalContext, gitRemoteUri:string):ListrTask {
-
-  // Define function-local and external debug namespaces.
-  const funcName    = `reValidateGitRemote`;
-  const dbgNsLocal  = `${dbgNs + funcName}`;
-  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
-
-  // Update the external namespace with the new "External+Function" namespace.
-  extCtx.dbgNs = dbgNsExt;
-
-  // Reflect incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
-  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
-
-  const sfdxFalconTask = new SfdxFalconTask({
-    extCtx:     extCtx,
-    title:      `Validating Access to the Git Remote`,
-    statusMsg:  `Attempting to reach ${gitRemoteUri}`,
-    minRuntime: 3,
-    showTimer:  false,
-    enabled:() => (typeof gitRemoteUri === 'string' && gitRemoteUri !== ''),
-    skip:   (listrContext:ListrContextFinalizeGit) => {
-      if (listrContext.gitInstalled !== true) {
-        return true;
-      }
-    },
-    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
-      return GitUtil.checkGitRemoteStatus(gitRemoteUri, 3)
-      .then((successResult:ShellExecResult) => {
-        SfdxFalconDebug.obj(`${dbgNsExt}:task:successResult:`, successResult);
-        _taskCtx.gitRemoteIsValid = true;
-      })
-      .catch((errorResult:ShellExecResult) => {
-        SfdxFalconDebug.obj(`${dbgNsExt}:task:errorResult:`, errorResult);
-
-        // Error code 2 (Git remote reachable but empty) is the ideal state.
-        // Consider that a success result.
-        if (errorResult.code === 2) {
-          _taskCtx.gitRemoteIsValid = true;
-          return;
-        }
-
-        // Any non-zero error code other than 2 is a failure.
-        _taskCtx.gitRemoteIsValid = false;
-        _taskObj.title += errorResult.message;
-        throw new SfdxFalconError ( `Git Remote is invalid. ${errorResult.message}. `
-                                  , `GitRemoteError`
-                                  , `${dbgNsExt}:task`);
-      });
-    }
-  });
-
-  // Build the SFDX-Falcon Task to return a Listr Task.
-  return sfdxFalconTask.build();
-}
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -508,6 +505,148 @@ export function stageProjectFiles(extCtx:ExternalContext, targetDir:string):List
         _taskCtx.projectFilesStaged = false;
         throw gitAddError;
       }
+    }
+  });
+
+  // Build the SFDX-Falcon Task to return a Listr Task.
+  return sfdxFalconTask.build();
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    validateCloneableGitRemote
+ * @param       {ExternalContext} extCtx  Required. Defines the context of the external environment
+ *              that this function is being called from.
+ * @param       {string}  [gitRemoteUri='']  Optional. URI of the remote Git repository that's being
+ *              validated for cloning. If a Git Remote URI is not provided, this task will be skipped.
+ * @returns     {ListrTask}  A Listr-compatible Task Object
+ * @description Returns a Listr-compatible Task Object that validates the presence of and read
+ *              access to the Git remote at the provided Git Remote URI. If the remote exists but
+ *              is empty (and therefore has nothing to clone), throw an error.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function validateCloneableGitRemote(extCtx:ExternalContext, gitRemoteUri:string=''):ListrTask {
+
+  // Define function-local and external debug namespaces.
+  const funcName    = `validateCloneableGitRemote`;
+  const dbgNsLocal  = `${dbgNs + funcName}`;
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
+
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
+
+  // Validate incoming arguments.
+  TypeValidator.throwOnNullInvalidString(gitRemoteUri, `${dbgNsExt}`, `gitRemoteUri`);
+
+  // Define an SfdxFalconTask object.
+  const sfdxFalconTask = new SfdxFalconTask({
+    extCtx:     extCtx,
+    title:      `Validating Git Remote`,
+    statusMsg:  `Attempting to reach ${gitRemoteUri}`,
+    minRuntime: 3,
+    showTimer:  false,
+    enabled: (_taskCtx:ListrContextFinalizeGit) => (gitRemoteUri && _taskCtx.gitInstalled === true),
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
+      return GitUtil.checkGitRemoteStatus(gitRemoteUri, 3)
+      .then((successResult:ShellExecResult) => {
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:successResult:`, successResult);
+        _taskCtx.gitRemoteIsValid = true;
+      })
+      .catch((errorResult:ShellExecResult) => {
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:errorResult:`, errorResult);
+
+        // Build the Error.
+        let gitRemoteError:SfdxFalconError;
+        if (errorResult instanceof Error) {
+          gitRemoteError = new SfdxFalconError( `There was a problem with your Git Remote. ${(errorResult.message) ? `${errorResult.message}` : ``}`
+                                              , `InvalidGitRemote`
+                                              , `${dbgNsExt}:task`
+                                              , errorResult);
+        }
+        else {
+          gitRemoteError = new SfdxFalconError( `There was a problem with your Git Remote. ${(errorResult.message) ? `${errorResult.message}` : ``}`
+                                              , 'InvalidGitRemote'
+                                              , `${dbgNsExt}:task`);
+          gitRemoteError.setDetail(errorResult);
+        }
+
+        // Throw the Error.
+        throw gitRemoteError;
+      });
+    }
+  });
+
+  // Build the SFDX-Falcon Task to return a Listr Task.
+  return sfdxFalconTask.build();
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    validateGitRemote
+ * @param       {ExternalContext} extCtx  Required. Defines the context of the external environment
+ *              that this function is being called from.
+ * @param       {string}  gitRemoteUri
+ * @returns     {ListrTask}  A Listr-compatible Task Object
+ * @description Returns a Listr-compatible Task Object that attempts to re-validate the presence of
+ *              a Git Remote at the Git Remote URI provided.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function validateGitRemote(extCtx:ExternalContext, gitRemoteUri:string):ListrTask {
+
+  // Define function-local and external debug namespaces.
+  const funcName    = `validateGitRemote`;
+  const dbgNsLocal  = `${dbgNs + funcName}`;
+  const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
+
+  // Update the external namespace with the new "External+Function" namespace.
+  extCtx.dbgNs = dbgNsExt;
+
+  // Reflect incoming arguments.
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+  SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
+
+  // Define an SfdxFalconTask object.
+  const sfdxFalconTask = new SfdxFalconTask({
+    extCtx:     extCtx,
+    title:      `Validating Access to the Git Remote`,
+    statusMsg:  `Attempting to reach ${gitRemoteUri}`,
+    minRuntime: 3,
+    showTimer:  false,
+    enabled:() => (typeof gitRemoteUri === 'string' && gitRemoteUri !== ''),
+    skip:   (listrContext:ListrContextFinalizeGit) => {
+      if (listrContext.gitInstalled !== true) {
+        return true;
+      }
+    },
+    task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
+      return GitUtil.checkGitRemoteStatus(gitRemoteUri, 3)
+      .then((successResult:ShellExecResult) => {
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:successResult:`, successResult);
+        _taskCtx.gitRemoteIsValid = true;
+      })
+      .catch((errorResult:ShellExecResult) => {
+        SfdxFalconDebug.obj(`${dbgNsExt}:task:errorResult:`, errorResult);
+
+        // Error code 2 (Git remote reachable but empty) is the ideal state.
+        // Consider that a success result.
+        if (errorResult.code === 2) {
+          _taskCtx.gitRemoteIsValid = true;
+          return;
+        }
+
+        // Any non-zero error code other than 2 is a failure.
+        _taskCtx.gitRemoteIsValid = false;
+        _taskObj.title += errorResult.message;
+        throw new SfdxFalconError ( `Git Remote is invalid. ${errorResult.message}. `
+                                  , `GitRemoteError`
+                                  , `${dbgNsExt}:task`);
+      });
     }
   });
 
