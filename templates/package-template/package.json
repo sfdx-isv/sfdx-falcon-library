@@ -1,6 +1,6 @@
 {
   "name": "@sfdx-falcon/package-template",
-  "description": "INSERT_DESCRIPTION_HERE",
+  "description": "INSERT_DESCRIPTION_HERE. Part of the SFDX-Falcon Library.",
   "version": "0.0.4-alpha.0",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
@@ -57,8 +57,8 @@
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
-  "main": "lib/package-template.js",
-  "types": "lib/package-template.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "test"

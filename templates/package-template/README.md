@@ -1,4 +1,4 @@
-# `util`
+# `package-template`
 
 > TODO: description
 
