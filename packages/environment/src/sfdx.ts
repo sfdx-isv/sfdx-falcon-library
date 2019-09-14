@@ -29,6 +29,7 @@ import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class
 
 // Import SFDX-Falcon Types
 import  {InquirerChoices}          from  '@sfdx-falcon/types';   // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
+import  {ListrObject}              from  '@sfdx-falcon/types';   // Interface. Represents a "runnable" Listr object (ie. an object that has the run() method attached).
 import  {MetadataPackage}          from  '@sfdx-falcon/types';   // Interface. Represents a Metadata Package (033). Can be managed or unmanaged.
 import  {MetadataPackageVersion}   from  '@sfdx-falcon/types';   // Interface. Represents a Metadata Package Version (04t).
 import  {PackageVersionMap}        from  '@sfdx-falcon/types';   // Type. Alias to a Map with string keys and MetadataPackageVersion values.
@@ -39,7 +40,7 @@ import  {RawScratchOrgInfo}        from  '@sfdx-falcon/types';   // Interface. R
 //import  {ErrorOrResult}             from  '@sfdx-falcon/result';  // Type. Alias to a combination of Error or SfdxFalconResult.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:environment:sfdx:';
+const dbgNs = '@sfdx-falcon:environment:sfdx';
 SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 
 
@@ -56,9 +57,11 @@ export type ScratchOrgInfoMap = Map<string, ScratchOrgInfo>;
  * `SfdxEnvironment` object.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface SfdxEnvironmentInitOptions {
+export interface SfdxEnvironmentOptions {
   /** Defines which elements of the local SFDX Environment must be represented by the initialized `SfdxEnvironment` object. */
   requirements: SfdxEnvironmentRequirements;
+  /** The Debug Namespace that should be used within this `SfdxEnvironment` instance */
+  dbgNs?:       string;
   /** Determines whether the progress/status of each initialization task is displayed to the user. Defaults to `true`. */
   verbose?:     boolean;
   /** Specifies that all initialization output should be suppressed. Defaults to `false`. */
@@ -156,13 +159,13 @@ export class ScratchOrgInfo {
   constructor(rawScratchOrgInfo:RawScratchOrgInfo) {
 
     // Debug incoming arguments
-    SfdxFalconDebug.obj(`${dbgNs}ScratchOrgInfo:constructor:arguments:`, arguments);
+    SfdxFalconDebug.obj(`${dbgNs}:ScratchOrgInfo:constructor:arguments:`, arguments);
 
     // Make sure the caller passed us an object.
     if (typeof rawScratchOrgInfo !== 'object') {
       throw new SfdxFalconError( `Expected rawScratchOrgInfo to an object but got type '${typeof rawScratchOrgInfo}' instead.`
                               , `TypeError`
-                              , `${dbgNs}ScratchOrgInfo:constructor`);
+                              , `${dbgNs}:ScratchOrgInfo:constructor`);
     }
     
     // Initialize core class members.
@@ -312,7 +315,7 @@ export class StandardOrgInfo {
     // Check if the aliased user is able to get a describe of the SignupRequest object.
     const signupRequestDescribe = await JsForceUtil.describeSignupRequest(this.alias);
 
-    SfdxFalconDebug.obj(`${dbgNs}determineEnvHubStatus:signupRequestDescribe:`, signupRequestDescribe);
+    SfdxFalconDebug.obj(`${dbgNs}:determineEnvHubStatus:signupRequestDescribe:`, signupRequestDescribe);
 
     // Make sure that SignupRequest is CREATABLE. Anything else means NOT an EnvHub.
     if (signupRequestDescribe.createable === true) {
@@ -344,15 +347,15 @@ export class StandardOrgInfo {
 
     // Run Tooling API query.
     this._metadataPackageResults = await JsForceUtil.getPackages(this.alias);
-    SfdxFalconDebug.obj(`${dbgNs}StandardOrgInfo:determinePkgOrgStatus:_metadataPackageResults:`, this._metadataPackageResults);
+    SfdxFalconDebug.obj(`${dbgNs}:StandardOrgInfo:determinePkgOrgStatus:_metadataPackageResults:`, this._metadataPackageResults);
 
     // Extract any packages from the results we just got.
     this._packages = this.extractPackages(this._metadataPackageResults);
-    SfdxFalconDebug.obj(`${dbgNs}StandardOrgInfo:determinePkgOrgStatus:_packages:`, this._packages);
+    SfdxFalconDebug.obj(`${dbgNs}:StandardOrgInfo:determinePkgOrgStatus:_packages:`, this._packages);
 
     // Create a Package Version Map.
     this._pkgVersionMap = this.mapPackageVersions(this._packages);
-    SfdxFalconDebug.obj(`${dbgNs}StandardOrgInfo:determinePkgOrgStatus:_pkgVersionMap:`, this._pkgVersionMap);
+    SfdxFalconDebug.obj(`${dbgNs}:StandardOrgInfo:determinePkgOrgStatus:_pkgVersionMap:`, this._pkgVersionMap);
 
     // Search the packages for a namespace.
     for (const packageObj of this._packages) {
@@ -424,7 +427,7 @@ export class StandardOrgInfo {
   private extractPackages(metadataPackages:QueryResult<MetadataPackage>):MetadataPackage[] {
 
     // Debug incoming arguments
-    SfdxFalconDebug.obj(`${dbgNs}StandardOrgInfo:extractPackages:arguments:`, arguments);
+    SfdxFalconDebug.obj(`${dbgNs}:StandardOrgInfo:extractPackages:arguments:`, arguments);
 
     // If there isn't a Metadata Package Query Result, return an empty array.
     if (typeof metadataPackages === 'undefined' || Array.isArray(metadataPackages.records) !== true) {
@@ -552,13 +555,10 @@ export class StandardOrgInfo {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export class SfdxEnvironment {
 
-
-
-
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      initialize
-   * @param       {SfdxEnvironmentInitOptions}  opts Required. Options that
+   * @param       {SfdxEnvironmentOptions}  opts Required. Options that
    *              determine how the `SfdxEnvironment` object will be initialized.
    * @returns     {Promise<SfdxEnvironment>}
    * @description Given a set of initialization options, instantiates a new
@@ -567,21 +567,23 @@ export class SfdxEnvironment {
    * @public @static @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public static async initialize(opts:SfdxEnvironmentInitOptions):Promise<SfdxEnvironment> {
+  public static async initialize(opts:SfdxEnvironmentOptions):Promise<SfdxEnvironment> {
 
     // Define function-local and external debug namespaces.
     const funcName    = `initialize`;
-    const dbgNsLocal  = `${dbgNs + funcName}`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+    const dbgNsExt    = (typeof opts === 'object' && typeof opts.dbgNs === 'string' && opts.dbgNs) ? `${opts.dbgNs}:${funcName}` : `NO_EXTERNAL_DBG_NS`;
 
     // Reflect incoming arguments.
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+    SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
 
     // Validate incoming arguments.
-    TypeValidator.throwOnEmptyNullInvalidObject(opts,               `${dbgNsLocal}`, `SfdxEnvironmentInitOptions`);
-    TypeValidator.throwOnEmptyNullInvalidObject(opts.requirements,  `${dbgNsLocal}`, `SfdxEnvironmentInitOptions.requirements`);
+    TypeValidator.throwOnEmptyNullInvalidObject(opts,               `${dbgNsLocal}`, `SfdxEnvironmentOptions`);
+    TypeValidator.throwOnEmptyNullInvalidObject(opts.requirements,  `${dbgNsLocal}`, `SfdxEnvironmentOptions.requirements`);
 
     // Set defaults for all SFDX Environment Requirements, then merge with caller-supplied requirements.
-    const sfdxEnvReqs:SfdxEnvironmentRequirements = {
+    opts.requirements = {
       standardOrgs:     false,
       scratchOrgs:      false,
       devHubOrgs:       false,
@@ -591,56 +593,107 @@ export class SfdxEnvironment {
       ...opts.requirements
     };
 
-    // Ensure Verbose and Silent vars end up as straight booleans.
-    const verboseTasks  = opts.verbose  ? true : false;
-    const silentTasks   = opts.silent   ? true : false;
-
     // Create an SfdxEnvironment object.
-    const sfdxEnv = new SfdxEnvironment();
+    const sfdxEnv = new SfdxEnvironment(opts);
+
+
+
 
     return null;
   }
 
+  // Public accessors
+  // TODO: Add accessors as needed
+  public abc: string;
+
+
   // Private members.
+  private _dbgNs:                   string;                       // Debug Namespace that should be used inside this instance.
+  private _envReqs:                 SfdxEnvironmentRequirements;  // Initialization requirements for this SFDX Environment.
+  private _verboseTasks:            boolean;                      // Determines whether tasks run in verbose mode.
+  private _silentTasks:             boolean;                      // Determines whether tasks run in silent mode.
+
+  // Org Lists
   private _rawStandardOrgList:      RawStandardOrgInfo[]; // List of raw org info for all Standard (ie. non-scratch) Orgs currently connected to the user's CLI.
   private _rawScratchOrgList:       RawScratchOrgInfo[];  // List of raw org info for all Scratch Orgs currently connected to the user's CLI.
 
+  // Org Infos
   private _standardOrgInfos:        StandardOrgInfo[];    // List of refined org info for all Standard (ie. non-scratch) Orgs currently connected to the user's CLI.
   private _scratchOrgInfos:         StandardOrgInfo[];    // List of refined org info for all Scratch Orgs currently connected to the user's CLI.
   private _devHubOrgInfos:          StandardOrgInfo[];    // List of refined org info for all DevHub Orgs currently connected to the user's CLI.
   private _envHubOrgInfos:          StandardOrgInfo[];    // List of refined org info for all Environment Hub Orgs currently connected to the user's CLI.
   private _pkgOrgInfos:             StandardOrgInfo[];    // List of refined org info for all Packaging Orgs (managed & unmanaged) currently connected to the user's CLI.
-
   private _managedPkgOrgInfos:      StandardOrgInfo[];    // List of refined org info for all the Managed Packaging Orgs currently connected to the user's CLI.
   private _unmanagedPkgOrgInfos:    StandardOrgInfo[];    // List of refined org info for all the Unmanaged Packaging Orgs currently connected to the user's CLI.
 
+  // Org Info Maps
   private _standardOrgInfoMap:      Map<UserName, StandardOrgInfo>;
   private _scratchOrgInfoMap:       Map<UserName, ScratchOrgInfo>;
 
+  // Org Choices
   private _standardOrgChoices:      InquirerChoices;  // Array of Inquirer Choices representing ALL Standard (ie. non-scratch) Org aliases/usernames.
   private _scratchOrgChoices:       InquirerChoices;  // Array of Inquirer Choices representing ALL Scratch Org aliases/usernames.
   private _devHubChoices:           InquirerChoices;  // Array of Inquirer Choices representing DevOrg aliases/usernames.
   private _envHubChoices:           InquirerChoices;  // Array of Inquirer Choices representing EnvHub aliases/usernames.
   private _pkgOrgChoices:           InquirerChoices;  // Array of Inquirer Choices representing ALL Packaging Org aliases/usernames.
-
   private _managedPkgOrgChoices:    InquirerChoices;  // Array of Inquirer Choices representing MANAGED Packaging Org aliases/usernames.
   private _unmanagedPkgOrgChoices:  InquirerChoices;  // Array of Inquirer Choices representing UNMANAGED Packaging Org aliases/usernames.
-
-
-
-  // Public accessors
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @constructs  SfdxEnvironment
+   * @param       {SfdxEnvironmentOptions}  opts Required. Options that
+   *              determine how the `SfdxEnvironment` object will be initialized.
    * @description Constructs an `SfdxEnvironment` object.
    * @private
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  private constructor() {
+  private constructor(opts:SfdxEnvironmentOptions) {
 
-    // TODO: Add implementation.
+    // Define function-local and external debug namespaces.
+    const funcName    = `constructor`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+    const dbgNsExt    = (typeof opts === 'object' && typeof opts.dbgNs === 'string' && opts.dbgNs) ? `${opts.dbgNs}:${funcName}` : `NO_EXTERNAL_DBG_NS`;
 
+    // Reflect incoming arguments.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+    SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`,   arguments);
+
+    // Validate incoming arguments.
+    TypeValidator.throwOnEmptyNullInvalidObject(opts,               `${dbgNsLocal}`, `SfdxEnvironmentOptions`);
+    TypeValidator.throwOnEmptyNullInvalidObject(opts.requirements,  `${dbgNsLocal}`, `SfdxEnvironmentOptions.requirements`);
+
+    // Initialize member variables based on incoming options.
+    this._envReqs       = opts.requirements;
+    this._dbgNs         = TypeValidator.isNotEmptyNullInvalidString(opts.dbgNs) ? `${opts.dbgNs}` : `NO_EXTERNAL_DBG_NS`;
+    this._verboseTasks  = TypeValidator.isNotInvalidBoolean(opts.verbose)       ? opts.verbose  : false;
+    this._silentTasks   = TypeValidator.isNotInvalidBoolean(opts.silent)        ? opts.silent   : false;
+
+    // Initialize Org List Arrays.
+    this._rawStandardOrgList      = [];
+    this._rawScratchOrgList       = [];
+
+    // Initialize Org Info Arrays.
+    this._standardOrgInfos        = [];
+    this._scratchOrgInfos         = [];
+    this._devHubOrgInfos          = [];
+    this._envHubOrgInfos          = [];
+    this._pkgOrgInfos             = [];
+    this._managedPkgOrgInfos      = [];
+    this._unmanagedPkgOrgInfos    = [];
+
+    // Initialize Org Info Maps.
+    this._standardOrgInfoMap      = new Map<UserName, StandardOrgInfo>();
+    this._scratchOrgInfoMap       = new Map<UserName, ScratchOrgInfo>();
+  
+    // Initialize Org Choices.
+    this._standardOrgChoices      = [];
+    this._scratchOrgChoices       = [];
+    this._devHubChoices           = [];
+    this._envHubChoices           = [];
+    this._pkgOrgChoices           = [];
+    this._managedPkgOrgChoices    = [];
+    this._unmanagedPkgOrgChoices  = [];
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -765,6 +818,33 @@ export class SfdxEnvironment {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
+   * @method      createInitializationTasks
+   * @param       {boolean} runSilent Required.
+   * @param       {boolean} runVerbose  Required.
+   * @returns     {void}
+   * @description Builds a `ListrObject` with the set of specific sub-tasks that
+   *              are needed in order to initialize the `SfdxEnvironment` per
+   *              the stated requirements of the logic that called
+   *              `SfdxEnvironment.initialize()`. Note that this method only
+   *              CREATES the `ListrObject`. It does not call `run()` on them.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private createInitializationTasks(runSilent:boolean, runVerbose:boolean):ListrObject {
+
+    // Define function-local and external debug namespaces.
+    const funcName    = `createInitializationTasks`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+    const dbgNsExt    = `${extCtx.dbgNs}:${funcName}`;
+
+
+    // TODO: Add implementation. See list-tasks (sfdxInitTasks) for code.
+    return null;
+
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
    * @method      identifyDevHubOrgs
    * @returns     {void}
    * @description Takes the list of `StandardOrgInfo` objects previously created
@@ -799,7 +879,7 @@ export class SfdxEnvironment {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      identifyPkgOrgs
+   * @method      _identifyPkgOrgs
    * @returns     {void}
    * @description Takes the list of `StandardOrgInfo` objects previously created
    *              by a call to `buildStandardOrgInfoMap()` and finds all the org
@@ -808,7 +888,22 @@ export class SfdxEnvironment {
    * @private
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  private identifyPkgOrgs():void {
+  private _identifyPkgOrgs():void {
+
+    // TODO: Add implementation.
+
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      _runInitializationTasks
+   * @returns     {void}
+   * @description Runs the `Listr` tasks that were previously created by a call
+   *              to `createInitializationTasks()`.
+   * @private @async
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private async _runInitializationTasks():Promise<void> {
 
     // TODO: Add implementation.
 
