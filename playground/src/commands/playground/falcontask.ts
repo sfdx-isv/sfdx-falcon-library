@@ -16,7 +16,7 @@ import  {Messages}                      from  '@salesforce/core';      // Messag
 import  {SfdxError}                     from  '@salesforce/core';      // Generalized SFDX error which also contains an action.
 
 // Import Internal Classes & Functions
-import  {SfdxFalconYeomanCommand}       from  '@sfdx-falcon/command'; // Abstract Class. Extend when building Salesforce CLI commands that use Yeoman.
+import  {SfdxFalconCommand}             from  '@sfdx-falcon/command'; // Abstract Class. Extend when building Salesforce CLI commands that use the SFDX-Falcon Library.
 import  {SfdxFalconDebug}               from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}               from  '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
@@ -25,8 +25,9 @@ import  {SfdxFalconCommandType}         from  '@sfdx-falcon/command'; // Enum. R
 import  {AnyJson}                       from  '@sfdx-falcon/types';   // Type. Any valid JSON value.
 
 // Imports related to THIS specific playground
-//import  {SfdxFalconTask}  from '@sfdx-falcon/task';
-//import  Listr             = require('listr');
+import  {SfdxFalconTask}  from '@sfdx-falcon/task';
+import  {waitASecond}     from '@sfdx-falcon/util/lib/async';
+import  Listr             = require('listr');
 
 // Set the File Local Debug Namespace
 const dbgNs = 'COMMAND:playground-falcontask:';
@@ -40,14 +41,14 @@ const commandMessages = Messages.loadMessages('@sfdx-falcon/playground', 'playgr
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @class       FalconTaskPlayground
- * @extends     SfdxFalconYeomanCommand
+ * @extends     SfdxFalconCommand
  * @summary     Implements the CLI Command `playground:falcontask`.
  * @description The command `playground:falcontask` allows for testing and experimentation with the
  *              `@sfdx-falcon/task` package.
  * @public
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export default class FalconTaskPlayground extends SfdxFalconYeomanCommand {
+export default class FalconTaskPlayground extends SfdxFalconCommand {
 
   // Define the basic properties of this CLI command.
   public static description = commandMessages.getMessage('commandDescription');
@@ -71,7 +72,7 @@ export default class FalconTaskPlayground extends SfdxFalconYeomanCommand {
     }),
 
     // IMPORTANT! The next line MUST be here to import the FalconDebug flags.
-    ...SfdxFalconYeomanCommand.falconBaseflagsConfig
+    ...SfdxFalconCommand.falconBaseflagsConfig
   };
 
   // Identify the core SFDX arguments/features required by this command.
@@ -95,24 +96,100 @@ export default class FalconTaskPlayground extends SfdxFalconYeomanCommand {
     // Initialize the SfdxFalconCommand (required by ALL classes that extend SfdxFalconCommand).
     this.sfdxFalconCommandInit('playground:falcontask', SfdxFalconCommandType.UNKNOWN);
 
+    // Build an async shell around the Playground Logic you want to run.
+    const playgroundLogic = async () => {
+
+      // Add your Playground Logic here.
 
 
-    console.log('DEVTEST');
-    throw new Error ('DEVTEST');
+      // Stand up a "shared data" object
+      // @ts-ignore
+      this.sharedData = {};
+      //*
+      // Define a Falcon Task.
+      const falconTask = new SfdxFalconTask({
+        title:  'this is my test task',
+        extCtx:   {
+          dbgNs:  `xxxx`
+          //sharedData: {}
+          //parentResult: {} as any,
+          //generatorStatus: {} as any
+        },
+//        extCtxReqs: {
+//          sharedData: true
+//          parentResult: false,
+//          generatorStatus: true
+//        },
+        statusMsg:  'My first status message',
+        minRuntime: 8,
+        showTimer:  true,
+        task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
 
+//          throw new Error('STOP TOUCHING ME!!');
+//          console.log(`I'm inside the house!`);
+//          console.log(`My arguments are: %O`, arguments);
+//          console.log(`My context is: %O`, listrContext);
+//          console.log(`My task is: %O`, _thisTask);
+//          console.log(`My shared data is: %O`, _sharedData);
+          await waitASecond(3);
+          _taskObj.title = 'I have totally changed the title!';
+          await waitASecond(3);
+          _taskStatus.message = 'I have a NEW status message!';
+          await waitASecond(3);
+        }
+      });
+  
+      // Define a Listr object and use our task to build one of the two tasks.
+      const listrTasks = new Listr(
+        [
+          falconTask.build(),
+          {
+            title: 'second task',
+            task: (_listrContext, _thisTask) => {
+              console.log(`This is from second task`);
+            }
+          }
+        ],
+        {
+          concurrent:   false,
+          // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+          collapse:     false,
+          exitOnError:  true,
+          renderer:     'verbose'
+        }
+      );
+  
+      //SfdxFalconDebug.debugObject(`xxxx:listrTasks:`, listrTasks);
+      //SfdxFalconDebug.debugObject(`xxxx:this:`, this);
+      
+      // Run the Listr Task.
+      return {
+        result: await listrTasks.run()
+      };
+    };
 
-
-    // Run a Yeoman Generator to interact with and run tasks for the user.
-    await super.runYeomanGenerator({
-      generatorType:    'tmtools-tm1-analyze',
-      outputDir:        this.outputDirectory,
-      options: []
+    // Execute the Playground Logic defined above.
+    await playgroundLogic()
+    .then((result:unknown) => {
+      console.log('HELLO SUCCESS!');
+      return this.onSuccess(result);
     })
-    .then(generatorResult   => this.onSuccess(generatorResult)) // Implemented by parent class
-    .catch(generatorResult  => this.onError(generatorResult));  // Implemented by parent class
+    .catch((error:unknown) => {
+      console.log('HELLO FAILURE!');
+      return this.onError(error);
+    });
+
+
+
+
+
+
+
+    console.log('HELLO END GAME!');
 
     // Return the JSON Response that was created by onSuccess()
     return this.falconJsonResponse as unknown as AnyJson;
+
   }
 
   //───────────────────────────────────────────────────────────────────────────┐

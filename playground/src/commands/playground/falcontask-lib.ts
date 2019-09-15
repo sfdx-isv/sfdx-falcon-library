@@ -102,74 +102,15 @@ export default class FalconTaskPlayground extends SfdxFalconCommand {
 
       // Add your Playground Logic here.
 
-      // Stand up a "shared data" object
-      // @ts-ignore
-      this.sharedData = {};
-      /*
-      // Define a Falcon Task.
-      const falconTask = new SfdxFalconTask({
-        title:  'this is my test task',
-        ctxExt: this,
-        dbgNsExt: 'xxxx',
-        statusMsg:  'My first status message',
-        minRuntime: 8,
-        showTimer:  true,
-        task: async (_listrContext, _thisTask, _taskStatus, _sharedData) => {
-          //const listrContext  = args[0];
-          //const thisTask      = args[1];
-          //const sharedData    = args[2];
-
-//          throw new Error('STOP TOUCHING ME!!');
-//          console.log(`I'm inside the house!`);
-//          console.log(`My arguments are: %O`, arguments);
-//          console.log(`My context is: %O`, listrContext);
-//          console.log(`My task is: %O`, _thisTask);
-//          console.log(`My shared data is: %O`, _sharedData);
-          await waitASecond(3);
-          _thisTask.title = 'I have totally changed the title!';
-          await waitASecond(3);
-          _taskStatus.message = 'I have a NEW status message!';
-          await waitASecond(3);
-
-
-        }
-      });
-  
-      // Define a Listr object and use our task to build one of the two tasks.
-      const listrTasks = new Listr(
-        [
-          falconTask.build(),
-          {
-            title: 'second task',
-            task: (_listrContext, _thisTask) => {
-              console.log(`This is from second task`);
-            }
-          }
-        ],
-        {
-          concurrent:   false,
-          // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
-          collapse:     false,
-          exitOnError:  true,
-          renderer:     'verbose'
-        }
-      );
-  
-      //SfdxFalconDebug.debugObject(`xxxx:listrTasks:`, listrTasks);
-      //SfdxFalconDebug.debugObject(`xxxx:this:`, this);
-      
-      // Run the Listr Task.
-      return {
-        result: await listrTasks.run()
-      };
-      //*/
-
+      console.log('\n\n\nROUND ONE\n\n\n');
+    
+      const gitEnvCheckTest = GitTasks.gitEnvironmentCheck({dbgNs: 'DEVTEST'}, 'https://github.com/sfdx-isv/hc-starter-pack.git');
+      await gitEnvCheckTest.run();
 
       console.log('\n\n\nROUND TWO\n\n\n');
 
-      const gitTaskTest = GitTasks.finalizeGit.call(this, `/Users/vchawla/VMC-TEST`, `https://github.com/sfdx-isv/hc-starter-pack.git`, `This is my TEST commit message`);
-  
-      await gitTaskTest.run();
+      const gitFinalizeTest = GitTasks.finalizeGit({dbgNs: 'DEVTEST'}, `/Users/vchawla/VMC-TEST`, `https://github.com/sfdx-isv/hc-starter-pack.git`, `This is my TEST commit message`);
+      await gitFinalizeTest.run();
   
 
     };
