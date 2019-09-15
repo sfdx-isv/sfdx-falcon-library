@@ -11,14 +11,15 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-//import  {Aliases}           from  '@salesforce/core';       // Aliases specify alternate names for groups of properties used by the Salesforce CLI, such as orgs.
-//import  {AuthInfo}          from  '@salesforce/core';       // Handles persistence and fetching of user authentication information using JWT, OAuth, or refresh tokens. Sets up the refresh flows that jsForce will use to keep tokens active.
-//import  {Connection}        from  '@salesforce/core';       // Handles connections and requests to Salesforce Orgs.
+import  {Separator}                 from 'inquirer';                    // Separator object to help organize Inquirer Lists.
+import  Listr =                     require('listr');                   // Provides asynchronous list with status of task completion.
+import  pad =                       require('pad');                     // Provides consistent spacing when trying to align console output.
 
 // Import SFDX-Falcon Libraries
 //import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Library. Async utility helper functions.
 //import  {YeomanUtil}                from  '@sfdx-falcon/util';          // Library. Helper functions and classes related to Yeoman Generators.
-import  {JsForceUtil, YeomanUtil}               from  '@sfdx-falcon/util';          // Library. Helper functions related to JSForce.
+import  {JsForceUtil}               from  '@sfdx-falcon/util';          // Library. Helper functions related to JSForce.
+import  {ListrUtil}                 from  '@sfdx-falcon/util';          // Library. Listr utility helper functions.
 import  {SfdxUtil}                  from  '@sfdx-falcon/util';          // Library. Helper functions related to SFDX and the Salesforce CLI.
 import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library. Helper functions related to Type Validation.
 
@@ -625,7 +626,7 @@ export class SfdxEnvironment {
 
   // Org Infos
   private _standardOrgInfos:        StandardOrgInfo[];    // Array of refined org info for all Standard (ie. non-scratch) Orgs currently connected to the user's CLI.
-  private _scratchOrgInfos:         StandardOrgInfo[];    // Array of refined org info for all Scratch Orgs currently connected to the user's CLI.
+  private _scratchOrgInfos:         ScratchOrgInfo[];     // Array of refined org info for all Scratch Orgs currently connected to the user's CLI.
   private _devHubOrgInfos:          StandardOrgInfo[];    // Array of refined org info for all DevHub Orgs currently connected to the user's CLI.
   private _envHubOrgInfos:          StandardOrgInfo[];    // Array of refined org info for all Environment Hub Orgs currently connected to the user's CLI.
   private _pkgOrgInfos:             StandardOrgInfo[];    // Array of refined org info for all Packaging Orgs (managed & unmanaged) currently connected to the user's CLI.
@@ -639,6 +640,7 @@ export class SfdxEnvironment {
   // Org Choices
   private _standardOrgChoices:      InquirerChoices;  // Array of Inquirer Choices representing ALL Standard (ie. non-scratch) Org aliases/usernames.
   private _scratchOrgChoices:       InquirerChoices;  // Array of Inquirer Choices representing ALL Scratch Org aliases/usernames.
+  private _allOrgChoices:           InquirerChoices;  // Array of Inquirer Choices representing ALL Scratch Org aliases/usernames AND Standard Org aliases/usernames.
   private _devHubChoices:           InquirerChoices;  // Array of Inquirer Choices representing DevOrg aliases/usernames.
   private _envHubChoices:           InquirerChoices;  // Array of Inquirer Choices representing EnvHub aliases/usernames.
   private _pkgOrgChoices:           InquirerChoices;  // Array of Inquirer Choices representing ALL Packaging Org aliases/usernames.
@@ -710,6 +712,34 @@ export class SfdxEnvironment {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
+   * @method      buildAllOrgChoices
+   * @returns     {void}
+   * @description Takes the list of identified Standard and Scratch Orgs from
+   *              `_standardOrgInfos` and `_scratchOrgInfos` and uses them to
+   *              create an array of `InquirerChoice` objects which will be
+   *              stored in the `_allOrgChoices` member variable.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private buildAllOrgChoices():void {
+
+    // Define function-local and external debug namespaces.
+    const funcName    = `buildAllOrgChoices`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
+    
+    // Build Choices based on all Standard AND Scratch Org Infos, followed by a separator and a "not specified" option.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_standardOrgInfos:`, this._standardOrgInfos);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_scratchOrgInfos:`, this._scratchOrgInfos);
+    this._allOrgChoices.push(new Separator(`---- Standard Orgs ----`));
+    this._allOrgChoices = this.generateOrgChoices(this._standardOrgInfos);
+    this._allOrgChoices.push(new Separator(`---- Scratch  Orgs ----`));
+    this._allOrgChoices = this.generateOrgChoices(this._scratchOrgInfos);
+    this._allOrgChoices.push(new Separator());
+    this._allOrgChoices.push({name:'My Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
    * @method      buildDevHubChoices
    * @returns     {void}
    * @description Takes the list of identified Dev Hubs in `_devHubOrgInfos`
@@ -720,8 +750,15 @@ export class SfdxEnvironment {
   //───────────────────────────────────────────────────────────────────────────┘
   private buildDevHubChoices():void {
 
-    // TODO: Add implementation. See listr-tasks (buildDevHubAliasList) for implementation logic.
+    // Define function-local and external debug namespaces.
+    const funcName    = `buildDevHubChoices`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
 
+    // Build Choices based on the DevHub Org Infos, followed by a separator and a "not specified" option.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_devHubOrgInfos:`, this._devHubOrgInfos);
+    this._devHubChoices = this.generateOrgChoices(this._devHubOrgInfos);
+    this._devHubChoices.push(new Separator());
+    this._devHubChoices.push({name:'My DevHub Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -736,8 +773,15 @@ export class SfdxEnvironment {
   //───────────────────────────────────────────────────────────────────────────┘
   private buildEnvHubChoices():void {
 
-    // TODO: Add implementation. See listr-tasks (buildEnvHubAliasList) for implementation logic.
+    // Define function-local and external debug namespaces.
+    const funcName    = `buildEnvHubChoices`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
 
+    // Build Choices based on the EnvHub Org Infos, followed by a separator and a "not specified" option.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_envHubOrgInfos:`, this._envHubOrgInfos);
+    this._envHubChoices = this.generateOrgChoices(this._envHubOrgInfos);
+    this._envHubChoices.push(new Separator());
+    this._envHubChoices.push({name:'My Environment Hub Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -754,8 +798,27 @@ export class SfdxEnvironment {
   //───────────────────────────────────────────────────────────────────────────┘
   private buildPkgOrgChoices():void {
 
-    // TODO: Add implementation. See listr-tasks (buildPkgOrgAliasList) for implementation logic.
+    // Define function-local and external debug namespaces.
+    const funcName    = `buildPkgOrgChoices`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
 
+    // Build Org Choices for ALL Packaging Orgs.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_pkgOrgInfos:`, this._pkgOrgInfos);
+    this._pkgOrgChoices = this.generateOrgChoices(this._pkgOrgInfos);
+    this._pkgOrgChoices.push(new Separator());
+    this._pkgOrgChoices.push({name:'My Packaging Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
+
+    // Build Org Choices for MANAGED Packaging Orgs.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_managedPkgOrgInfos:`, this._managedPkgOrgInfos);
+    this._managedPkgOrgChoices = this.generateOrgChoices(this._managedPkgOrgInfos);
+    this._managedPkgOrgChoices.push(new Separator());
+    this._managedPkgOrgChoices.push({name:'My Packaging Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
+
+    // Build Org Choices for UNMANAGED Packaging Orgs.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_unmanagedPkgOrgInfos:`, this._unmanagedPkgOrgInfos);
+    this._unmanagedPkgOrgChoices = this.generateOrgChoices(this._unmanagedPkgOrgInfos);
+    this._unmanagedPkgOrgChoices.push(new Separator());
+    this._unmanagedPkgOrgChoices.push({name:'My Packaging Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -771,8 +834,15 @@ export class SfdxEnvironment {
   //───────────────────────────────────────────────────────────────────────────┘
   private buildScratchOrgChoices():void {
 
-    // TODO: Add implementation. See listr-tasks (buildScratchOrgAliasList) for implementation logic.
+    // Define function-local and external debug namespaces.
+    const funcName    = `buildScratchOrgChoices`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
 
+    // Build Choices based on ALL Scratch Org Infos, followed by a separator and a "not specified" option.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_scratchOrgInfos:`, this._scratchOrgInfos);
+    this._scratchOrgChoices = this.generateOrgChoices(this._scratchOrgInfos);
+    this._scratchOrgChoices.push(new Separator());
+    this._scratchOrgChoices.push({name:'My Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -792,18 +862,11 @@ export class SfdxEnvironment {
     const funcName    = `buildStandardOrgChoices`;
     const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
 
-    // Debug the Standard Org Info map.
-    SfdxFalconDebug.obj(`${dbgNsLocal}:_standardOrgInfoMap:`, this._standardOrgInfoMap);
-
-    // Convert the values from the Standard Org Info map into an array.
-    this._standardOrgInfos = Array.from(this._standardOrgInfoMap.values());
-    SfdxFalconDebug.obj(`${dbgNsLocal}:_standardOrgInfos:`, this._standardOrgInfos);
-    
     // Build Choices based on ALL Standard Org Infos, followed by a separator and a "not specified" option.
-    this.sharedData['standardOrgAliasChoices'] = YeomanUtil.buildOrgAliasChoices(standardOrgInfos);
-    this.sharedData['standardOrgAliasChoices'].push(new yoHelper.YeomanSeparator());
-    this.sharedData['standardOrgAliasChoices'].push({name:'My Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified'});
-
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_standardOrgInfos:`, this._standardOrgInfos);
+    this._standardOrgChoices = this.generateOrgChoices(this._standardOrgInfos);
+    this._standardOrgChoices.push(new Separator());
+    this._standardOrgChoices.push({name:'My Org Is Not Listed', value:'NOT_SPECIFIED', short:'Not Specified', disabled: false});
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -841,6 +904,10 @@ export class SfdxEnvironment {
       }
     }
     SfdxFalconDebug.obj(`${dbgNsLocal}:_scratchOrgInfoMap:`, this._scratchOrgInfoMap);
+
+    // Convert the values from the newly created Scratch Org Info map into an array.
+    this._scratchOrgInfos = Array.from(this._scratchOrgInfoMap.values());
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_scratchOrgInfos:`, this._scratchOrgInfos);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -884,6 +951,10 @@ export class SfdxEnvironment {
       }
     }
     SfdxFalconDebug.obj(`${dbgNsLocal}:_standardOrgInfoMap:`, this._standardOrgInfoMap);
+
+    // Convert the values from the newly created Standard Org Info map into an array.
+    this._standardOrgInfos = Array.from(this._standardOrgInfoMap.values());
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_standardOrgInfos:`, this._standardOrgInfos);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -912,14 +983,17 @@ export class SfdxEnvironment {
       dbgNs:        dbgNsExt,
       parentResult: this._initializationResult
     };
+    SfdxFalconDebug.obj(`${dbgNsLocal}:extCtx:`, extCtx);
 
     // Determine if Initialization should happen or not.
+    SfdxFalconDebug.obj(`${dbgNsExt}:_envReqs:`, this._envReqs);
     const doSfdxEnvInit =   this._envReqs.standardOrgs     === true
                         ||  this._envReqs.scratchOrgs      === true
                         ||  this._envReqs.devHubOrgs       === true
                         ||  this._envReqs.envHubOrgs       === true
                         ||  this._envReqs.managedPkgOrgs   === true
                         ||  this._envReqs.unmanagedPkgOrgs === true;
+    SfdxFalconDebug.str(`${dbgNsExt}:doSfdxEnvInit:`, `${doSfdxEnvInit}`);
 
     //─────────────────────────────────────────────────────────────────────────┐
     // Define the "Scan Connected Orgs" task.
@@ -957,17 +1031,27 @@ export class SfdxEnvironment {
                                      , `${dbgNsTask}`);
           }
 
-          // Build maps of Standard and Scratch org infos based on the raw lists.
-          this.buildStandardOrgInfoMap();
-          this.buildScratchOrgInfoMap();
+          try {
+            // Build maps of Standard and Scratch org infos based on the raw lists.
+            this.buildStandardOrgInfoMap();
+            this.buildScratchOrgInfoMap();
 
-          // Build Standard and Scratch Org Choices, if required.
-          if (this._envReqs.standardOrgs) this.buildStandardOrgChoices();
-          if (this._envReqs.scratchOrgs)  this.buildScratchOrgChoices();
+            // Build Standard, Scratch, and ALL Org Choices.
+            this.buildStandardOrgChoices();
+            this.buildScratchOrgChoices();
+            this.buildAllOrgChoices();
+          }
+          catch (error) {
+            throw new SfdxFalconError ( `Org scan was successful but there was an error during initialization.`
+                                      + `${error.message ? ` ${error.message}` : ``}`
+                                      , `InitializationError`
+                                      , `${dbgNsTask}`
+                                      , error);
+          }
         })
         .catch(orgScanFailure => {
 
-          // We get here if no connections were found.
+          // We get here if no connections were found or if there was an initialization error.
           SfdxFalconDebug.obj(`${dbgNsTask}:orgScanFailure:`, orgScanFailure);
           throw orgScanFailure;
         });
@@ -984,8 +1068,16 @@ export class SfdxEnvironment {
       enabled:  () => this._envReqs.devHubOrgs,
       task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
         const dbgNsTask = `${dbgNsExt}:task:identifyDevHubs`;
-        this.identifyDevHubOrgs();
-        this.buildDevHubChoices();
+        this.identifyDevHubOrgs()
+        .then(() => {
+          SfdxFalconDebug.obj(`${dbgNsTask}:_devHubOrgInfos:`, this._devHubOrgInfos);
+          this.buildDevHubChoices();
+        })
+        .catch(error => {
+          // We normally should NOT get here.
+          SfdxFalconDebug.obj(`${dbgNsTask}:error:`, error);
+          throw error;
+        });
       }
     });
 
@@ -1035,22 +1127,152 @@ export class SfdxEnvironment {
       }
     });
 
+    // Now we need to build the actual ListrTask object.
+    return new Listr(
+      [
+        {
+          // PARENT_TASK: Local SFDX Configuration
+          title: 'Inspecting Local SFDX Configuration',
+          enabled:() => doSfdxEnvInit,
+          task: () => {
+            return new Listr(
+              [
+                scanConnectedOrgs.build(),
+                identifyDevHubs.build(),
+                identifyEnvHubs.build(),
+                identifyPkgOrgs.build()
+              ],
+              // SUBTASK OPTIONS: (SFDX Config Tasks)
+              {
+                concurrent:   false,
+                // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+                collapse:     false,
+                showSubtasks: this._verboseTasks,
+                exitOnError:  true,
+                renderer:     ListrUtil.chooseListrRenderer(`${this._silentTasks ? `silent` : ``}`)
+              }
+            );
+          }
+        }
+      ],
+      {
+        // PARENT_TASK OPTIONS: (Local SFDX Configuration)
+        concurrent:   false,
+        // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+        collapse:     false,
+        showSubtasks: this._verboseTasks,
+        exitOnError:  true,
+        renderer:     ListrUtil.chooseListrRenderer(`${this._silentTasks ? `silent` : ``}`)
+      }
+    );
+  }
 
-    return null;
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @function    generateOrgChoice
+   * @param       {StandardOrgInfo|ScratchOrgInfo}  orgInfo Required. The
+   *              Standard or Scratch Org Info that will be used as the basis
+   *              of an Org Alias Choice.
+   * @param       {number}  longestAlias  Required.
+   * @param       {number}  longestUsername Required.
+   * @returns     {InquirerChoice}
+   * @description Given either a Standard or Scratch Org Info object, the length
+   *              of the longest-expected Alias and the longest-expected
+   *              username, returns a Yeoman Choice that will be formatted with
+   *              appropriate padding to make multiple choices look aligned
+   *              when shown to the user.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private generateOrgChoice(orgInfo:StandardOrgInfo|ScratchOrgInfo, longestAlias:number, longestUsername:number):InquirerChoice {
+
+    // Define function-local debug namespace.
+    const funcName    = `generateOrgChoice`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
+
+    // Debug incoming arguments
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Build an OrgChoice using the YeomanChoice data structure.
+    return {
+      name:   `${pad(orgInfo.alias, longestAlias)} -- ${pad(orgInfo.username, longestUsername)}${orgInfo['nsPrefix'] ? ' ['+orgInfo['nsPrefix']+']' : ''}`,
+      disabled: false,
+      value:  orgInfo.username,
+      short:  (typeof orgInfo.alias !== 'undefined' && orgInfo.alias !== '')
+              ? `${orgInfo.alias} (${orgInfo.username})${orgInfo['nsPrefix'] ? ' ['+orgInfo['nsPrefix']+']' : ''}`  // Use Alias (Username)
+              : orgInfo.username + (orgInfo['nsPrefix'] ? '['+orgInfo['nsPrefix']+']' : '')                         // Just use Username
+    };
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @function    generateOrgChoices
+   * @param       {StandardOrgInfo[]|ScratchOrgInfo[]}  orgInfos  Required.
+   * @returns     {InquirerChoice[]}  Array of `InquirerChoice` objects based
+   *              on the provided array of `StandardOrgInfo` or `ScratchOrgInfo`
+   *              objects.
+   * @description Given an array of `StandardOrgInfo` or `ScratchOrgInfo`
+   *              objects, builds a fully formed array of `InquirerChoice`
+   *              objects in order to display a list of choices to the user.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private generateOrgChoices(orgInfos:StandardOrgInfo[]|ScratchOrgInfo[]):InquirerChoice[] {
+
+    // Define function-local debug namespace.
+    const funcName    = `generateOrgChoices`;
+    const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
+
+    // Debug incoming arguments.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Validate incoming arguments.
+    TypeValidator.throwOnNullInvalidArray(orgInfos, `${dbgNsLocal}`, `orgInfos`);
+
+    // Create local var to build the Inquirer Choice array.
+    const orgChoices = [] as InquirerChoice[];
+
+    // Calculate the length of the longest Alias
+    let longestAlias = 0;
+    for (const orgInfo of orgInfos) {
+      if (typeof orgInfo.alias !== 'undefined') {
+        longestAlias = Math.max(orgInfo.alias.length, longestAlias);
+      }
+    }
+
+    // Calculate the length of the longest Username.
+    let longestUsername = 0;
+    for (const orgInfo of orgInfos) {
+      if (typeof orgInfo.username !== 'undefined') {
+        longestUsername = Math.max(orgInfo.username.length, longestUsername);
+      }
+    }
+
+    // Iterate over the array of Org Infos and call generateOrgChoice()
+    // and push each one onto the orgAliasChoices array.
+    for (const orgInfo of orgInfos) {
+      orgChoices.push(this.generateOrgChoice(orgInfo, longestAlias, longestUsername));
+    }
+
+    // DEBUG
+    SfdxFalconDebug.obj(`${dbgNsLocal}:orgChoices:`, orgChoices);
+
+    // All done.
+    return orgChoices;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      identifyDevHubOrgs
-   * @returns     {void}
+   * @returns     {Promise<void>}
    * @description Takes the list of `StandardOrgInfo` objects previously created
    *              by a call to `buildStandardOrgInfoMap()` and finds all the org
    *              connections that point to DevHub Orgs, then places them into
    *              the `_devHubOrgInfos` member variable.
-   * @private
+   * @private @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  private identifyDevHubOrgs():void {
+  private async identifyDevHubOrgs():Promise<void> {
 
     // Define function-local debug namespace.
     const funcName    = `identifyDevHubOrgs`;
@@ -1130,6 +1352,16 @@ export class SfdxEnvironment {
       if (await standardOrgInfo.determinePkgOrgStatus()) {
         SfdxFalconDebug.str(`${dbgNsLocal}:AliasUsername:`, `${standardOrgInfo.alias}(${standardOrgInfo.username})`, `PACKAGING ORG FOUND: `);
         this._pkgOrgInfos.push(standardOrgInfo);
+
+        // Further categorize this org as either a MANAGED or UNMANAGED packaging org.
+        if (standardOrgInfo.nsPrefix) {
+          this._managedPkgOrgInfos.push(standardOrgInfo);
+          SfdxFalconDebug.str(`${dbgNsLocal}:IsManagedPackageOrg:`, `${standardOrgInfo.alias}(${standardOrgInfo.username})`, `MANAGED PACKAGING ORG FOUND: `);
+        }
+        else {
+          this._unmanagedPkgOrgInfos.push(standardOrgInfo);
+          SfdxFalconDebug.str(`${dbgNsLocal}:IsUnmanagedPackageOrg:`, `${standardOrgInfo.alias}(${standardOrgInfo.username})`, `UNMANAGED PACKAGING ORG FOUND: `);
+        }
       }
       else {
         SfdxFalconDebug.str(`${dbgNsLocal}:AliasUsername:`, `${standardOrgInfo.alias}(${standardOrgInfo.username})`, `NOT A PACKAGING ORG: `);
