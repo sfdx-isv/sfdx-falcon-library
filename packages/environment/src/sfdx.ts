@@ -528,24 +528,6 @@ export class StandardOrgInfo {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @class       SfdxEnvironment
@@ -610,9 +592,23 @@ export class SfdxEnvironment {
   }
 
   // Public accessors
-  // TODO: Add accessors as needed
-  public abc: string;
-
+  public get standardOrgInfos():StandardOrgInfo[]                 { return this._standardOrgInfos; }
+  public get scratchOrgInfos():ScratchOrgInfo[]                   { return this._scratchOrgInfos; }
+  public get devHubOrgInfos():StandardOrgInfo[]                   { return this._devHubOrgInfos; }
+  public get envHubOrgInfos():StandardOrgInfo[]                   { return this._envHubOrgInfos; }
+  public get pkgOrgInfos():StandardOrgInfo[]                      { return this._pkgOrgInfos; }
+  public get managedPkgOrgInfos():StandardOrgInfo[]               { return this._managedPkgOrgInfos; }
+  public get unmanagedPkgOrgInfos():StandardOrgInfo[]             { return this._unmanagedPkgOrgInfos; }
+  public get standardOrgInfoMap():Map<UserName, StandardOrgInfo>  { return this._standardOrgInfoMap; }
+  public get scratchOrgInfoMap():Map<UserName, ScratchOrgInfo>    { return this._scratchOrgInfoMap; }
+  public get standardOrgChoices():InquirerChoices                 { return this._standardOrgChoices; }
+  public get scratchOrgChoices():InquirerChoices                  { return this._scratchOrgChoices; }
+  public get allOrgChoices():InquirerChoices                      { return this._allOrgChoices; }
+  public get devHubChoices():InquirerChoices                      { return this._devHubChoices; }
+  public get envHubChoices():InquirerChoices                      { return this._envHubChoices; }
+  public get pkgOrgChoices():InquirerChoices                      { return this._pkgOrgChoices; }
+  public get managedPkgOrgChoices():InquirerChoices               { return this._managedPkgOrgChoices; }
+  public get unmanagedPkgOrgChoices():InquirerChoices             { return this._unmanagedPkgOrgChoices; }
 
   // Private members.
   private _dbgNs:                   string;                       // Debug Namespace that should be used inside this instance.
@@ -984,7 +980,7 @@ export class SfdxEnvironment {
     // Define function-local and external debug namespaces.
     const funcName    = `createInitializationTasks`;
     const dbgNsLocal  = `${this._dbgNs}:${funcName}`;
-    const dbgNsExt    = `${this._dbgNs}:init`;
+    const dbgNsExt    = `${this._dbgNs}:sfdxEnvInit`;
 
     // Initialize an External Context that will be shared by all tasks.
     const extCtx:ExternalContext = {
@@ -994,14 +990,14 @@ export class SfdxEnvironment {
     SfdxFalconDebug.obj(`${dbgNsLocal}:extCtx:`, extCtx);
 
     // Determine if Initialization should happen or not.
-    SfdxFalconDebug.obj(`${dbgNsExt}:_envReqs:`, this._envReqs);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:_envReqs:`, this._envReqs);
     const doSfdxEnvInit =   this._envReqs.standardOrgs     === true
                         ||  this._envReqs.scratchOrgs      === true
                         ||  this._envReqs.devHubOrgs       === true
                         ||  this._envReqs.envHubOrgs       === true
                         ||  this._envReqs.managedPkgOrgs   === true
                         ||  this._envReqs.unmanagedPkgOrgs === true;
-    SfdxFalconDebug.str(`${dbgNsExt}:doSfdxEnvInit:`, `${doSfdxEnvInit}`);
+    SfdxFalconDebug.str(`${dbgNsLocal}:doSfdxEnvInit:`, `${doSfdxEnvInit}`);
 
     //─────────────────────────────────────────────────────────────────────────┐
     // Define the "Scan Connected Orgs" task.
@@ -1012,8 +1008,8 @@ export class SfdxEnvironment {
       showTimer:  false,
       enabled:  () => doSfdxEnvInit,
       task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
-        const dbgNsTask = `${dbgNsExt}:task:scanConnectedOrgs`;
-        SfdxUtil.scanConnectedOrgs()
+        const dbgNsTask = `${dbgNsExt}:scanConnectedOrgs`;
+        await SfdxUtil.scanConnectedOrgs()
         .then(orgScanResult => {
           SfdxFalconDebug.obj(`${dbgNsTask}:orgScanResult:`, orgScanResult);
 
@@ -1075,8 +1071,8 @@ export class SfdxEnvironment {
       showTimer:  false,
       enabled:  () => this._envReqs.devHubOrgs,
       task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
-        const dbgNsTask = `${dbgNsExt}:task:identifyDevHubs`;
-        this.identifyDevHubOrgs()
+        const dbgNsTask = `${dbgNsExt}:identifyDevHubs`;
+        await this.identifyDevHubOrgs()
         .then(() => {
           SfdxFalconDebug.obj(`${dbgNsTask}:_devHubOrgInfos:`, this._devHubOrgInfos);
           this.buildDevHubChoices();
@@ -1098,8 +1094,8 @@ export class SfdxEnvironment {
       showTimer:  false,
       enabled:  () => this._envReqs.envHubOrgs,
       task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
-        const dbgNsTask = `${dbgNsExt}:task:identifyEnvHubs`;
-        this.identifyEnvHubOrgs()
+        const dbgNsTask = `${dbgNsExt}:identifyEnvHubs`;
+        await this.identifyEnvHubOrgs()
         .then(() => {
           SfdxFalconDebug.obj(`${dbgNsTask}:_envHubOrgInfos:`, this._envHubOrgInfos);
           this.buildEnvHubChoices();
@@ -1121,8 +1117,8 @@ export class SfdxEnvironment {
       showTimer:  false,
       enabled:  () => (this._envReqs.managedPkgOrgs || this._envReqs.unmanagedPkgOrgs),
       task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
-        const dbgNsTask = `${dbgNsExt}:task:identifyPkgOrgs`;
-        this.identifyPkgOrgs()
+        const dbgNsTask = `${dbgNsExt}:identifyPkgOrgs`;
+        await this.identifyPkgOrgs()
         .then(() => {
           SfdxFalconDebug.obj(`${dbgNsTask}:_pkgOrgInfos:`, this._pkgOrgInfos);
           this.buildPkgOrgChoices();
@@ -1155,7 +1151,7 @@ export class SfdxEnvironment {
                 concurrent:   false,
                 // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
                 collapse:     false,
-                showSubtasks: this._verboseTasks,
+                showSubtasks: false,
                 exitOnError:  true,
                 renderer:     ListrUtil.chooseListrRenderer(`${this._silentTasks ? `silent` : ``}`)
               }
@@ -1173,6 +1169,8 @@ export class SfdxEnvironment {
         renderer:     ListrUtil.chooseListrRenderer(`${this._silentTasks ? `silent` : ``}`)
       }
     );
+
+    SfdxFalconDebug.msg(`${dbgNsLocal}:status:`, `Creation of Initialization Tasks is complete`);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -1401,6 +1399,7 @@ export class SfdxEnvironment {
     }
 
     // Run the tasks.
+    SfdxFalconDebug.msg(`${dbgNsLocal}:status:`, `About to run Initialization Tasks`);
     const listrContext = await this._initializationTasks.run();
     SfdxFalconDebug.obj(`${dbgNsLocal}:listrContext:`, listrContext);
   }
