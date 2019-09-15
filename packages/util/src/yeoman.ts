@@ -17,16 +17,16 @@ import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug'; // Class. Provides a s
 import  {SfdxFalconError}     from  '@sfdx-falcon/error'; // Class. Specialized Error object. Wraps SfdxError.
 
 // Import Internal Classes & Functions
-import  {ScratchOrgInfo}      from  './sfdx';             // Class. Stores information about a scratch org that is connected to the local Salesforce CLI.
-import  {StandardOrgInfo}     from  './sfdx';             // Class. Stores information about a standard (ie. non-scratch) orgs that is connected to the local Salesforce CLI.
+//import  {ScratchOrgInfo}      from  './sfdx';             // Class. Stores information about a scratch org that is connected to the local Salesforce CLI.
+//import  {StandardOrgInfo}     from  './sfdx';             // Class. Stores information about a standard (ie. non-scratch) orgs that is connected to the local Salesforce CLI.
 import  {printStatusMessages} from  './ux';               // Function. Prints an array of Status Messages.
 
 // Import SFDX-Falcon Types
 import  {StatusMessage}       from  '@sfdx-falcon/types'; // Interface. Interface. Represents a "state aware" message. Contains a title, a message, and a type.
-import  {InquirerChoice}      from  '@sfdx-falcon/types'; // Type. Represents an Inquirer Choice object.
+//import  {InquirerChoice}      from  '@sfdx-falcon/types'; // Type. Represents an Inquirer Choice object.
 
 // Requires
-const pad = require('pad');   // Provides consistent spacing when trying to align console output.
+//const pad = require('pad');   // Provides consistent spacing when trying to align console output.
 
 // Set the File Local Debug Namespace
 const dbgNs = 'UTILITY:yeoman:';
@@ -35,33 +35,37 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @class       YeomanSeparator
- * @summary     Separator object for use when creating Yeoman Lists.
- * @description Separator object for use when creating Yeoman Lists. This is essentially a wrapper
- *              for an Inquirer Separator since Yeoman uses Inquirer to query the user.
+ * @class       Separator
+ * @summary     Separator object for use when creating Inquirer/Yeoman lists.
+ * @description Separator object for use when creating Inquirer/Yeoman Lists. This is essentially
+ *              a wrapper for an Inquirer Separator since Yeoman uses Inquirer to query the user.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export class YeomanSeparator {
+/*
+export class SeparatorDELETE {
 
   // Class Members
-  public name:   string;
-  public value:  string;
-  public short:  string;
-  public type:   string;
-  public line?:  string;
+  public name:      string;
+  public value:     string;
+  public short:     string;
+  public type:      string;
+  public disabled:  boolean;
+  public line?:     string;
 
   // Constructor
   constructor(separatorLine?:string) {
-    this.name   = '';
-    this.value  = '';
-    this.short  = '';
-    this.type   = 'separator';
+    this.name     = '';
+    this.value    = '';
+    this.short    = '';
+    this.type     = 'separator';
+    this.disabled = false;
     if (typeof separatorLine !== 'undefined') {
       this.line = separatorLine;
     }
   }
 }
+//*/
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -248,84 +252,6 @@ export class GeneratorStatus {
   public printStatusMessages():void {
     printStatusMessages(this.messages);
   }
-}
-
-// ────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @function    createOrgAliasChoice
- * @param       {StandardOrgInfo|ScratchOrgInfo}  orgInfo Required. The Standard or Scratch Org
- *              Info that will be used as the basis of an Org Alias Choice.
- * @param       {number}  longestAlias  Required.
- * @param       {number}  longestUsername Required.
- * @returns     {InquirerChoice}
- * @description Given either a Standard or Scratch Org Info object, the length of the longest-expected
- *              Alias and the longest-expected username, returns a Yeoman Choice that will be formatted
- *              with appropriate padding to make multiple choices look aligned when shown to the user.
- * @private
- */
-// ────────────────────────────────────────────────────────────────────────────────────────────────┘
-function createOrgAliasChoice(orgInfo:StandardOrgInfo|ScratchOrgInfo, longestAlias:number, longestUsername:number):InquirerChoice {
-
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}createOrgAliasChoice:`, arguments);
-
-  // Build an OrgAliasChoice as a YeomanChoice data structure.
-  return {
-    name:   `${pad(orgInfo.alias, longestAlias)} -- ${pad(orgInfo.username, longestUsername)}${orgInfo['nsPrefix'] ? ' ['+orgInfo['nsPrefix']+']' : ''}`,
-    disabled: false,
-    value:  orgInfo.username,
-    short:  (typeof orgInfo.alias !== 'undefined' && orgInfo.alias !== '')
-            ? `${orgInfo.alias} (${orgInfo.username})${orgInfo['nsPrefix'] ? ' ['+orgInfo['nsPrefix']+']' : ''}`  // Use Alias (Username)
-            : orgInfo.username + (orgInfo['nsPrefix'] ? '['+orgInfo['nsPrefix']+']' : '')                         // Just use Username
-  };
-}
-
-// ────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @function    buildOrgAliasChoices
- * @param       {StandardOrgInfo[]|ScratchOrgInfo[]}  orgInfos  Required.
- * @returns     {InquirerChoice[]}  Array of Inquirer Choice objects based on the provided Standard
- *              or Scratch Org Info objects.
- * @description Given an array of StandardOrgInfo or ScratchOrgInfo objects, builds a fully formed
- *              array of Inquirer Choice objects in order to display a list of choices to the user.
- * @public
- */
-// ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function buildOrgAliasChoices(orgInfos:StandardOrgInfo[]|ScratchOrgInfo[]):InquirerChoice[] {
-
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}buildOrgAliasChoices:arguments:`, arguments);
-
-  // Create local var to build the Inquirer Choice array.
-  const orgAliasChoices = [] as InquirerChoice[];
-
-  // Calculate the length of the longest Alias
-  let longestAlias = 0;
-  for (const orgInfo of orgInfos) {
-    if (typeof orgInfo.alias !== 'undefined') {
-      longestAlias = Math.max(orgInfo.alias.length, longestAlias);
-    }
-  }
-
-  // Calculate the length of the longest Username.
-  let longestUsername = 0;
-  for (const orgInfo of orgInfos) {
-    if (typeof orgInfo.username !== 'undefined') {
-      longestUsername = Math.max(orgInfo.username.length, longestUsername);
-    }
-  }
-
-  // Iterate over the array of Org Infos and call createOrgAliasChoice()
-  // and push each one onto the orgAliasChoices array.
-  for (const orgInfo of orgInfos) {
-    orgAliasChoices.push(createOrgAliasChoice(orgInfo, longestAlias, longestUsername));
-  }
-
-  // DEBUG
-  SfdxFalconDebug.obj(`${dbgNs}buildOrgAliasChoices:orgAliasChoices:`, orgAliasChoices);
-
-  // All done.
-  return orgAliasChoices;
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
