@@ -286,7 +286,9 @@ export class ObservableTaskResult {
       this._subscriber.next(`[0s] ${this._taskStatusMessages.defaultMessage}`);
     }
     else {
-      this._subscriber.next(`${this._taskStatusMessages.defaultMessage}`);
+      if (this._taskStatusMessages.defaultMessage) {
+        this._subscriber.next(`${this._taskStatusMessages.defaultMessage}`);
+      }
     }
 
     // Set up Task Progress Notifications and store a reference to the Timer.
