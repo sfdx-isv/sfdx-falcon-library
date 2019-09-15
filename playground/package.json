@@ -14,6 +14,7 @@
     "@salesforce/core": "2.1.1",
     "@sfdx-falcon/command": "0.0.4-alpha.0",
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
+    "@sfdx-falcon/environment": "0.0.4-alpha.0",
     "@sfdx-falcon/error": "0.0.4-alpha.0",
     "@sfdx-falcon/result": "0.0.4-alpha.0",
     "@sfdx-falcon/task": "0.0.4-alpha.0",
