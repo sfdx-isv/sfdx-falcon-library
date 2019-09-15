@@ -10,7 +10,10 @@
     "@sfdx-falcon/error": "0.0.4-alpha.0",
     "@sfdx-falcon/types": "0.0.4-alpha.0",
     "@sfdx-falcon/util": "0.0.4-alpha.0",
-    "@sfdx-falcon/validator": "0.0.4-alpha.0"
+    "@sfdx-falcon/validator": "0.0.4-alpha.0",
+    "inquirer": "7.0.0",
+    "listr": "0.14.3",
+    "pad": "3.2.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",
