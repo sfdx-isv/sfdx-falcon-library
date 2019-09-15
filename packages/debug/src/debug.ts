@@ -27,7 +27,7 @@ type DebugFunc = any; // tslint:disable-line: no-any
 export class SfdxFalconDebug {
   
   // Public members
-  public static lineBreaks: number  = 5;
+  public static lineBreaks: number  = 2;
   public static debugDepth: number  = 2;
 
   // Public getters
@@ -102,7 +102,9 @@ export class SfdxFalconDebug {
   //───────────────────────────────────────────────────────────────────────────┘
   public static debugMessage(namespace:string, message:string):void {
     const debugFunc = SfdxFalconDebug.getDebugger(namespace);
-    debugFunc(`\n${chalk.blue(message)}\n`);
+    debugFunc ( `${SfdxFalconDebug.printLineBreaks('-\n')}`
+              + `${chalk.yellow(message)}`
+              + `${SfdxFalconDebug.printLineBreaks('\n-')}`);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -121,11 +123,11 @@ export class SfdxFalconDebug {
   //───────────────────────────────────────────────────────────────────────────┘
   public static debugObject(namespace:string, objToDebug:object, strLead:string = '', strTail:string = ''):void {
     const debugFunc = SfdxFalconDebug.getDebugger(namespace);
-    debugFunc(
-      `\n${chalk.yellow(strLead)}\n` +
-      `${util.inspect(objToDebug, {depth:8, colors:true})}` +
-      `\n${chalk.yellow(strTail)}` +
-      `${SfdxFalconDebug.printLineBreaks()}`
+    debugFunc ( `${SfdxFalconDebug.printLineBreaks('-\n')}`
+              + (strLead ? `${chalk.yellow(strLead)}\n` : ``)
+              + `${util.inspect(objToDebug, {depth:8, colors:true})}`
+              + (strTail ? `\n${chalk.yellow(strTail)}` : ``)
+              + `${SfdxFalconDebug.printLineBreaks('\n-')}`
     );
   }
 
@@ -145,7 +147,11 @@ export class SfdxFalconDebug {
   //───────────────────────────────────────────────────────────────────────────┘
   public static debugString(namespace:string, strToDebug:string, strLead:string = '', strTail:string = ''):void {
     const debugFunc = SfdxFalconDebug.getDebugger(namespace);
-    debugFunc(`-\n${chalk.blue(strLead)}${strToDebug}${chalk.blue(strTail)}${SfdxFalconDebug.printLineBreaks()}`);
+    debugFunc ( `${SfdxFalconDebug.printLineBreaks('-\n')}`
+              + (strLead ? `${chalk.blue(strLead)} ` : ``)
+              + `${strToDebug} `
+              + (strTail ? ` ${chalk.blue(strTail)}` : ``)
+              + `${SfdxFalconDebug.printLineBreaks('\n-')}`);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -252,16 +258,18 @@ export class SfdxFalconDebug {
   /**
    * @method      toConsole
    * @param       {string}  message Required. Message to send to console.log().
+   * @param       {number}  [lineBreaks]  Optional. The number of line breaks
+   *              to insert before and after the message.
    * @description Sends a message to console.log that's pre and post-pended
    *              with newline breaks to help the output be easy to see.
    * @public @static
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public static toConsole(message:string):void {
+  public static toConsole(message:string, lineBreaks?:number):void {
     console.log(
-      `${SfdxFalconDebug.printLineBreaks()}` +
-      `\n${chalk.yellow(message)}\n` +
-      `${SfdxFalconDebug.printLineBreaks()}`
+      `${SfdxFalconDebug.printLineBreaks('-\n', lineBreaks)}` +
+      `${chalk.yellow(message)}` +
+      `${SfdxFalconDebug.printLineBreaks('\n-', lineBreaks)}`
     );
   }
 
@@ -272,13 +280,24 @@ export class SfdxFalconDebug {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      printLineBreaks
+   * @param       {string}  breakPattern  Required. The string that will be used
+   *              to create the line breaks. This must contain a `/n` (newline)
+   *              character or no line breaks will occur.
+   * @param       {number}  [lineBreaks]  Optional. The number of line breaks
+   *              to insert. If not provided, the Global Static value will be
+   *              used.
    * @description Returns a string containing the number of newline chars as
    *              specified in the lineBreaks public static member variable.
    * @private @static
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  private static printLineBreaks():string {
-    return '\n-'.repeat(SfdxFalconDebug.lineBreaks);
+  private static printLineBreaks(breakPattern:string, lineBreaks?:number):string {
+    if (typeof breakPattern !== 'string' || breakPattern === null || breakPattern === '') {
+      breakPattern = '\n';
+    }
+    if (isNaN(lineBreaks)) {
+      lineBreaks = SfdxFalconDebug.lineBreaks;
+    }
+    return breakPattern.repeat(lineBreaks);
   }
-
-} // ENDOF class SfdxFalconDebug
+}
