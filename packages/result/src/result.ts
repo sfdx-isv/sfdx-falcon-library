@@ -93,18 +93,19 @@ export const enum SfdxFalconResultStatus {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export const enum SfdxFalconResultType {
-  ACTION    = 'ACTION',
-  COMMAND   = 'COMMAND',
-  ENGINE    = 'ENGINE',
-  EXECUTOR  = 'EXECUTOR',
-  FUNCTION  = 'FUNCTION',
-  GENERATOR = 'GENERATOR',
-  INQUIRER  = 'INQUIRER',
-  LISTR     = 'LISTR',    // TODO: Deprecate in favor of TASK.
-  RECIPE    = 'RECIPE',
-  TASK      = 'TASK',
-  UNKNOWN   = 'UNKNOWN',
-  UTILITY   = 'UTILITY'
+  ACTION          = 'ACTION',
+  COMMAND         = 'COMMAND',
+  ENGINE          = 'ENGINE',
+  EXECUTOR        = 'EXECUTOR',
+  FUNCTION        = 'FUNCTION',
+  GENERATOR       = 'GENERATOR',
+  INQUIRER        = 'INQUIRER',
+  INITIALIZATION  = 'INITIALIZATION',
+  LISTR           = 'LISTR',    // TODO: Deprecate in favor of TASK.
+  RECIPE          = 'RECIPE',
+  TASK            = 'TASK',
+  UNKNOWN         = 'UNKNOWN',
+  UTILITY         = 'UTILITY'
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
