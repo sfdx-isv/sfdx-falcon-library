@@ -150,7 +150,7 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
     // Combine incoming generatorOptions with the default options.
     const resolvedGeneratorOptions = {
       // Default options
-      commandName:      this.falconCommandName,
+      commandName:      this.commandName,
       generatorResult:  generatorResult,
       options: [],
       // User options
