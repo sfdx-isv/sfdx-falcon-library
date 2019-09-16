@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "outDir": "./lib",
+    "rootDir": "./src"
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "references": [
+    {"path": "../types/tsconfig.build.json"},         // @SFDX-Falcon/types
+    {"path": "../error/tsconfig.build.json"},         // @SFDX-Falcon/error
+    {"path": "../debug/tsconfig.build.json"},         // @SFDX-Falcon/debug
+    {"path": "../validator/tsconfig.build.json"},     // @SFDX-Falcon/validator
+    {"path": "../result/tsconfig.build.json"},        // @SFDX-Falcon/result
+    {"path": "../util/tsconfig.build.json"},          // @SFDX-Falcon/util
+    {"path": "../task/tsconfig.build.json"},          // @SFDX-Falcon/task
+    {"path": "../task-library/tsconfig.build.json"},  // @SFDX-Falcon/task-library
+    {"path": "../command/tsconfig.build.json"}        // @SFDX-Falcon/command
+  ]
+}
