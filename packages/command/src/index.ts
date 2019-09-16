@@ -17,10 +17,6 @@ import  {SfdxFalconCommandResultDetail} from  './sfdx-falcon-command';
 import  {SfdxFalconGeneratorCommand}    from  './sfdx-falcon-generator-command';
 import  {GeneratorOptions}              from  './sfdx-falcon-generator-command';
 
-// Import from generator-status
-import  {GeneratorStatus}               from  './generator-status';
-
-
 // Export everything we've imported.
 /** Abstract Class. Extend this when you want to build Salesforce CLI commands that use the SFDX-Falcon Library. */
 export {SfdxFalconCommand};
@@ -36,6 +32,3 @@ export {SfdxFalconGeneratorCommand};
 
 /** Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment. */
 export {GeneratorOptions};
-
-/** Class. Creates a standardized way of providing a final status report after the completion of an `SfdxFalconGeneratorCommand` */
-export {GeneratorStatus};
