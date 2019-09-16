@@ -15,7 +15,6 @@
 
 // Import SFDX-Falcon Libraries
 //import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Library. Async utility helper functions.
-//import  {YeomanUtil}                from  '@sfdx-falcon/util';          // Library. Helper functions and classes related to Yeoman Generators.
 //import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
