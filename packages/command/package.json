@@ -60,8 +60,8 @@
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
-  "main": "lib/command.js",
-  "types": "lib/command.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "test"
