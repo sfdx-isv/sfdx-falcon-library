@@ -21,7 +21,6 @@ import  {SfdxFalconDebug}               from  '@sfdx-falcon/debug';   // Class. 
 import  {SfdxFalconError}               from  '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import Falcon Types
-import  {SfdxFalconCommandType}         from  '@sfdx-falcon/command'; // Enum. Represents the types of SFDX-Falcon Commands.
 import  {AnyJson}                       from  '@sfdx-falcon/types';   // Type. Any valid JSON value.
 
 // Imports related to THIS specific playground
@@ -56,8 +55,8 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
   public static description = commandMessages.getMessage('commandDescription');
   public static hidden      = false;
   public static examples    = [
-    `$ sfdx playground:falcontask`,
-    `$ sfdx playground:falcontask -d ~/output-directory`
+    `$ sfdx playground:environment-sfdx`,
+    `$ sfdx playground:environment-sfdx -d ~/output-directory`
   ];
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -84,6 +83,9 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
   protected static supportsUsername       = false;  // True if an org username is OPTIONAL.
   protected static supportsDevhubUsername = false;  // True if a hub org username is OPTIONAL.
 
+  // Specify the name of this command (eg. 'falcon:adk:clone').
+  protected readonly commandName = 'playground:environment-sfdx';
+
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @function    run
@@ -96,7 +98,7 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
   public async run():Promise<AnyJson> {
 
     // Initialize the SfdxFalconCommand (required by ALL classes that extend SfdxFalconCommand).
-    this.sfdxFalconCommandInit('playground:environment-sfdx', SfdxFalconCommandType.UNKNOWN);
+    this.sfdxFalconCommandInit();
 
     // Build an async shell around the Playground Logic you want to run.
     const playgroundLogic = async () => {

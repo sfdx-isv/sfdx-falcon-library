@@ -21,7 +21,6 @@ import  {SfdxFalconDebug}               from  '@sfdx-falcon/debug';   // Class. 
 import  {SfdxFalconError}               from  '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import Falcon Types
-import  {SfdxFalconCommandType}         from  '@sfdx-falcon/command'; // Enum. Represents the types of SFDX-Falcon Commands.
 import  {AnyJson}                       from  '@sfdx-falcon/types';   // Type. Any valid JSON value.
 
 // Imports related to THIS specific playground
@@ -94,7 +93,7 @@ export default class FalconTaskPlayground extends SfdxFalconCommand {
   public async run():Promise<AnyJson> {
 
     // Initialize the SfdxFalconCommand (required by ALL classes that extend SfdxFalconCommand).
-    this.sfdxFalconCommandInit('playground:falcontask', SfdxFalconCommandType.UNKNOWN);
+    this.sfdxFalconCommandInit();
 
     // Build an async shell around the Playground Logic you want to run.
     const playgroundLogic = async () => {
