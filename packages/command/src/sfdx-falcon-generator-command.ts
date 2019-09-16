@@ -1,19 +1,19 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          modules/sfdx-falcon-yeoman-command/index.ts
- * @copyright     Vivek M. Chawla - 2018
+ * @file          packages/command/src/sfdx-falcon-generator-command.ts
+ * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Exports an abstract class that adds support for running a Yeoman Generator inside
- *                of custom-built Salesforce CLI commands.
- * @description   Exports an abstract class that adds support for running Yeoman "Generators" inside
- *                of custom-built Salesforce CLI commands. Generators are specialized classes that
- *                define user interaction and task execution in a standardized mannner.
+ *                of the SFDX-Falcon flavor of a Salesforce CLI command.
+ * @description   Exports an abstract class that adds support for running a Yeoman Generators inside
+ *                of the SFDX-Falcon flavor of a Salesforce CLI command. Generators are specialized
+ *                classes that define user interaction and task execution in a standardized mannner.
  *
- *                Generator classes must be present in the ./generators directory and must be
- *                included when publishing your CLI plugin.  The Generator's file name must match
- *                the string passed to the generatorType option.  For example, if
- *                generatorType==="my-generator", there MUST be a corresponding source file located
- *                at ./generators/my-generator.ts
+ *                Generator classes must be present at the root of your package's source tree in a
+ *                `./generators` directory and must be included when publishing your CLI plugin.
+ *                The Generator's file name must match the string passed to the `generatorType`
+ *                option.  For example, if `generatorType==='my-generator'`, there MUST be a
+ *                corresponding source file located at `./generators/my-generator.ts`.
  * @version       1.0.0
  * @license       MIT
  */
@@ -33,11 +33,13 @@ import  {SfdxFalconResultType}  from  '@sfdx-falcon/result';    // Interface. Re
 
 // Import Internal Modules
 import  {SfdxFalconCommand}     from  './sfdx-falcon-command';  // Abstract Class. Custom SFDX-Falcon base class for SFDX Commands.
+
+// Import Internal Types
 import  {SfdxFalconCommandType} from  './sfdx-falcon-command';  // Enum. Represents the types of SFDX-Falcon Commands.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'COMMAND:sfdx-falcon-yeoman-command:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon/command:sfdx-falcon-generator-command';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -57,18 +59,21 @@ export interface GeneratorOptions {
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @class       SfdxFalconYeomanCommand
+ * @class       SfdxFalconGeneratorCommand
  * @extends     SfdxFalconCommand
  * @summary     Abstract base class class for building Salesforce CLI commands that use Yeoman.
- * @description Classes that extend SfdxYeomanCommand will be able to run any Generator defined
- *              in the src/generators directory.  The file name in src/generators should match the
- *              generatorType string passed into runYeomanGenerator().  For example, if
- *              generatorType==="my-generator", then there MUST be a TS script file located at
- *              src/generators/my-generator.ts.
+ * @description Classes that extend `SfdxFalconGeneratorCommand` will be able to run any Generator
+ *              defined in the `src/generators` directory.  The file name in `src/generators` should
+ *              match the `generatorType` string passed into `runYeomanGenerator()`.  For example,
+ *              if `generatorType==='my-generator'`, then there MUST be a `.TS` script file located
+ *              at `src/generators/my-generator.ts`.
  * @public @abstract
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
+export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
+
+  // Set the Command Type to GENERATOR.
+  protected readonly commandType:  SfdxFalconCommandType = SfdxFalconCommandType.GENERATOR;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -78,7 +83,7 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
    * @param       {boolean} [showErrorDebug]  Optional. Determines if extended
    *              debugging output the Error Result can be shown.
    * @param       {boolean} [promptUser] Optional. Determines if the user will
-   *              be prompted to display debug info. If FALSE, debug info will
+   *              be prompted to display debug info. If `false`, debug info will
    *              be shown without requiring additional user input.
    * @returns     {Promise<void>}
    * @description Handles the output of a failed Yeoman Generator run.
@@ -96,7 +101,7 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
   /**
    * @function    onSuccess
    * @param       {unknown} resolvedPromise Required. This should be an
-   *              SfdxFalconResult object returned from runYeomanGenerator()
+   *              `SfdxFalconResult` object returned from `runYeomanGenerator()`.
    * @returns     {Promise<void>}
    * @description Handles the output of a successful Yeoman Generator run.
    * @protected @asnyc
@@ -116,19 +121,23 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
    *              specify how the Yeoman Generator should run.
    * @returns     {Promise<SfdxFalconResult>}  Returns a promise that resolves
    *              and rejects with an SFDX-Falcon Result. The output of this
-   *              function is intended to be consumed by the onSuccess() and
-   *              onError() methods.
+   *              function is intended to be consumed by the `onSuccess()` and
+   *              `onError()` methods.
    * @description Runs the specified Yeoman generator using the given options.
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
   protected async runYeomanGenerator(generatorOptions:GeneratorOptions):Promise<SfdxFalconResult> {
 
+    // Define the function-local debug namespace.
+    const funcName    = `runYeomanGenerator`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+  
     // Make sure the caller provides a Generator Type.
     if (!generatorOptions.generatorType) {
       throw new SfdxFalconError( `A valid generator type must be provided to runYeomanGenerator(). You provided '${generatorOptions.generatorType}'.`
                                , `InvalidGeneratorType`
-                               , `${dbgNs}runYeomanGenerator`);
+                               , `${dbgNsLocal}`);
     }
 
     // Initialize a GENERATOR Result. Pass it to the Generator so we can figure out how things went.
@@ -177,7 +186,7 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
           if (generatorError instanceof Error) {
             sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed. ${generatorError.message}`
                                                   , `GeneratorError`
-                                                  , `${dbgNs}runYeomanGenerator`
+                                                  , `${dbgNsLocal}`
                                                   , generatorError);
             generatorResult.error(sfdxFalconError);
             return reject(generatorResult);
@@ -188,7 +197,7 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
             sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed`
                                                   +  (generatorError.errObj ? `. ${generatorError.errObj.message}` : ` with an unknown error.`)
                                                   , `GeneratorResultError`
-                                                  , `${dbgNs}runYeomanGenerator`
+                                                  , `${dbgNsLocal}`
                                                   , generatorError.errObj);
             generatorResult.addChild(generatorError);
             generatorResult.error(sfdxFalconError);
@@ -198,7 +207,7 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
           // If we get here, it means a completely unexpected result came back from the Generator.
           sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed with an unexpected result. See error.details for more information.`
                                                 , `UnexpectedGeneratorFailure`
-                                                , `${dbgNs}runYeomanGenerator`);
+                                                , `${dbgNsLocal}`);
           sfdxFalconError.setDetail(generatorError);
           generatorResult.error(sfdxFalconError);
           return reject(generatorResult);
@@ -215,17 +224,15 @@ export abstract class SfdxFalconYeomanCommand extends SfdxFalconCommand {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @function    sfdxFalconCommandInit
-   * @param       {string}  commandName Required. Name of the command.
-   * @param       {SfdxFalconCommandType} commandType Required. Type of command.
    * @returns     {void}
-   * @description Initializes various SfdxFalconYeomandCommand structures before
-   *              calling the same init function from SfdxFalconCommand.
+   * @description Initializes any `SfdxFalconGeneratorCommand` structures
+   *              before calling the same init function from `SfdxFalconCommand`.
    * @protected
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected sfdxFalconCommandInit(commandName:string='UNSPECIFIED_FALCON_YEOMAN_COMMAND', commandType:SfdxFalconCommandType):void {
+  protected sfdxFalconCommandInit():void {
 
     // If specialized initialization is needed, add it here before the super() call.
-    super.sfdxFalconCommandInit(commandName, commandType);
+    super.sfdxFalconCommandInit();
   }
 }
