@@ -11,11 +11,11 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import SFDX-Falcon Classes & Functions
+// Import External Libraries, Modules, and Types
 import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';       // Class. Provides a system for sending debug info to the console.
 import  {SfdxFalconError}     from  '@sfdx-falcon/error';       // Class. Specialized Error object. Wraps SfdxError.
 
-// Import Internal Classes & Functions
+// Import SFDX-Falcon Classes & Functions
 import  {printStatusMessages} from  '@sfdx-falcon/util/lib/ux'; // Function. Prints an array of Status Messages.
 
 // Import SFDX-Falcon Types

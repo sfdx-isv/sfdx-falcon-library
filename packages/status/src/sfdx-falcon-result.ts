@@ -13,12 +13,16 @@
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import External Modules
+// Import External Libraries, Modules, and Types
 import {isEmpty}  from  'lodash'; // Useful function for detecting empty objects.
 
-// Import Local Modules
+// Import SFDX-Falcon Classes & Functions
 import {SfdxFalconDebug}  from '@sfdx-falcon/debug';  // Class. Specialized debug provider for SFDX-Falcon code.
 import {SfdxFalconError}  from '@sfdx-falcon/error';  // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+
+// Import Internal Types
+import  {SfdxFalconResultStatus}  from './index'; // Enum. Represents the different types of sources where Results might come from.
+import  {SfdxFalconResultType}    from './index'; // Enum. Represents the different types of sources where Results might come from.
 
 // Require Modules
 const chalk     = require('chalk');     // Makes it easier to generate colored CLI output via console.log.
@@ -71,43 +75,7 @@ export interface SfdxFalconResultOptions {
   failureIsError?:  boolean;
 }
 
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @enum        SfdxFalconResultStatus
- * @description Represents the different types of sources where Results might come from.
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export const enum SfdxFalconResultStatus {
-  INITIALIZED = 'INITIALIZED',
-  WAITING     = 'WAITING',
-  SUCCESS     = 'SUCCESS',
-  FAILURE     = 'FAILURE',
-  WARNING     = 'WARNING',
-  ERROR       = 'ERROR',
-  UNKNOWN     = 'UNKNOWN'
-}
 
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @enum        SfdxFalconResultType
- * @description Represents the different types of sources where Results might come from.
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export const enum SfdxFalconResultType {
-  ACTION          = 'ACTION',
-  COMMAND         = 'COMMAND',
-  ENGINE          = 'ENGINE',
-  EXECUTOR        = 'EXECUTOR',
-  FUNCTION        = 'FUNCTION',
-  GENERATOR       = 'GENERATOR',
-  INQUIRER        = 'INQUIRER',
-  INITIALIZATION  = 'INITIALIZATION',
-  LISTR           = 'LISTR',    // TODO: Deprecate in favor of TASK.
-  RECIPE          = 'RECIPE',
-  TASK            = 'TASK',
-  UNKNOWN         = 'UNKNOWN',
-  UTILITY         = 'UTILITY'
-}
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -471,18 +439,28 @@ export class SfdxFalconResult {
         return 'FailedEngine';
       case SfdxFalconResultType.EXECUTOR:
         return 'FailedExecutor';
-      case SfdxFalconResultType.INQUIRER:
-        return 'FailedInquirer';
-      case SfdxFalconResultType.LISTR:
-        return 'FailedListr';
+      case SfdxFalconResultType.FUNCTION:
+        return 'FailedFunction';
+      case SfdxFalconResultType.GENERATOR:
+        return 'FailedGenerator';
+      case SfdxFalconResultType.INITIALIZER:
+        return 'FailedInitializer';
+      case SfdxFalconResultType.INTERVIEW:
+        return 'FailedInterview';
+      case SfdxFalconResultType.PROMPT:
+        return 'FailedPrompt';
       case SfdxFalconResultType.RECIPE:
         return 'FailedRecipe';
+      case SfdxFalconResultType.TASK:
+        return 'FailedTask';
+      case SfdxFalconResultType.TASKBUNDLE:
+        return 'FailedTaskBundle';
       case SfdxFalconResultType.UNKNOWN:
         return 'UnknownFailure';
       case SfdxFalconResultType.UTILITY:
         return 'FailedUtility';
-      case SfdxFalconResultType.FUNCTION:
-        return 'FailedFunction';
+      case SfdxFalconResultType.WORKER:
+        return 'FailedWorker';
       default:
         return 'UnknownFailure';
     }
