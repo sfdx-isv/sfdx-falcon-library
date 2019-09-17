@@ -374,8 +374,9 @@ export class ObservableTaskResult {
       else {
         const unexpectedError = new SfdxFalconError ( `Received an Error Result that did not contain an Error Object. See error.detail for more information.`
                                                     , `MissingErrObj`
-                                                    , `${dbgNsLocal}`);
-        unexpectedError.setDetail(errorOrResult);
+                                                    , `${dbgNsLocal}`
+                                                    , null
+                                                    , errorOrResult);
         return subscriberThrow(unexpectedError);
       }
     }
@@ -571,8 +572,8 @@ export class SfdxFalconTask<CTX=ListrContext> {
           const extTaskSetupError = new SfdxFalconError ( `External Task could not be initialized. ${error.message}`
                                                         , `TaskFunctionInitError`
                                                         , `${dbgNsLocal}`
-                                                        , error);
-          extTaskSetupError.setDetail(this._extTask);
+                                                        , error
+                                                        , this._extTask);
           return this._otr.finalizeFailure(extTaskSetupError);
         }
 
@@ -580,8 +581,9 @@ export class SfdxFalconTask<CTX=ListrContext> {
         if ((extTaskPromise instanceof Promise) !== true) {
           const invalidExtTaskFunctionError = new SfdxFalconError ( `SFDX-Falcon Task Functions must be asynchronous and return Promise<void>`
                                                                   , `InvalidTaskFunction`
-                                                                  , `${dbgNsLocal}`);
-          invalidExtTaskFunctionError.setDetail(this._extTask);
+                                                                  , `${dbgNsLocal}`
+                                                                  , null
+                                                                  , this._extTask);
           return this._otr.finalizeFailure(invalidExtTaskFunctionError);
         }
 
@@ -629,8 +631,8 @@ export class SfdxFalconTask<CTX=ListrContext> {
           const taskError = new SfdxFalconError ( `${errorMessage}`
                                                 , `TaskFunctionError`
                                                 , `${dbgNsLocal}`
-                                                , errorCause);
-          taskError.setDetail(errorDetail);
+                                                , errorCause
+                                                , errorDetail);
 
           // Finalize the OTR as a FAILURE.
           return this._otr.finalizeFailure(taskError);

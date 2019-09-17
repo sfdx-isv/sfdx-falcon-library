@@ -115,12 +115,11 @@ export async function bulk2Insert(aliasOrConnection:AliasOrConnection, bulk2JobC
   bulk2OperationStatus.initialJobStatus = await createBulk2Job(aliasOrConnection, bulk2JobCreateRequest)
   .catch(bulk2JobError => {
     SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2JobError:`, bulk2JobError);
-    const errorWithDetail = new SfdxFalconError ( `${baseErrorMsg} Bulk job to ingest data could not be created.`
-                                                , `Bulk2InsertError`
-                                                , `${dbgNsLocal}`
-                                                , bulk2JobError);
-    errorWithDetail.setDetail(bulk2OperationStatus);
-    throw errorWithDetail;
+    throw new SfdxFalconError ( `${baseErrorMsg} Bulk job to ingest data could not be created.`
+                              , `Bulk2InsertError`
+                              , `${dbgNsLocal}`
+                              , bulk2JobError
+                              , bulk2OperationStatus);
   });
   SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2OperationStatus:afterCreate:`, bulk2OperationStatus);
 
@@ -128,37 +127,34 @@ export async function bulk2Insert(aliasOrConnection:AliasOrConnection, bulk2JobC
   await uploadBulk2DataSource(aliasOrConnection, dataSourcePath, bulk2OperationStatus.initialJobStatus.contentUrl)
   .catch(bulk2DataUploadError => {
     SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2DataUploadError:`, bulk2DataUploadError);
-    const errorWithDetail = new SfdxFalconError ( `${baseErrorMsg} The data source file could not be uploaded.`
-                                                , `Bulk2InsertError`
-                                                , `${dbgNsLocal}`
-                                                , bulk2DataUploadError);
-    errorWithDetail.setDetail(bulk2OperationStatus);
-    throw errorWithDetail;
+    throw new SfdxFalconError ( `${baseErrorMsg} The data source file could not be uploaded.`
+                              , `Bulk2InsertError`
+                              , `${dbgNsLocal}`
+                              , bulk2DataUploadError
+                              , bulk2OperationStatus);
   });
 
   // Close the Bulk2 job.
   await closeBulk2Job(aliasOrConnection, bulk2OperationStatus.initialJobStatus.id)
   .catch(bulk2CloseJobError => {
     SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2CloseJobError:`, bulk2CloseJobError);
-    const errorWithDetail = new SfdxFalconError ( `${baseErrorMsg} Could not close the bulk data load job. `
-                                                + `You may want to try and close the job manually via the Setup UI in your org.`
-                                                , `Bulk2InsertError`
-                                                , `${dbgNsLocal}`
-                                                , bulk2CloseJobError);
-    errorWithDetail.setDetail(bulk2OperationStatus);
-    throw errorWithDetail;
+    throw new SfdxFalconError ( `${baseErrorMsg} Could not close the bulk data load job. `
+                              + `You may want to try and close the job manually via the Setup UI in your org.`
+                              , `Bulk2InsertError`
+                              , `${dbgNsLocal}`
+                              , bulk2CloseJobError
+                              , bulk2OperationStatus);
   });
 
   // Monitor the Bulk2 job. This should resolve once the Job is complete, failed, or the timeout expires.
   bulk2OperationStatus.currentJobStatus = await monitorBulk2Job(aliasOrConnection, bulk2OperationStatus.initialJobStatus.id, intervalOptions)
   .catch(bulk2JobMonitorError => {
     SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2JobMonitorError:`, bulk2JobMonitorError);
-    const errorWithDetail = new SfdxFalconError ( `${baseErrorMsg} Monitoring failed for Job ID '${bulk2OperationStatus.initialJobStatus.id}'.`
-                                                , `Bulk2InsertError`
-                                                , `${dbgNsLocal}`
-                                                , bulk2JobMonitorError);
-    errorWithDetail.setDetail(bulk2OperationStatus);
-    throw errorWithDetail;
+    throw new SfdxFalconError ( `${baseErrorMsg} Monitoring failed for Job ID '${bulk2OperationStatus.initialJobStatus.id}'.`
+                              , `Bulk2InsertError`
+                              , `${dbgNsLocal}`
+                              , bulk2JobMonitorError
+                              , bulk2OperationStatus);
   });
   SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2OperationStatus:afterMonitor:`, bulk2OperationStatus);
 
@@ -166,12 +162,11 @@ export async function bulk2Insert(aliasOrConnection:AliasOrConnection, bulk2JobC
   bulk2OperationStatus.successfulResults = await downloadSuccessfulResults(aliasOrConnection, bulk2OperationStatus.initialJobStatus.id, bulk2OperationStatus.successfulResultsPath)
   .catch(downloadSuccessfulResultsError => {
     SfdxFalconDebug.obj(`${dbgNsLocal}:downloadSuccessfulResultsError:`, downloadSuccessfulResultsError);
-    const errorWithDetail = new SfdxFalconError ( `${baseErrorMsg} Could not download Successful Results.`
-                                                , `Bulk2SuccessfulResultsError`
-                                                , `${dbgNsLocal}`
-                                                , downloadSuccessfulResultsError);
-    errorWithDetail.setDetail(bulk2OperationStatus);
-    throw errorWithDetail;
+    throw new SfdxFalconError ( `${baseErrorMsg} Could not download Successful Results.`
+                              , `Bulk2SuccessfulResultsError`
+                              , `${dbgNsLocal}`
+                              , downloadSuccessfulResultsError
+                              , bulk2OperationStatus);
   });
   SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2OperationStatus:afterSuccessDownload:`, bulk2OperationStatus);
 
@@ -179,12 +174,11 @@ export async function bulk2Insert(aliasOrConnection:AliasOrConnection, bulk2JobC
   bulk2OperationStatus.failedResults = await downloadFailedResults(aliasOrConnection, bulk2OperationStatus.initialJobStatus.id, bulk2OperationStatus.failedResultsPath)
   .catch(downloadFailedResultsError => {
     SfdxFalconDebug.obj(`${dbgNsLocal}:downloadFailedResultsError:`, downloadFailedResultsError);
-    const errorWithDetail = new SfdxFalconError ( `${baseErrorMsg} Could not download Failed Results.`
-                                                , `Bulk2FailedResultsError`
-                                                , `${dbgNsLocal}`
-                                                , downloadFailedResultsError);
-    errorWithDetail.setDetail(bulk2OperationStatus);
-    throw errorWithDetail;
+    throw new SfdxFalconError ( `${baseErrorMsg} Could not download Failed Results.`
+                              , `Bulk2FailedResultsError`
+                              , `${dbgNsLocal}`
+                              , downloadFailedResultsError
+                              , bulk2OperationStatus);
   });
   SfdxFalconDebug.obj(`${dbgNsLocal}:bulk2OperationStatus:afterFailedDownload:`, bulk2OperationStatus);
 

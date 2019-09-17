@@ -566,13 +566,14 @@ export function validateCloneableGitRemote(extCtx:ExternalContext, gitRemoteUri:
           gitRemoteError = new SfdxFalconError( `There was a problem with your Git Remote. ${(errorResult.message) ? `${errorResult.message}` : ``}`
                                               , `InvalidGitRemote`
                                               , `${dbgNsExt}:task`
-                                              , errorResult);
+                                              , errorResult);     // We know this is an Error, so use as the CAUSE.
         }
         else {
           gitRemoteError = new SfdxFalconError( `There was a problem with your Git Remote. ${(errorResult.message) ? `${errorResult.message}` : ``}`
                                               , 'InvalidGitRemote'
-                                              , `${dbgNsExt}:task`);
-          gitRemoteError.setDetail(errorResult);
+                                              , `${dbgNsExt}:task`
+                                              , null
+                                              , errorResult);     // We know this is NOT an Error, so use as the DETAIL.
         }
 
         // Throw the Error.

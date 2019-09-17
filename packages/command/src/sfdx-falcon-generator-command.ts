@@ -209,8 +209,9 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
           // If we get here, it means a completely unexpected result came back from the Generator.
           sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed with an unexpected result. See error.details for more information.`
                                                 , `UnexpectedGeneratorFailure`
-                                                , `${dbgNsLocal}`);
-          sfdxFalconError.setDetail(generatorError);
+                                                , `${dbgNsLocal}`
+                                                , null
+                                                , generatorError);
           generatorResult.error(sfdxFalconError);
           return reject(generatorResult);
         }
