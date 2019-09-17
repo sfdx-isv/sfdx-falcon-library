@@ -247,7 +247,7 @@ export async function executeRedirectedSfdxCommand(sfdxCommandString:string, out
         else {
 
           // We have a shell Error. Prepare ERROR detail using ShellError.
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdErrBuffer, stdOutBuffer, `${dbgNs}executeRedirectedSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeRedirectedSfdxCommand`);
         }
 
         // Close the UTILITY result out as an ERROR.
@@ -268,7 +268,7 @@ export async function executeRedirectedSfdxCommand(sfdxCommandString:string, out
 
         // Unparseable responses from the CLI are SHELL ERRORS and should be rejected.
         if (parsedCliResponse['unparsed']) {
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdErrBuffer, stdOutBuffer, `${dbgNs}executeRedirectedSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeRedirectedSfdxCommand`);
           utilityResult.error(utilityResultDetail.error);
           reject(utilityResult);
         }
@@ -368,7 +368,7 @@ export async function executeSfdxCommand(sfdxCommandString:string, utilityResult
         else {
 
           // We have a shell Error. Prepare ERROR detail using ShellError.
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdErrBuffer, stdOutBuffer, `${dbgNs}executeSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeSfdxCommand`);
         }
 
         // Close the UTILITY result out as an ERROR.
@@ -389,7 +389,7 @@ export async function executeSfdxCommand(sfdxCommandString:string, utilityResult
 
         // Unparseable responses from the CLI are SHELL ERRORS and should be rejected.
         if (parsedCliResponse['unparsed']) {
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdErrBuffer, stdOutBuffer, `${dbgNs}executeSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeSfdxCommand`);
           utilityResult.error(utilityResultDetail.error);
           reject(utilityResult);
         }
