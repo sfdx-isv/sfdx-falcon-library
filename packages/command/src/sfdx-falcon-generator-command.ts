@@ -22,14 +22,14 @@
 import  {AnyJson}               from  '@salesforce/ts-types';   // Safe type for use where "any" might otherwise be used.
 import  * as yeoman             from  'yeoman-environment';     // Facilitates the discovery and execution of a Yeoman Generator.
 
-// Import SFDX-Falcon Libraries
-import  {YeomanUtil}            from  '@sfdx-falcon/util';      // Library. Contains utility classes and functions related to the use of Yeoman.
-
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}       from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}       from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import  {SfdxFalconResult}      from  '@sfdx-falcon/result';    // Class. Provides a mechanism for sharing data among SFDX-Falcon code structures.
-import  {SfdxFalconResultType}  from  '@sfdx-falcon/result';    // Interface. Represents various types of SFDX-Falcon Results.
+import  {SfdxFalconResult}      from  '@sfdx-falcon/status';    // Class. Provides a mechanism for sharing data among SFDX-Falcon code structures.
+import  {GeneratorStatus}       from  '@sfdx-falcon/status';    // Class. Status tracking object for use with Generators derived from SfdxFalconGenerator.
+
+// Import SFDX-Falcon Types
+import  {SfdxFalconResultType}  from  '@sfdx-falcon/status';    // Interface. Represents various types of SFDX-Falcon Results.
 
 // Import Internal Modules
 import  {SfdxFalconCommand}     from  './sfdx-falcon-command';  // Abstract Class. Custom SFDX-Falcon base class for SFDX Commands.
@@ -38,7 +38,7 @@ import  {SfdxFalconCommand}     from  './sfdx-falcon-command';  // Abstract Clas
 import  {SfdxFalconCommandType} from  './sfdx-falcon-command';  // Enum. Represents the types of SFDX-Falcon Commands.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon/command:sfdx-falcon-generator-command';
+const dbgNs = '@sfdx-falcon/command:generator';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
@@ -52,9 +52,9 @@ export interface GeneratorOptions {
   commandName?:     string;
   commandResult?:   SfdxFalconResult;
   generatorType?:   string;
-  generatorStatus?: YeomanUtil.GeneratorStatus;
+  generatorStatus?: GeneratorStatus;
   generatorResult?: SfdxFalconResult;
-  [key:string]: AnyJson | YeomanUtil.GeneratorStatus | SfdxFalconResult | string | number;
+  [key:string]: AnyJson | GeneratorStatus | SfdxFalconResult | string | number;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐

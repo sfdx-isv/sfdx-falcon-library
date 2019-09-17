@@ -24,11 +24,11 @@ import  {CoreValidator}               from  '@sfdx-falcon/validator'; // Library
 // Import SFDX-Falcon Classes & Functions
 import {SfdxFalconDebug}              from  '@sfdx-falcon/debug';     // Class. Internal debugging framework for SFDX-Falcon.
 import {SfdxFalconError}              from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import {SfdxFalconResult}             from  '@sfdx-falcon/result';    // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
-import {TaskProgressNotifications}    from  '@sfdx-falcon/task';      // Class. Manages progress notifications inside Falcon.
+import {SfdxFalconResult}             from  '@sfdx-falcon/status';    // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
+import {TaskStatus}                   from  '@sfdx-falcon/status';    // Class. Manages progress notifications inside Falcon.
 
 // Import SFDX-Falcon Types
-import {SfdxFalconResultType}         from  '@sfdx-falcon/result';    // Enum. Represents the different types of sources where Results might come from.
+import {SfdxFalconResultType}         from  '@sfdx-falcon/status';    // Enum. Represents the different types of sources where Results might come from.
 import {SfdxFalconJsonResponse}       from  '@sfdx-falcon/types';     // Interface. Represents the JSON reponse returned by SFDX-Falcon Commands.
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -318,7 +318,7 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
   private async terminateWithError(showErrorDebug:boolean=true, promptUser:boolean=true):Promise<void> {
   
     // Make sure any outstanding notifications are killed.
-    TaskProgressNotifications.killAll();
+    TaskStatus.killAll();
 
     // Make sure that an SfdxFalconResult object was passed to us.
     if ((this.falconCommandResult instanceof SfdxFalconResult) === false) {
