@@ -355,17 +355,17 @@ export class SfdxFalconError extends SfdxError {
   public constructor(message:string, name?:string, source?:string, cause?:Error, detail?:unknown, actions?:string[], exitCode?:number, suppressDebug?:boolean) {
 
     // Set default values for incoming arguments.
-    const thisMessage = (typeof message !== 'string' || message === null || message === '') ? 'An unexpected error occurred.' : message;
-    const thisName    = (typeof name    !== 'string' || name    === null || name    === '') ? 'SfdxFalconError' : name;
-    const thisSource  = (typeof source  !== 'string' || source  === null || source  === '') ? 'Unhandled Exception' : message;
-    const thisExitCode  = (isNaN(exitCode)) ? 1 : exitCode;
+    message   = (typeof message !== 'string' || message === null || message === '') ? 'An unexpected error occurred.' : message;
+    name      = (typeof name    !== 'string' || name    === null || name    === '') ? 'SfdxFalconError' : name;
+    source    = (typeof source  !== 'string' || source  === null || source  === '') ? 'Unhandled Exception' : source;
+    exitCode  = (isNaN(exitCode)) ? 1 : exitCode;
 
     // Call the parent constructor
-    super(thisMessage, thisName, actions || [], thisExitCode, cause);
+    super(message, name, actions || [], exitCode, cause);
 
     // Initialize member vars
     this.data         = {};
-    this.source       = thisSource;
+    this.source       = source;
     this._detail      = {};
     this._userInfo    = new SfdxFalconErrorInfo();
     this._debugInfo   = new SfdxFalconErrorInfo();
