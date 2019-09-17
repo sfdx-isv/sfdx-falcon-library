@@ -25,22 +25,22 @@ import {SfdxFalconDebug}          from  '@sfdx-falcon/debug';     // Class. Spec
 import {SfdxFalconError}          from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 import {SfdxCliError}             from  '@sfdx-falcon/error';     // Class. Extends SfdxFalconError to provide specialized error handling of error results returned from CLI commands run via shell exec.
 import {ShellError}               from  '@sfdx-falcon/error';     // Class. Extends SfdxFalconError to provide specialized error handling of error results returned by failed shell commands
-import {SfdxFalconResult}         from  '@sfdx-falcon/result';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-import {SfdxFalconResultType}     from  '@sfdx-falcon/result';    // Enum. Represents the different types of sources where Results might come from.
+import {SfdxFalconResult}         from  '@sfdx-falcon/status';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
 // Import Internal Classes & Functions
 import {waitASecond}              from  './async';                // Function. Can be used to introduce a delay when called inside async functions with the "await" keyword.
-import {safeParse}                from  './util';                 // Function. Given any content to parse, returns a JavaScript object based on that content.
-import {convertPropertyToBoolean} from  './util';                 // Function. Given a target object and key that the caller wants to convert, attempts to coerce a boolean value based on the intent of the value currently in that property.
-import {convertPropertyToNumber}  from  './util';                 // Function. Given a target object and key that the caller wants to convert, attempts to coerce a number value based on the intent of the value currently in that property.
+import {safeParse}                from  './index';                // Function. Given any content to parse, returns a JavaScript object based on that content.
+import {convertPropertyToBoolean} from  './index';                // Function. Given a target object and key that the caller wants to convert, attempts to coerce a boolean value based on the intent of the value currently in that property.
+import {convertPropertyToNumber}  from  './index';                // Function. Given a target object and key that the caller wants to convert, attempts to coerce a number value based on the intent of the value currently in that property.
 
 // Import SFDX-Falcon Types
-import {AliasOrConnection}        from  '@sfdx-falcon/types';   // Type. Represents either an Org Alias or a JSForce Connection.
-import {AnyJson}                  from  '@sfdx-falcon/types';   // Type. Any valid JSON value.
-import {DeployResult}             from  '@sfdx-falcon/types';   // Interface. Modeled on the MDAPI Object DeployResult. Returned by a call to force:mdapi:deploy.
-import {DeployMessage}            from  '@sfdx-falcon/types';   // Interface. Modeled on the MDAPI object DeployMessage. May be part of the results returned by force:mdapi:deploy.
-import {JsonMap}                  from  '@sfdx-falcon/types';   // Interface. Any JSON-compatible object.
-import {ResolvedConnection}       from  '@sfdx-falcon/types';   // Interface. Represents a resolved (active) JSForce connection to a Salesforce Org.
+import {SfdxFalconResultType}     from  '@sfdx-falcon/status';    // Enum. Represents the different types of sources where Results might come from.
+import {AliasOrConnection}        from  '@sfdx-falcon/types';     // Type. Represents either an Org Alias or a JSForce Connection.
+import {AnyJson}                  from  '@sfdx-falcon/types';     // Type. Any valid JSON value.
+import {DeployResult}             from  '@sfdx-falcon/types';     // Interface. Modeled on the MDAPI Object DeployResult. Returned by a call to force:mdapi:deploy.
+import {DeployMessage}            from  '@sfdx-falcon/types';     // Interface. Modeled on the MDAPI object DeployMessage. May be part of the results returned by force:mdapi:deploy.
+import {JsonMap}                  from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
+import {ResolvedConnection}       from  '@sfdx-falcon/types';     // Interface. Represents a resolved (active) JSForce connection to a Salesforce Org.
 
 // Set the File Local Debug Namespace
 const dbgNs = 'UTILITY:sfdx:';
