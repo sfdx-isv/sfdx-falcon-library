@@ -22,7 +22,7 @@ import  {printStatusMessages} from  './ux';                     // Function. Pri
 import  {StatusMessage}       from  '@sfdx-falcon/types';       // Interface. Interface. Represents a "state aware" message. Contains a title, a message, and a type.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon/status:generator';
+const dbgNs = '@sfdx-falcon:status:generator';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 

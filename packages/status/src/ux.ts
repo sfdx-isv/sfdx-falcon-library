@@ -27,7 +27,7 @@ import  {StatusMessageType}   from  '@sfdx-falcon/types';       // Enum. Represe
 import  {StyledMessage}       from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon/status:ux';
+const dbgNs = '@sfdx-falcon:status:ux';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 

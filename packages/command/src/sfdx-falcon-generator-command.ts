@@ -38,7 +38,7 @@ import  {SfdxFalconCommand}     from  './sfdx-falcon-command';  // Abstract Clas
 import  {SfdxFalconCommandType} from  './sfdx-falcon-command';  // Enum. Represents the types of SFDX-Falcon Commands.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon/command:generator';
+const dbgNs = '@sfdx-falcon:command:generator';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
@@ -90,12 +90,13 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
+  /*
   protected async onError(rejectedPromise:unknown, showErrorDebug:boolean=true, promptUser:boolean=true):Promise<void> {
 
     // If special override behavior is deemed necessary, we can add it here.
     // For now, we'll simply pass things along to the superclass (parent).
     return super.onError(rejectedPromise, showErrorDebug, promptUser);
-  }
+  }//*/
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -107,12 +108,13 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
    * @protected @asnyc
    */
   //───────────────────────────────────────────────────────────────────────────┘
+  /*
   protected async onSuccess(resolvedPromise:unknown):Promise<void> {
 
     // If special override behavior is deemed necessary, we can add it here.
     // For now, we'll simply pass things along to the superclass (parent).
     return super.onSuccess(resolvedPromise);
-  }
+  }//*/
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -230,9 +232,10 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
    * @protected
    */
   //───────────────────────────────────────────────────────────────────────────┘
+  /*
   protected sfdxFalconCommandInit():void {
 
     // If specialized initialization is needed, add it here before the super() call.
     super.sfdxFalconCommandInit();
-  }
+  }//*/
 }
