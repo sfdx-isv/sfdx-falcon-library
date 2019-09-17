@@ -15,8 +15,8 @@
 import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';       // Class. Provides a system for sending debug info to the console.
 import  {SfdxFalconError}     from  '@sfdx-falcon/error';       // Class. Specialized Error object. Wraps SfdxError.
 
-// Import SFDX-Falcon Classes & Functions
-import  {printStatusMessages} from  '@sfdx-falcon/util/lib/ux'; // Function. Prints an array of Status Messages.
+// Import Internal Classes & Functions
+import  {printStatusMessages} from  './ux';                     // Function. Prints an array of Status Messages.
 
 // Import SFDX-Falcon Types
 import  {StatusMessage}       from  '@sfdx-falcon/types';       // Interface. Interface. Represents a "state aware" message. Contains a title, a message, and a type.
