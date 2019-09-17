@@ -3,8 +3,10 @@
  * @file          packages/status/src/index.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       INSERT_SUMMARY_HERE
- * @description   INSERT_DESCRIPTION_HERE
+ * @summary       Collection of standardized mechanisms to track status/results and display this
+ *                information coherently to the user.
+ * @description   Collection of standardized mechanisms to track status/results and display this
+ *                information coherently to the user.
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -37,6 +39,34 @@ export  {TaskStatus};
 
 import  {TaskStatusMessage}               from  './task-status';
 export  {TaskStatusMessage};
+
+// Re-Export from ux
+import  {SfdxFalconKeyValueTableDataRow}  from  './ux';
+export  {SfdxFalconKeyValueTableDataRow};
+
+import  {SfdxFalconTableData}             from  './ux';
+export  {SfdxFalconTableData};
+
+import  {TableColumn}                     from  './ux';
+export  {TableColumn};
+
+import  {TableColumnKey}                  from  './ux';
+export  {TableColumnKey};
+
+import  {TableOptions}                    from  './ux';
+export  {TableOptions};
+
+import  {printStatusMessage}              from  './ux';
+export  {printStatusMessage};
+
+import  {printStatusMessages}             from  './ux';
+export  {printStatusMessages};
+
+import  {printStyledMessage}              from  './ux';
+export  {printStyledMessage};
+
+import  {SfdxFalconKeyValueTable}         from  './ux';
+export  {SfdxFalconKeyValueTable};
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**

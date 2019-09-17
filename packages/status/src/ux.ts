@@ -33,8 +33,7 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @interface   SfdxFalconKeyValueTableDataRow
- * @description Represents a single row of data for use in an SFDX-Falon Table.
+ * Interface. Represents a single row of data for use in an SFDX-Falon Table.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface SfdxFalconKeyValueTableDataRow {
@@ -45,28 +44,14 @@ export interface SfdxFalconKeyValueTableDataRow {
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @type        SfdxFalconTableData
- * @description Represents an array of SfdxFalconKeyValueTableDataRow object literals.
+ * Type. Represents an array of SfdxFalconKeyValueTableDataRow object literals.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export type SfdxFalconTableData = SfdxFalconKeyValueTableDataRow[];
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @interface   StatusMessage
- * @description Represents a Status Message that may eventually be displayed using a Falcon Table.
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface StatusMessageOLD {
-  title:    string;
-  message:  string;
-  type:     'error'|'info'|'success'|'warning';
-}
-
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @interface   TableColumn
- * @description Represents the settings for a column of data in a Falcon Table.
+ * Interface. Represents the settings for a column of data in a Falcon Table.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface TableColumn {
@@ -79,8 +64,7 @@ export interface TableColumn {
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @interface   TableColumnKey
- * @description Represents the Key that identifies a column in a Falcon Table.
+ * Interface. Represents the Key that identifies a column in a Falcon Table.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface TableColumnKey {
@@ -90,8 +74,7 @@ export interface TableColumnKey {
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @interface   TableOptions
- * @description Represents the options that can be set when constructing a Falcon Table.
+ * Interface. Represents the options that can be set when constructing a Falcon Table.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface TableOptions {
@@ -105,10 +88,9 @@ export interface TableOptions {
   printHeader(row:any[]):void;                  // tslint:disable-line: no-any
 }
 
-
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @function    printStatusMessages
+ * @function    printStatusMessage
  * @param       {StatusMessage} statusMessages  Required. The status message to be printed to console.
  * @param       {number}  [padLength] Optional. The minimum character distance between the start of
  *              the message label and the separator character.
