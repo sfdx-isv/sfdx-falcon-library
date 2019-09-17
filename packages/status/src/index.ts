@@ -1,6 +1,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/status/src/package-template.ts
+ * @file          packages/status/src/index.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       INSERT_SUMMARY_HERE
