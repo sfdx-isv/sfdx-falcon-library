@@ -23,15 +23,20 @@
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 //import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-//import  {SfdxFalconResult}          from  '@sfdx-falcon/result';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+//import  {SfdxFalconResult}          from  '@sfdx-falcon/status';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
 // Import SFDX-Falcon Types
-//import  {SfdxFalconResultType}      from  '@sfdx-falcon/result';  // Enum. Represents the different types of sources where Results might come from.
-//import  {ErrorOrResult}             from  '@sfdx-falcon/result';  // Type. Alias to a combination of Error or SfdxFalconResult.
+//import  {SfdxFalconResultType}      from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
+//import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:package-template:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:package-template';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
+
+// Define function-local debug namespace.
+const funcName    = `myFuncName`;
+const dbgNsLocal  = `${dbgNs}:${funcName}`;
+SfdxFalconDebug.msg(`${dbgNsLocal}:`, `This is how you do debug.`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
