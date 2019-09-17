@@ -963,7 +963,7 @@ export class SfdxFalconResult {
   public displayResult(displayOptions:SfdxFalconResultDisplayOptions=null):void {
 
     // Make sure that displayOptions is an object.
-    if (typeof displayOptions !== 'object') {
+    if (typeof displayOptions !== 'object' || displayOptions === null) {
       displayOptions = {} as SfdxFalconResultDisplayOptions;
     }
     
