@@ -1,6 +1,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/ux.ts
+ * @file          packages/status/src/ux.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Console UX utility helper library
@@ -12,6 +12,7 @@
 import  chalk                 from  'chalk';                    // Helps write colored text to the console.
 import  * as _                from  'lodash';                   // Useful collection of utility functions.
 import  pad                   = require('pad');                 // Provides consistent spacing when trying to align console output.
+import  stripAnsi             from  'strip-ansi';               // Strips ANSI escape codes from strings.
 
 // Import SFDX-Falcon Libraries
 import  {TypeValidator}       from  '@sfdx-falcon/validator';   // Library of SFDX Helper functions specific to SFDX-Falcon.
@@ -25,12 +26,9 @@ import  {StatusMessage}       from  '@sfdx-falcon/types';       // Interface. Re
 import  {StatusMessageType}   from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
 import  {StyledMessage}       from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
 
-// Requires
-const stripAnsi = require('strip-ansi');                        // Strips ANSI escape codes from strings.
-
 // Set the File Local Debug Namespace
-const dbgNs = 'UTILITY:ux:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon/status:ux';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -125,11 +123,15 @@ export interface TableOptions {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function printStatusMessage(statusMessage:StatusMessage, padLength:number=0, separator:string=' : '):void {
 
+  // Define function-local debug namespace.
+  const funcName    = `printStatusMessage`;
+  const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
   // Validate input
-  TypeValidator.throwOnNullInvalidString(statusMessage.title,   `${dbgNs}printStatusMessage`, `statusMessage.title`);
-  TypeValidator.throwOnNullInvalidString(statusMessage.message, `${dbgNs}printStatusMessage`, `statusMessage.message`);
-  TypeValidator.throwOnNullInvalidString(statusMessage.type,    `${dbgNs}printStatusMessage`, `statusMessage.type`);
-  TypeValidator.throwOnNullInvalidString(separator,             `${dbgNs}printStatusMessage`, `separator`);
+  TypeValidator.throwOnNullInvalidString(statusMessage.title,   `${dbgNsLocal}`, `statusMessage.title`);
+  TypeValidator.throwOnNullInvalidString(statusMessage.message, `${dbgNsLocal}`, `statusMessage.message`);
+  TypeValidator.throwOnNullInvalidString(statusMessage.type,    `${dbgNsLocal}`, `statusMessage.type`);
+  TypeValidator.throwOnNullInvalidString(separator,             `${dbgNsLocal}`, `separator`);
 
   // Make sure we move forward with Pad Length as an actual number.
   if (isNaN(padLength)) {
@@ -156,7 +158,7 @@ export function printStatusMessage(statusMessage:StatusMessage, padLength:number
     default:
       throw new SfdxFalconError( `Invalid setting for statusMessage.type: '${statusMessage.type}'`
                                , `InvalidMessageType`
-                               , `${dbgNs}printStatusMessage`);
+                               , `${dbgNsLocal}`);
   }
 }
 
@@ -174,16 +176,21 @@ export function printStatusMessage(statusMessage:StatusMessage, padLength:number
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function printStatusMessages(statusMessages:StatusMessage[], separator:string=' : '):void {
+
+  // Define function-local debug namespace.
+  const funcName    = `printStatusMessages`;
+  const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
   // Validate input
   if (Array.isArray(statusMessages) === false) {
     throw new SfdxFalconError( `Expected array for statusMessages but got '${typeof statusMessages}'`
                              , `TypeError`
-                             , `${dbgNs}printStatusMessages`);
+                             , `${dbgNsLocal}`);
   }
   if (typeof separator !== 'string') {
     throw new SfdxFalconError( `Expected string for separator but got '${typeof separator}'`
                              , `TypeError`
-                             , `${dbgNs}printStatusMessages`);
+                             , `${dbgNsLocal}`);
   }
   
   // Calculate the length of the longest StatusMessage Title
@@ -221,15 +228,19 @@ export function printStatusMessages(statusMessages:StatusMessage[], separator:st
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function printStyledMessage(styledMessage:StyledMessage):void {
 
+  // Define function-local debug namespace.
+  const funcName    = `printStyledMessage`;
+  const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
   // If the incoming Styled Message is undefined, don't do anything.
   if (typeof styledMessage === 'undefined') {
     return;
   }
 
   // Validate incoming arguments.
-  TypeValidator.throwOnEmptyNullInvalidObject (styledMessage,         `${dbgNs}printStyledMessage`, `styledMessage`);
-  TypeValidator.throwOnNullInvalidString      (styledMessage.message, `${dbgNs}printStyledMessage`, `styledMessage.message`);
-  TypeValidator.throwOnNullInvalidString      (styledMessage.styling, `${dbgNs}printStyledMessage`, `styledMessage.styling`);
+  TypeValidator.throwOnEmptyNullInvalidObject (styledMessage,         `${dbgNsLocal}`, `styledMessage`);
+  TypeValidator.throwOnNullInvalidString      (styledMessage.message, `${dbgNsLocal}`, `styledMessage.message`);
+  TypeValidator.throwOnNullInvalidString      (styledMessage.styling, `${dbgNsLocal}`, `styledMessage.styling`);
 
   // If styling info was provided, use it. Otherwise just log an unadorned message to the console.
   if (styledMessage.styling) {
@@ -252,6 +263,10 @@ export function printStyledMessage(styledMessage:StyledMessage):void {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 function renderTable(data:SfdxFalconKeyValueTableDataRow[], tableOptionsOverride:Partial<TableOptions> = {}):void {
+
+  // Define function-local debug namespace.
+  const funcName    = `renderTable`;
+  const dbgNsLocal  = `${dbgNs}:${funcName}`;
 
   const tableOptions:TableOptions = {
     // DEFINE default table tableOptions
@@ -309,7 +324,7 @@ function renderTable(data:SfdxFalconKeyValueTableDataRow[], tableOptionsOverride
     // ENDOF columns definition
   };
 
-  SfdxFalconDebug.obj(`${dbgNs}renderTable:`, tableOptions, `tableOptions: `);
+  SfdxFalconDebug.obj(`${dbgNsLocal}:`, tableOptions);
 
   function calcWidth(cell:any) {                                      // tslint:disable-line: no-any
     const lines = stripAnsi(cell).split(/[\r\n]+/);
