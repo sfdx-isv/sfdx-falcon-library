@@ -8,7 +8,7 @@
     "@salesforce/core": "2.1.1",
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
     "@sfdx-falcon/error": "0.0.4-alpha.0",
-    "@sfdx-falcon/result": "0.0.4-alpha.0",
+    "@sfdx-falcon/status": "0.0.4-alpha.0",
     "@sfdx-falcon/types": "0.0.4-alpha.0",
     "@sfdx-falcon/validator": "0.0.4-alpha.0",
     "chalk": "2.4.2",
@@ -19,10 +19,8 @@
     "listr": "0.14.3",
     "listr-silent-renderer": "1.1.1",
     "lodash": "4.17.15",
-    "pad": "3.2.0",
     "shelljs": "0.8.3",
     "tslib": "1.10.0",
-    "strip-ansi": "5.2.0",
     "unzipper": "0.10.4",
     "uuid": "3.3.3"
   },
@@ -68,8 +66,8 @@
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
-  "main": "lib/util.js",
-  "types": "lib/util.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "directories": {
     "lib": "lib",
     "test": "test"

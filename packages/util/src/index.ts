@@ -32,7 +32,6 @@ import  * as JsForceUtil    from  './jsforce';
 import  * as ListrUtil      from  './listr';
 import  * as MdapiUtil      from  './mdapi';
 import  * as SfdxUtil       from  './sfdx';
-import  * as YeomanUtil     from  './yeoman';
 import  * as ZipUtil        from  './zip';
 
 // Export all of the Utilities we just imported, above.
@@ -45,7 +44,6 @@ export {
   ListrUtil,
   MdapiUtil,
   SfdxUtil,
-  YeomanUtil,
   ZipUtil
 };
 
