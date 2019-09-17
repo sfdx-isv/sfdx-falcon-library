@@ -32,7 +32,6 @@ import  * as JsForceUtil    from  './jsforce';
 import  * as ListrUtil      from  './listr';
 import  * as MdapiUtil      from  './mdapi';
 import  * as SfdxUtil       from  './sfdx';
-import  * as UxUtil         from  './ux';
 import  * as YeomanUtil     from  './yeoman';
 import  * as ZipUtil        from  './zip';
 
@@ -46,7 +45,6 @@ export {
   ListrUtil,
   MdapiUtil,
   SfdxUtil,
-  UxUtil,
   YeomanUtil,
   ZipUtil
 };
