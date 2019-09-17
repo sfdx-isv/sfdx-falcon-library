@@ -24,11 +24,11 @@ import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Libra
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import  {SfdxFalconResult}          from  '@sfdx-falcon/result';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+import  {SfdxFalconResult}          from  '@sfdx-falcon/status';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 import  {SfdxFalconTask}            from  '@sfdx-falcon/task';          // Class. Abstraction of a single Listr Task with a lot of extra functionality bundled in.
 
 // Import SFDX-Falcon Types
-import  {SfdxFalconResultType}     from  '@sfdx-falcon/result';  // Enum. Represents the different types of sources where Results might come from.
+import  {SfdxFalconResultType}     from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
 import  {ExternalContext}          from  '@sfdx-falcon/task';    // Interface. Collection of key data structures that represent the overall context of the external environment inside which an SfdxFalconTask is running.
 import  {InquirerChoice}           from  '@sfdx-falcon/types';   // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
 import  {InquirerChoices}          from  '@sfdx-falcon/types';   // Type. Represents an array of Inquirer multi-choice/multi-select questions.
@@ -678,7 +678,7 @@ export class SfdxEnvironment {
     this._silentTasks   = TypeValidator.isNotInvalidBoolean(opts.silent)        ? opts.silent   : false;
 
     // Initialize the Initialization Result.
-    this._initializationResult  = new SfdxFalconResult(this._dbgNs, SfdxFalconResultType.INITIALIZATION,
+    this._initializationResult  = new SfdxFalconResult(this._dbgNs, SfdxFalconResultType.INITIALIZER,
                                                       { startNow:       false,
                                                         bubbleError:    false,    // Let the parent Result handle errors (no bubbling)
                                                         bubbleFailure:  false});  // Let the parent Result handle failures (no bubbling)
