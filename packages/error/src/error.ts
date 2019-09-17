@@ -692,13 +692,27 @@ export class ShellError extends SfdxFalconError {
   //───────────────────────────────────────────────────────────────────────────┘
   public constructor(command:string, code:number, signal:string, stdOutBuffer:string, stdErrBuffer:string, message:string, source:string) {
 
+    // Create a function to get the first line of output from STDERR and STDOUT
+    const getFirstLine = (strBuffer:string):string => {
+      const sourceLines = strBuffer.split('\n');
+      const maxLenth    = 252;
+      let   outputLine  = '';
+      for (const line of sourceLines) {
+        if (typeof line === 'string' && line !== null && line !== '') {
+          outputLine = line.substr(0, maxLenth) + (line.length >= maxLenth ? '...' : '');
+          break;
+        }
+      }
+      return outputLine;
+    };
+
     // Set the message to be either what the caller provided, the first line of stdErrBuffer, or a default message.
     if (typeof message !== 'string' || message === null || message === '') {
       if (typeof stdErrBuffer === 'string' && stdErrBuffer) {
-        message = stdErrBuffer.substr(0, stdErrBuffer.indexOf('\n'));
+        message = getFirstLine(stdErrBuffer);
       }
       else if (typeof stdOutBuffer === 'string' && stdOutBuffer) {
-        message = stdOutBuffer.substr(0, stdOutBuffer.indexOf('\n'));
+        message = getFirstLine(stdOutBuffer);
       }
       else {
         // Set a default "Unknown Shell Error" message.
