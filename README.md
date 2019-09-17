@@ -34,3 +34,22 @@ After building a package, VS Code's built in TypeScript linter can show false er
 
 ### `npm whoami`
 Prints the username that's currently logged into the NPM registry. This is the user who will be used during the `lerna publish` operation.
+
+# Project Notes
+General notes about the project
+
+### Dependency Order
+SFDX-Falcon packages are dependent upon one another in the following order.
+
+1. `@sfdx-falcon/types`
+2. `@sfdx-falcon/debug`
+3. `@sfdx-falcon/error`
+4. `@sfdx-falcon/validator`
+5. `@sfdx-falcon/status`
+6. `@sfdx-falcon/util`
+7. Independent Siblings
+    * `@sfdx-falcon/command`
+    * `@sfdx-falcon/environment`
+    * `@sfdx-falcon/task`
+8. `@sfdx-falcon/task-library`
+
