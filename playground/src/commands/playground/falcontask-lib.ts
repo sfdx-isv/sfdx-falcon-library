@@ -92,52 +92,32 @@ export default class FalconTaskPlayground extends SfdxFalconCommand {
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async run():Promise<AnyJson> {
+  public async runCommand2():Promise<AnyJson> {
 
-    // Initialize the SfdxFalconCommand (required by ALL classes that extend SfdxFalconCommand).
-    this.sfdxFalconCommandInit();
+    // Add your Playground Logic here.
 
-    // Build an async shell around the Playground Logic you want to run.
-    const playgroundLogic = async () => {
-
-      // Add your Playground Logic here.
-
-      console.log('\n\n\nROUND ONE\n\n\n');
-    
-      const gitEnvCheckTest = GitTasks.gitEnvironmentCheck({dbgNs: 'DEVTEST'}, 'https://github.com/sfdx-isv/hc-starter-pack.git');
-      await gitEnvCheckTest.run();
-
-      console.log('\n\n\nROUND TWO\n\n\n');
-
-      const gitFinalizeTest = GitTasks.finalizeGit({dbgNs: 'DEVTEST'}, `/Users/vchawla/VMC-TEST`, `https://github.com/sfdx-isv/hc-starter-pack.git`, `This is my TEST commit message`);
-      await gitFinalizeTest.run();
+    console.log('\n\n\nROUND ONE\n\n\n');
   
+    const gitEnvCheckTest = GitTasks.gitEnvironmentCheck({dbgNs: 'DEVTEST'}, 'https://github.com/sfdx-isv/hc-starter-pack.git');
+    await gitEnvCheckTest.run();
 
-    };
+    console.log('\n\n\nROUND TWO\n\n\n');
 
-    // Execute the Playground Logic defined above.
-    await playgroundLogic()
-    .then((result:unknown) => {
-      console.log('HELLO SUCCESS!');
-      return this.onSuccess(result);
-    })
-    .catch((error:unknown) => {
-      console.log('HELLO FAILURE!');
-      return this.onError(error);
-    });
-
-
-
-
-
-
-
+    const gitFinalizeTest = GitTasks.finalizeGit({dbgNs: 'DEVTEST'}, `/Users/vchawla/VMC-TEST`, `https://github.com/sfdx-isv/hc-starter-pack.git`, `This is my TEST commit message`);
+    await gitFinalizeTest.run();
+  
     console.log('HELLO END GAME!');
 
-    // Return the JSON Response that was created by onSuccess()
-    return this.falconJsonResponse as unknown as AnyJson;
+    return null;
 
   }
+
+  protected async runCommand():Promise<string> {
+    console.log('This is from inside runCommand()');
+    return null;
+  }
+
+
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**

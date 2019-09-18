@@ -23,14 +23,18 @@ import  {SfdxFalconError}               from  '@sfdx-falcon/error';   // Class. 
 // Import Falcon Types
 import  {AnyJson}                       from  '@sfdx-falcon/types';   // Type. Any valid JSON value.
 
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
 // Imports related to THIS specific playground
+//import  {SfdxCliError}    from '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+//import  {ShellError}      from '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 import  {SfdxFalconTask}  from '@sfdx-falcon/task';
 import  {waitASecond}     from '@sfdx-falcon/util/lib/async';
 import  Listr             = require('listr');
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 // Set the File Local Debug Namespace
-const dbgNs = 'COMMAND:playground-falcontask:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = 'COMMAND:playground:falcontask';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 // Use SfdxCore's Messages framework to get the message bundles for this command.
 Messages.importMessagesDirectory(__dirname);
@@ -83,46 +87,46 @@ export default class FalconTaskPlayground extends SfdxFalconCommand {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @function    run
+   * @function    runCommand
    * @returns     {Promise<AnyJson>}  Resolves with a JSON object that the CLI
    *              will pass to the user as stdout if the `--json` flag was set.
    * @description Entrypoint function for `sfdx playground:falcontask`.
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async run():Promise<AnyJson> {
+  public async runCommand():Promise<AnyJson> {
 
-    // Initialize the SfdxFalconCommand (required by ALL classes that extend SfdxFalconCommand).
-    this.sfdxFalconCommandInit();
+    // Test Error construction and debug
+    //throw new SfdxFalconError('stop touching me!', 'My_SfdxFalconError', 'My_Sfdx_Falcon_Error_Source', new Error('STOOOOOPPPPPPP!!!!'), {detail: 'This is string detail', myNum: 42, error: new Error('OMG NOOO!')});
+    //throw new SfdxFalconError('stop touching me!', 'My_SfdxFalconError', 'My_Sfdx_Falcon_Error_Source', null, {detail: 'This is string detail', myNum: 42, error: new Error('OMG NOOO!')});
+    //throw new SfdxCliError('sfdx force:org:list', 'STDOUT buffer simulation', 'STDERR buffer simulation', 'stop touching me Mr. CLI!', 'My_SfdxFalconError');
+    //throw new ShellError('git init --force', 100, 'EONENT', 'STDOUT buffer simulation', 'STDERR buffer simulation\nthis is how we play\nall nitght long!', null, 'My_SfdxFalconError');
 
-    // Build an async shell around the Playground Logic you want to run.
-    const playgroundLogic = async () => {
-
-      // Add your Playground Logic here.
+    //SfdxFalconDebug.debugObject('xxxx:', this);
 
 
-      // Stand up a "shared data" object
-      // @ts-ignore
-      this.sharedData = {};
-      //*
-      // Define a Falcon Task.
-      const falconTask = new SfdxFalconTask({
-        title:  'this is my test task',
-        extCtx:   {
-          dbgNs:  `xxxx`
-          //sharedData: {}
-          //parentResult: {} as any,
-          //generatorStatus: {} as any
-        },
+    // Stand up a "shared data" object
+    // @ts-ignore
+    this.sharedData = {};
+    //*
+    // Define a Falcon Task.
+    const falconTask = new SfdxFalconTask({
+      title:  'this is my test task',
+      extCtx:   {
+        dbgNs:  `xxxx`
+        //sharedData: {}
+        //parentResult: {} as any,
+        //generatorStatus: {} as any
+      },
 //        extCtxReqs: {
 //          sharedData: true
 //          parentResult: false,
 //          generatorStatus: true
 //        },
-        statusMsg:  'My first status message',
-        minRuntime: 8,
-        showTimer:  true,
-        task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
+      statusMsg:  'My first status message',
+      minRuntime: 8,
+      showTimer:  true,
+      task: async (_taskCtx, _taskObj, _taskStatus, _extCtx) => {
 
 //          throw new Error('STOP TOUCHING ME!!');
 //          console.log(`I'm inside the house!`);
@@ -130,65 +134,39 @@ export default class FalconTaskPlayground extends SfdxFalconCommand {
 //          console.log(`My context is: %O`, listrContext);
 //          console.log(`My task is: %O`, _thisTask);
 //          console.log(`My shared data is: %O`, _sharedData);
-          await waitASecond(3);
-          _taskObj.title = 'I have totally changed the title!';
-          await waitASecond(3);
-          _taskStatus.message = 'I have a NEW status message!';
-          await waitASecond(3);
-        }
-      });
-  
-      // Define a Listr object and use our task to build one of the two tasks.
-      const listrTasks = new Listr(
-        [
-          falconTask.build(),
-          {
-            title: 'second task',
-            task: (_listrContext, _thisTask) => {
-              console.log(`This is from second task`);
-            }
-          }
-        ],
-        {
-          concurrent:   false,
-          // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
-          collapse:     false,
-          exitOnError:  true,
-          renderer:     'verbose'
-        }
-      );
-  
-      //SfdxFalconDebug.debugObject(`xxxx:listrTasks:`, listrTasks);
-      //SfdxFalconDebug.debugObject(`xxxx:this:`, this);
-      
-      // Run the Listr Task.
-      return {
-        result: await listrTasks.run()
-      };
-    };
-
-    // Execute the Playground Logic defined above.
-    await playgroundLogic()
-    .then((result:unknown) => {
-      console.log('HELLO SUCCESS!');
-      return this.onSuccess(result);
-    })
-    .catch((error:unknown) => {
-      console.log('HELLO FAILURE!');
-      return this.onError(error);
+        await waitASecond(3);
+        _taskObj.title = 'I have totally changed the title!';
+        await waitASecond(3);
+        _taskStatus.message = 'I have a NEW status message!';
+        await waitASecond(3);
+      }
     });
 
+    // Define a Listr object and use our task to build one of the two tasks.
+    const listrTasks = new Listr(
+      [
+        falconTask.build(),
+        {
+          title: 'second task',
+          task: (_listrContext, _thisTask) => {
+            console.log(`This is from second task`);
+          }
+        }
+      ],
+      {
+        concurrent:   false,
+        // @ts-ignore -- Listr doesn't correctly recognize "collapse" as a valid option.
+        collapse:     false,
+        exitOnError:  true,
+        renderer:     'verbose'
+      }
+    );
 
-
-
-
-
-
-    console.log('HELLO END GAME!');
-
-    // Return the JSON Response that was created by onSuccess()
-    return this.falconJsonResponse as unknown as AnyJson;
-
+    //SfdxFalconDebug.debugObject(`xxxx:listrTasks:`, listrTasks);
+    //SfdxFalconDebug.debugObject(`xxxx:this:`, this);
+    
+    // Run the Listr Task.
+    return await listrTasks.run();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐

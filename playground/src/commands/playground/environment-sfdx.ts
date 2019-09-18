@@ -95,62 +95,49 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async run():Promise<AnyJson> {
+  public async runCommand2():Promise<AnyJson> {
 
-    // Initialize the SfdxFalconCommand (required by ALL classes that extend SfdxFalconCommand).
-    this.sfdxFalconCommandInit();
-
-    // Build an async shell around the Playground Logic you want to run.
-    const playgroundLogic = async () => {
-
-      // Add your Playground Logic here.
-      const opts:Sfdx.SfdxEnvironmentOptions = {
-        requirements: {
-          managedPkgOrgs: true,
-          unmanagedPkgOrgs: true,
-          devHubOrgs: true
-        },
-        dbgNs:    'xxxx',
-        verbose:  true,
-        silent:   false
-      };
-
-      //SfdxFalconDebug.debugMessage('xxxx1111xxxx', 'BEFORE Environment Init');
-      // @ts-ignore
-      const sfdxEnv = await Sfdx.SfdxEnvironment.initialize(opts);
-
-      //SfdxFalconDebug.debugMessage('xxxx2222xxxx', 'AFTER Environment Init');
-
-      await waitASecond(4);
-
-      SfdxFalconDebug.debugObject('POST_INIT:standardOrgChoices:', sfdxEnv.standardOrgChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:scratchOrgChoices:', sfdxEnv.scratchOrgChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:allOrgChoices:', sfdxEnv.allOrgChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:devHubChoices:', sfdxEnv.devHubChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:envHubChoices:', sfdxEnv.envHubChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:pkgOrgChoices:', sfdxEnv.pkgOrgChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:managedPkgOrgChoices:', sfdxEnv.managedPkgOrgChoices);
-      SfdxFalconDebug.debugObject('POST_INIT:unmanagedPkgOrgChoices:', sfdxEnv.unmanagedPkgOrgChoices);
-  
-
+    // Add your Playground Logic here.
+    const opts:Sfdx.SfdxEnvironmentOptions = {
+      requirements: {
+        managedPkgOrgs: true,
+        unmanagedPkgOrgs: true,
+        devHubOrgs: true
+      },
+      dbgNs:    'xxxx',
+      verbose:  true,
+      silent:   false
     };
 
-    // Execute the Playground Logic defined above.
-    await playgroundLogic()
-    .then((result:unknown) => {
-      console.log('HELLO SUCCESS!');
-      return this.onSuccess(result);
-    })
-    .catch((error:unknown) => {
-      console.log('HELLO FAILURE!');
-      return this.onError(error);
-    });
+    //SfdxFalconDebug.debugMessage('xxxx1111xxxx', 'BEFORE Environment Init');
+    // @ts-ignore
+    const sfdxEnv = await Sfdx.SfdxEnvironment.initialize(opts);
+
+    //SfdxFalconDebug.debugMessage('xxxx2222xxxx', 'AFTER Environment Init');
+
+    await waitASecond(4);
+
+    SfdxFalconDebug.debugObject('POST_INIT:standardOrgChoices:', sfdxEnv.standardOrgChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:scratchOrgChoices:', sfdxEnv.scratchOrgChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:allOrgChoices:', sfdxEnv.allOrgChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:devHubChoices:', sfdxEnv.devHubChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:envHubChoices:', sfdxEnv.envHubChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:pkgOrgChoices:', sfdxEnv.pkgOrgChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:managedPkgOrgChoices:', sfdxEnv.managedPkgOrgChoices);
+    SfdxFalconDebug.debugObject('POST_INIT:unmanagedPkgOrgChoices:', sfdxEnv.unmanagedPkgOrgChoices);
+
+
 
     console.log('HELLO END GAME!');
 
-    // Return the JSON Response that was created by onSuccess()
-    return this.falconJsonResponse as unknown as AnyJson;
+    return null;
   }
+
+  protected async runCommand():Promise<string> {
+    console.log('This is from inside runCommand()');
+    return null;
+  }
+
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
