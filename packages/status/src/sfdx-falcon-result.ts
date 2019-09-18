@@ -867,10 +867,9 @@ export class SfdxFalconResult {
    */
   //───────────────────────────────────────────────────────────────────────────┘
   public debugResult(contextLabel:string='', debugNamespace:string='', childInspectDepth:number=1, detailInspectDepth:number=4, errorInspectDepth:number=1):void {
-    const debugOutput
-      = '-\n'
-      + this.renderResult(contextLabel, childInspectDepth, detailInspectDepth, errorInspectDepth)
-      + '\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-';
+    
+    // Render this result in preparation to send it out through `SfdxFalconDebug`.
+    const debugOutput = this.renderResult(contextLabel, childInspectDepth, detailInspectDepth, errorInspectDepth);
 
     // If namespace is provided, use the standard debug channel. Force debug message if no namespace.
     if (debugNamespace) {
