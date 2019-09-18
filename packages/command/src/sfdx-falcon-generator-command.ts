@@ -72,72 +72,46 @@ export interface GeneratorOptions {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
 
-  // Set the Command Type to GENERATOR.
-  protected readonly commandType:  SfdxFalconCommandType = SfdxFalconCommandType.GENERATOR;
-
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @function    onError
-   * @param       {unknown} rejectedPromise Required. Result of the failed
-   *              Yeoman Generator.
-   * @param       {boolean} [showErrorDebug]  Optional. Determines if extended
-   *              debugging output the Error Result can be shown.
-   * @param       {boolean} [promptUser] Optional. Determines if the user will
-   *              be prompted to display debug info. If `false`, debug info will
-   *              be shown without requiring additional user input.
-   * @returns     {Promise<void>}
-   * @description Handles the output of a failed Yeoman Generator run.
-   * @protected @async
+   * @constructs  SfdxFalconGeneratorCommand
+   * @param       {any} argv  Required. Part of the `oclif` command run process.
+   *              Must be passed **unmodified** to the superclass.
+   * @param       {any} config  Required. Part of the `oclif` command run process.
+   *              Must be passed **unmodified** to the superclass.
+   * @description Constructs an `SfdxFalconGeneratorCommand` object.
+   * @private
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  /*
-  protected async onError(rejectedPromise:unknown, showErrorDebug:boolean=true, promptUser:boolean=true):Promise<void> {
+  protected constructor(argv:any, config:any) { // tslint:disable-line: no-any
 
-    // If special override behavior is deemed necessary, we can add it here.
-    // For now, we'll simply pass things along to the superclass (parent).
-    return super.onError(rejectedPromise, showErrorDebug, promptUser);
-  }//*/
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @function    onSuccess
-   * @param       {unknown} resolvedPromise Required. This should be an
-   *              `SfdxFalconResult` object returned from `runYeomanGenerator()`.
-   * @returns     {Promise<void>}
-   * @description Handles the output of a successful Yeoman Generator run.
-   * @protected @asnyc
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-  /*
-  protected async onSuccess(resolvedPromise:unknown):Promise<void> {
-
-    // If special override behavior is deemed necessary, we can add it here.
-    // For now, we'll simply pass things along to the superclass (parent).
-    return super.onSuccess(resolvedPromise);
-  }//*/
+    // Call the parent constructor. Make sure it knows this is a GENERATOR type command.
+    // DO NOT MODIFY `argv` or `config` variables!
+    super(argv, config, SfdxFalconCommandType.GENERATOR);
+  }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @function    runYeomanGenerator
+   * @function    runGenerator
    * @param       {GeneratorOptions}  generatorOptions  Required. Options that
-   *              specify how the Yeoman Generator should run.
+   *              specify how the Generator should run.
    * @returns     {Promise<SfdxFalconResult>}  Returns a promise that resolves
    *              and rejects with an SFDX-Falcon Result. The output of this
    *              function is intended to be consumed by the `onSuccess()` and
    *              `onError()` methods.
-   * @description Runs the specified Yeoman generator using the given options.
+   * @description Runs the specified Generator using the given options.
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async runYeomanGenerator(generatorOptions:GeneratorOptions):Promise<SfdxFalconResult> {
+  protected async runGenerator(generatorOptions:GeneratorOptions):Promise<SfdxFalconResult> {
 
     // Define the function-local debug namespace.
-    const funcName    = `runYeomanGenerator`;
+    const funcName    = `runGenerator`;
     const dbgNsLocal  = `${dbgNs}:${funcName}`;
   
     // Make sure the caller provides a Generator Type.
     if (!generatorOptions.generatorType) {
-      throw new SfdxFalconError( `A valid generator type must be provided to runYeomanGenerator(). You provided '${generatorOptions.generatorType}'.`
+      throw new SfdxFalconError( `A valid generator type must be provided to runGenerator(). You provided '${generatorOptions.generatorType}'.`
                                , `InvalidGeneratorType`
                                , `${dbgNsLocal}`);
     }
@@ -146,8 +120,8 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
     const generatorResult =
       new SfdxFalconResult(generatorOptions.generatorType, SfdxFalconResultType.GENERATOR,
                           { startNow:       true,
-                            bubbleError:    false,    // Bubble errors to the COMMAND result
-                            bubbleFailure:  false});  // Do not bubble failures (eg. Git commit not working)
+                            bubbleError:    false,    // Do not bubble errors. Errors handled by inspecting the result of the Generator.
+                            bubbleFailure:  false});  // Do not bubble failures.
 
     // Combine incoming generatorOptions with the default options.
     const resolvedGeneratorOptions = {
@@ -223,20 +197,4 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
       });
     }) as Promise<SfdxFalconResult>;
   }
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @function    sfdxFalconCommandInit
-   * @returns     {void}
-   * @description Initializes any `SfdxFalconGeneratorCommand` structures
-   *              before calling the same init function from `SfdxFalconCommand`.
-   * @protected
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-  /*
-  protected sfdxFalconCommandInit():void {
-
-    // If specialized initialization is needed, add it here before the super() call.
-    super.sfdxFalconCommandInit();
-  }//*/
 }
