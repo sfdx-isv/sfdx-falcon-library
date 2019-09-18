@@ -182,7 +182,7 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     super(argv, config);
 
     // Set the correct Command Type.
-    commandType = (typeof commandType === 'string' && commandType) ? commandType : SfdxFalconCommandType.STANDARD;
+    this.commandType = (typeof commandType === 'string' && commandType) ? commandType : SfdxFalconCommandType.STANDARD;
     
     // Set the Command Name.
     this.commandName = this.id;
@@ -248,8 +248,10 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     return preparedResponse;
   }
 
-  // Abstract methods
-  protected abstract buildFinalError(cmdError:SfdxFalconError):SfdxError; // Builds a user-friendly error message that's specific to an implemented command.
+  // Protected Abstract Methods
+  /** Builds a user-friendly error message that is specific to the command being implemented. */
+  protected abstract buildFinalError(cmdError:SfdxFalconError):SfdxError;
+  /** Contains all off the execution logic that is specific to the command being implemented. */
   protected abstract async runCommand():Promise<unknown>;
 
   //───────────────────────────────────────────────────────────────────────────┐
