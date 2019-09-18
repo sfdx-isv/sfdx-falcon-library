@@ -24,6 +24,7 @@ import  * as path                     from  'path';                   // Helps r
 
 // Import SFDX-Falcon Libraries
 import  {CoreValidator}               from  '@sfdx-falcon/validator'; // Library. Contains core validation functions to check that local path values don't have invalid chars.
+import  {TypeValidator}               from  '@sfdx-falcon/validator'; // Library. Contains type validation functions.
 
 // Import SFDX-Falcon Classes & Functions
 import {SfdxFalconDebug}              from  '@sfdx-falcon/debug';     // Class. Internal debugging framework for SFDX-Falcon.
@@ -132,8 +133,8 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
   };
 
   // These should be overridden by derived classes
-  protected readonly commandName:  string = 'unspecified:command';
-  protected readonly commandType:  SfdxFalconCommandType = SfdxFalconCommandType.STANDARD;
+  protected readonly commandName:       string;
+  protected readonly commandType:       SfdxFalconCommandType = SfdxFalconCommandType.STANDARD;
 
   // These help build and deliver a JSON response once command execution is done.
   protected commandResult:              SfdxFalconResult;               // Why?
@@ -182,7 +183,7 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     SfdxFalconDebug.obj(`${dbgNsLocal}:this:`, this);
 
     // Run the command logic that's defined by the derived class.
-    await this.runCommand()
+    const commandResponse = await this.runCommand()
     .then((result:unknown) => {
       SfdxFalconDebug.obj(`${dbgNsLocal}:runCommand:result:`, {result: result});
       return this.onSuccess(result);
@@ -191,9 +192,14 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
       SfdxFalconDebug.obj(`${dbgNsLocal}:runCommand:error:`, {error: error});
       return this.onError(error);
     });
+    SfdxFalconDebug.obj(`${dbgNsLocal}:commandResponse:`, {commandResponse: commandResponse});
 
+    // Prepare the Command Response for return to the user.
+    const preparedResponse = this.prepareResponse(commandResponse);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:preparedResponse:`, {preparedResponse: preparedResponse});
 
-    return 'this is my command output!';
+    // All done. Give the core SfdxCommand our prepared response.
+    return preparedResponse;
   }
 
   // Abstract methods
@@ -213,10 +219,10 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
    * @description Recieves the results from a Rejected Promise and processes
    *              them to settle out the ultimate exit status of this
    *              COMMAND Result.
-   * @protected
+   * @private
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async onError(rejectedPromise:unknown, showErrorDebug:boolean=true, promptUser:boolean=true):Promise<void> {
+  private async onError(rejectedPromise:unknown, showErrorDebug:boolean=true, promptUser:boolean=true):Promise<void> {
 
     // Make sure any rejected promises are wrapped as an ERROR Result.
     const errorResult = SfdxFalconResult.wrapRejectedPromise(rejectedPromise, SfdxFalconResultType.UNKNOWN, 'RejectedPromise');
@@ -247,7 +253,7 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
    * @protected
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async onSuccess(resolvedPromise:unknown):Promise<void> {
+  private async onSuccess(resolvedPromise:unknown):Promise<unknown> {
 
     // Make sure any resolved promises are wrapped as an SfdxFalconResult.
     const successResult = SfdxFalconResult.wrap(resolvedPromise, SfdxFalconResultType.UNKNOWN, `onSuccess`);
@@ -266,8 +272,8 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
       this.commandResult.displayResult();
     }
 
-    // TODO: Setup the JSON Response
-
+    // Return the unmodified Resolved Promise so it can be processed by `prepareResponse()`.
+    return resolvedPromise;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -275,10 +281,15 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
    * @function    sfdxFalconCommandInit
    * @returns     {void}
    * @description Initializes various SfdxFalconCommand structures.
-   * @protected
+   * @private
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected sfdxFalconCommandInit() {
+  private sfdxFalconCommandInit() {
+
+    // Make sure that the derived class specified a command name.
+    if (TypeValidator.isEmptyNullInvalidString(this.commandName)) {
+      throw new Error(errorMessages.getMessage('errInvalidCommandName'));
+    }
 
     // Initialize the command response.
     this.commandResponse = null;
@@ -347,12 +358,32 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
  
   //───────────────────────────────────────────────────────────────────────────┐
   /**
+   * @method      prepareResponse
+   * @param       {unknown} finalOutput  Required. The ouput that came back
+   *              from the `runCommand()` method, after being processed by
+   *              either `onSuccess()` or `onFailure()`.
+   * @description Given the output returned by the `runCommand()` method and
+   *              processed by either the `onSuccess()` or `onFailure()` methods,
+   *              prepares the final output which will be returned from the
+   *              `run()` method.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private prepareResponse(finalOutput:unknown):AnyJson {
+
+    // TODO: Implement this method.
+    
+    return finalOutput as AnyJson;
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
    * @method      terminateWithError
-   * @param       {boolean} [showErrorDebug]  Optional. Determines if extended
-   *              debugging output for the terminating Error can be shown.
-   * @param       {boolean} [promptUser] Optional. Determines if the user will
-   *              be prompted to display debug info. If `false`, debug info will
-   *              be shown without requiring additional user input.
+   * @param       {boolean} [showErrorDebug=true]  Optional. Determines if
+   *              extended debugging output for the terminating Error can be shown.
+   * @param       {boolean} [promptUser=true] Optional. Determines if the user
+   *              will be prompted to display debug info. If `false`, debug info
+   *              will be shown without requiring additional user input.
    * @description Kills all ongoing async code (ie. Progress Notifications) and
    *              possibly renders an Error Debug before throwing an `SfdxError`
    *              so that the CLI can present user-friendly error info.
@@ -377,7 +408,32 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     // Run the "Display Error Debug Info" process. This may prompt the user to view extended debug info.
     await this.commandResult.displayErrorDebugInfo(showErrorDebug, promptUser);
 
-    // Throw a "Final Error" based on the COMMAND Result's Error object.
-    throw this.buildFinalError(this.commandResult.errObj);
+    // Create a "Final Error" based on the COMMAND Result's Error object.
+    let finalError:SfdxError = null;
+    try {
+      finalError = this.buildFinalError(this.commandResult.errObj);
+      if (TypeValidator.isInvalidInstance(finalError, Error)) {
+        finalError = new SfdxFalconError( `${this.commandName} failed. See error details for additional information.`
+                                        , `FatalCommandError`
+                                        , `${dbgNs}:terminateWithError`
+                                        , null
+                                        , {devWarning:    `Warning: The developer of this plugin did not properly implement the buildFinalError() method. If you are the developer, please fix this.`,
+                                           rawErrorObj:   this.commandResult.errObj,
+                                           finalErrorObj: finalError});
+      }
+    }
+    catch (errorBuilderError) {
+        finalError = new SfdxFalconError( `${this.commandName} failed. See error details for additional information.`
+                                        , `FatalCommandError`
+                                        , `${dbgNs}:terminateWithError`
+                                        , null
+                                        , {devWarning:    `Warning: The developer of this plugin did not properly implement the buildFinalError() method. If you are the developer, please fix this.`,
+                                           errorBuilderError: errorBuilderError,
+                                           rawErrorObj:   this.commandResult.errObj,
+                                           finalErrorObj: finalError});
+    }
+    
+    // Throw the Final Error.
+    throw finalError;
   }
 }

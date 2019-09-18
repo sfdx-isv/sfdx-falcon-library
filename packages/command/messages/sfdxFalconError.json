@@ -3,6 +3,7 @@
   "errDefault": "%s (see details below)\n\n%s",
 
   "errInvalidDirectory": "%sDirectory can not begin with a ~, have unescaped spaces, or contain these invalid characters (' \" * |)",
+  "errInvalidCommandName": "Classes that extend SfdxFalconCommand must define & initialize this.commandName with a valid string (eg. 'falcon:adk:clone').",
 
   "actionDevTest1": "DEVTEST1: This should not be seen in production (%s)\n",
   "actionDevTest2": "DEVTEST2: This should not be seen in production (%s)\n",
