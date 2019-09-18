@@ -50,6 +50,7 @@ SFDX-Falcon packages are dependent upon one another in the following order.
 7. Independent Siblings
     * `@sfdx-falcon/command`
     * `@sfdx-falcon/environment`
+    * `@sfdx-falcon/prompt`
     * `@sfdx-falcon/task`
 8. `@sfdx-falcon/task-library`
 

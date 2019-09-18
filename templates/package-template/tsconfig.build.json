@@ -16,6 +16,7 @@
     {"path": "../validator/tsconfig.build.json"},     // @SFDX-Falcon/validator
     {"path": "../status/tsconfig.build.json"},        // @SFDX-Falcon/status
     {"path": "../util/tsconfig.build.json"},          // @SFDX-Falcon/util
+    {"path": "../prompt/tsconfig.build.json"},        // @SFDX-Falcon/prompt
     {"path": "../command/tsconfig.build.json"},       // @SFDX-Falcon/command
     {"path": "../environment/tsconfig.build.json"},   // @SFDX-Falcon/environment
     {"path": "../task/tsconfig.build.json"},          // @SFDX-Falcon/task
