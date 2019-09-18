@@ -132,34 +132,80 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     })
   };
 
-  // These should be overridden by derived classes
-  protected readonly commandName:       string;
-  protected readonly commandType:       SfdxFalconCommandType = SfdxFalconCommandType.STANDARD;
+  // Member vars for basic information about this command.
+  /** Name of the command defined by the derived class, eg. `falcon:adk:clone`. */
+  protected readonly commandName:         string;
+  /** Type of command defined by the derived class. Possible values are `STANDARD` or `GENERATOR`. */
+  protected readonly commandType:         SfdxFalconCommandType;
 
-  // These help build and deliver a JSON response once command execution is done.
-  protected commandResult:              SfdxFalconResult;               // Why?
-  protected commandResultDetail:        SfdxFalconCommandResultDetail;  // Why?
-  protected commandResponse:            AnyJson;                        // Why?
+  // Member vars that help build and deliver a JSON response once command execution is done.
+  /** Command-level `SfdxFalconResult` object. Should should be used as the ultimate parent to all other `SfdxFalconResult` objects used by logic executed by this command. */
+  protected readonly commandResult:       SfdxFalconResult;
+  protected readonly commandResultDetail: SfdxFalconCommandResultDetail;  // Why?
+  protected commandResponse:              AnyJson;                        // Why?
 
   // Member vars for commonly implemented flags.
-  protected outputDirectory:            string;                         // Why?
-  protected projectDirectory:           string;                         // Why?
-  protected sourceDirectory:            string;                         // Why?
-  protected targetDirectory:            string;                         // Why?
-  protected recipeFile:                 string;                         // Why?
-  protected configFile:                 string;                         // Why?
-  protected extendedOptions:            JsonMap;                        // Why?
+  protected outputDirectory:              string;                         // Why?
+  protected projectDirectory:             string;                         // Why?
+  protected sourceDirectory:              string;                         // Why?
+  protected targetDirectory:              string;                         // Why?
+  protected recipeFile:                   string;                         // Why?
+  protected configFile:                   string;                         // Why?
+  protected extendedOptions:              JsonMap;                        // Why?
 
   // Member vars for commonly implemented arguments.
-  protected gitRemoteUri:               string;                         // Why?
-  protected gitCloneDirectory:          string;                         // Why?
+  protected gitRemoteUri:                 string;                         // Why?
+  protected gitCloneDirectory:            string;                         // Why?
 
   // Member vars for ALL debug flags
-  protected falconDebugFlag:            string[]      = new Array<string>();  // Why?
-  protected falconDebugErrorFlag:       boolean       = false;                // Why?
-  protected falconDebugSuccessFlag:     boolean       = false;                // Why?
-  protected falconDebugDepthFlag:       number        = 2;                    // Why?
+  protected falconDebugFlag:              string[]      = new Array<string>();  // Why?
+  protected falconDebugErrorFlag:         boolean       = false;                // Why?
+  protected falconDebugSuccessFlag:       boolean       = false;                // Why?
+  protected falconDebugDepthFlag:         number        = 2;                    // Why?
   
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @constructs  SfdxFalconCommand
+   * @param       {any} argv  Required. Part of the `oclif` command run process.
+   *              Must be passed **unmodified** to the superclass.
+   * @param       {any} config  Required. Part of the `oclif` command run process.
+   *              Must be passed **unmodified** to the superclass.
+   * @param       {SfdxFalconCommandType} [commandType] Optional. Specifies the
+   *              type of command being created. Defaults to `STANDARD`.
+   * @description Constructs an `SfdxFalconCommand` object.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  protected constructor(argv:any, config:any, commandType?:SfdxFalconCommandType) { // tslint:disable-line: no-any
+
+    // Call the parent constructor. DO NOT MODIFY `argv` or `config` variables!
+    super(argv, config);
+
+    // Set the correct Command Type.
+    commandType = (typeof commandType === 'string' && commandType) ? commandType : SfdxFalconCommandType.STANDARD;
+    
+    // Set the Command Name.
+    this.commandName = this.id;
+
+    // Initialize an SfdxFalconResult object to store the Result of this COMMAND.
+    this.commandResult =
+      new SfdxFalconResult(this.commandName, SfdxFalconResultType.COMMAND,
+                          { startNow:       true,
+                            bubbleError:    false,    // Let onError() handle errors (no bubbling)
+                            bubbleFailure:  false});  // Let onSuccess() handle failures (no bubbling)
+
+    // Initialize COMMAND Result Detail. Some details will be fleshed out by `sfdxFalconCommandInit()`.
+    this.commandResultDetail = {commandName:      this.commandName,
+                                commandType:      this.commandType,
+                                commandFlags:     null,
+                                commandArgs:      null,
+                                commandExitCode:  null,
+                                enabledDebuggers: null};
+    
+    // Attach the Results Detail object to the COMMAND result then debug it.
+    this.commandResult.setDetail(this.commandResultDetail);
+  }
+
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @function    run
@@ -286,10 +332,9 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
   //───────────────────────────────────────────────────────────────────────────┘
   private sfdxFalconCommandInit() {
 
-    // Make sure that the derived class specified a command name.
-    if (TypeValidator.isEmptyNullInvalidString(this.commandName)) {
-      throw new Error(errorMessages.getMessage('errInvalidCommandName'));
-    }
+    // Define function-local debug namespace.
+    const funcName    = `sfdxFalconCommandInit`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
 
     // Initialize the command response.
     this.commandResponse = null;
@@ -323,26 +368,14 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     if (this.falconDebugErrorFlag)    enabledDebuggers.push('FALCON_ERROR');
     if (this.falconDebugSuccessFlag)  enabledDebuggers.push('FALCON_SUCCESS');
 
-    // Initialize an SfdxFalconResult object to store the Result of this COMMAND.
-    this.commandResult =
-      new SfdxFalconResult(this.commandName, SfdxFalconResultType.COMMAND,
-                          { startNow:       true,
-                            bubbleError:    false,    // Let onError() handle errors (no bubbling)
-                            bubbleFailure:  false});  // Let onSuccess() handle failures (no bubbling)
-
-    // Initialize the Results Detail object for this COMMAND.
-    this.commandResultDetail = {commandName:      this.commandName,
-                                commandType:      this.commandType,
-                                commandFlags:     this.flags,
-                                commandArgs:      this.args,
-                                commandExitCode:  null,
-                                enabledDebuggers: enabledDebuggers};
-
-    // Attach the Results Detail object to the COMMAND result.
-    this.commandResult.setDetail(this.commandResultDetail);
-
     // Enable the specified debuggers.
     SfdxFalconDebug.enableDebuggers(enabledDebuggers, this.falconDebugDepthFlag);
+
+    // Flesh out the details of the COMMAND Result then debug it.
+    this.commandResultDetail.commandFlags     = this.flags;
+    this.commandResultDetail.commandArgs      = this.args,
+    this.commandResultDetail.enabledDebuggers = enabledDebuggers;
+    this.commandResult.debugResult(`After initialization in constructor`, `${dbgNsLocal}`);
 
     // Perform validation of common flags and args.
     if (CoreValidator.validateLocalPath(this.outputDirectory) === false) {
