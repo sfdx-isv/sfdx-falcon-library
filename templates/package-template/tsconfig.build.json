@@ -21,6 +21,7 @@
     {"path": "../environment/tsconfig.build.json"},   // @SFDX-Falcon/environment
     {"path": "../task/tsconfig.build.json"},          // @SFDX-Falcon/task
     {"path": "../interview/tsconfig.build.json"},     // @SFDX-Falcon/interview
+    {"path": "../task-bundle/tsconfig.build.json"},   // @SFDX-Falcon/task-bundle
     {"path": "../task-library/tsconfig.build.json"},  // @SFDX-Falcon/task-library
     {"path": "../generator/tsconfig.build.json"}      // @SFDX-Falcon/generator
   ]
