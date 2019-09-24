@@ -55,4 +55,5 @@ SFDX-Falcon packages are dependent upon one another in the following order.
 8. Independent Siblings
     * `@sfdx-falcon/interview`
     * `@sfdx-falcon/task-library`
+9. `@sfdx-falcon/generator`
 
