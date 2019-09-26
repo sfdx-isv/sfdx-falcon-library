@@ -13,14 +13,12 @@
 // Import External Libraries, Modules, and Types
 
 // Import SFDX-Falcon Libraries
-//import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Library. Async utility helper functions.
-//import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
+import  {TypeValidator}             from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import  {SfdxFalconPrompt}          from  '@sfdx-falcon/prompt';        // Class. Wraps user prompting/interaction functionality provided by Inquirer.
-import  {SfdxFalconKeyValueTable}   from  '@sfdx-falcon/status';        // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
+import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconPrompt}          from  '@sfdx-falcon/prompt';    // Class. Wraps user prompting/interaction functionality provided by Inquirer.
+import  {SfdxFalconKeyValueTable}   from  '@sfdx-falcon/status';    // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
 
 // Import SFDX-Falcon Types
 import  {AbortInterview}            from  '@sfdx-falcon/types';     // Type. Alias defining a function that checks whether an Interview should be aborted.
@@ -118,36 +116,20 @@ export class SfdxFalconInterview<T extends object> {
    */
   //───────────────────────────────────────────────────────────────────────────┘
   public static validateInterviewScope(callingScope:unknown):void {
-    if (typeof callingScope !== 'object' || callingScope === null) {
-      throw new SfdxFalconError( `Expected the 'callingScope' argument to be a non-null object${typeof callingScope !== 'object' ? ` but got '${typeof callingScope}' instead.` : `.`}`
-                               , `TypeError`
-                               , `${dbgNs}validateInterviewScope`);
-    }
-    if (typeof callingScope['userAnswers'] !== 'object' || callingScope['userAnswers'] === null) {
-      throw new SfdxFalconError( `Expected 'userAnswers' to be a non-null object available to the calling scope${typeof callingScope['userAnswers'] !== 'object' ? ` but got '${typeof callingScope['userAnswers']}' instead.` : `.`}`
-                               , `InvalidInterviewScope`
-                               , `${dbgNs}validateInterviewScope`);
-    }
-    if (typeof callingScope['defaultAnswers'] !== 'object' || callingScope['defaultAnswers'] === null) {
-      throw new SfdxFalconError( `Expected 'defaultAnswers' to be a non-null object available to the calling scope${typeof callingScope['defaultAnswers'] !== 'object' ? ` but got '${typeof callingScope['defaultAnswers']}' instead.` : `.`}`
-                               , `InvalidInterviewScope`
-                               , `${dbgNs}validateInterviewScope`);
-    }
-    if (typeof callingScope['confirmationAnswers'] !== 'object' || callingScope['confirmationAnswers'] === null) {
-      throw new SfdxFalconError( `Expected 'confirmationAnswers' to be a non-null object available to the calling scope${typeof callingScope['confirmationAnswers'] !== 'object' ? ` but got '${typeof callingScope['confirmationAnswers']}' instead.` : `.`}`
-                               , `InvalidInterviewScope`
-                               , `${dbgNs}validateInterviewScope`);
-    }
-    if (typeof callingScope['context'] !== 'object' || callingScope['context'] === null) {
-      throw new SfdxFalconError( `Expected 'context' to be a non-null object available to the calling scope${typeof callingScope['context'] !== 'object' ? ` but got '${typeof callingScope['context']}' instead.` : `.`}`
-                               , `InvalidInterviewScope`
-                               , `${dbgNs}validateInterviewScope`);
-    }
-    if (typeof callingScope['sharedData'] !== 'object' || callingScope['sharedData'] === null) {
-      throw new SfdxFalconError( `Expected 'sharedData' to be a non-null object available to the calling scope${typeof callingScope['sharedData'] !== 'object' ? ` but got '${typeof callingScope['sharedData']}' instead.` : `.`}`
-                               , `InvalidInterviewScope`
-                               , `${dbgNs}validateInterviewScope`);
-    }
+
+    // Define function-local debug namespace.
+    const funcName    = `validateInterviewScope`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
+    // Make sure we got a Calling Scope object.
+    TypeValidator.throwOnEmptyNullInvalidObject(callingScope, `${dbgNsLocal}`, `callingScope`);
+
+    // Make sure the Calling Scope has access to the required variables.
+    TypeValidator.throwOnNullInvalidObject(callingScope['userAnswers'],         `${dbgNsLocal}`, `callingScope.userAnswers`);
+    TypeValidator.throwOnNullInvalidObject(callingScope['defaultAnswers'],      `${dbgNsLocal}`, `callingScope.defaultAnswers`);
+    TypeValidator.throwOnNullInvalidObject(callingScope['confirmationAnswers'], `${dbgNsLocal}`, `callingScope.confirmationAnswers`);
+    TypeValidator.throwOnNullInvalidObject(callingScope['context'],             `${dbgNsLocal}`, `callingScope.context`);
+    TypeValidator.throwOnNullInvalidObject(callingScope['sharedData'],          `${dbgNsLocal}`, `callingScope.sharedData`);
   }
 
   // Public members
@@ -186,14 +168,21 @@ export class SfdxFalconInterview<T extends object> {
    */
   //───────────────────────────────────────────────────────────────────────────┘
   constructor(opts:InterviewOptions<T>) {
+
+    // Define function-local debug namespace and debug incoming args.
+    const funcName    = `constructor`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Initialize this instance.
     this.defaultAnswers       = opts.defaultAnswers as T;
     this._confirmation        = opts.confirmation;
     this._confirmationHeader  = opts.confirmationHeader || '';
     this._display             = opts.display;
-    this._displayHeader       = opts.displayHeader || '';
+    this._displayHeader       = opts.displayHeader      || '';
     this._invertConfirmation  = opts.invertConfirmation || false;
-    this.context              = opts.context || {} as object;
-    this.sharedData           = opts.sharedData || {} as object;
+    this.context              = opts.context            || {} as object;
+    this.sharedData           = opts.sharedData         || {} as object;
     this.userAnswers          = {} as T;
     this._interviewGroups     = new Array<InterviewGroup<T>>();
     this.status               = {aborted: false, completed: false};
@@ -250,26 +239,30 @@ export class SfdxFalconInterview<T extends object> {
   //─────────────────────────────────────────────────────────────────────────────┘
   public async start():Promise<T> {
 
+    // Define function-local debug namespace.
+    const funcName    = `start`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
     // DEBUG - Don't typically need this level of detail, so keep commented out.
-    //SfdxFalconDebug.obj(`${dbgNs}start:`, this.interviewGroups, `this.interviewGroups: `);
+    //SfdxFalconDebug.obj(`${dbgNsLocal}:_interviewGroups:`, this._interviewGroups);
 
     // Iterate over each Interview Group
     for (const interviewGroup of this._interviewGroups) {
 
       // Determine if this Interview Group should be skipped.
       if (await this.skipInterviewGroup(interviewGroup)) {
-        SfdxFalconDebug.msg(`${dbgNs}start:`, `Interview Group Skipped! `);
+        SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Interview Group Skipped! `);
         continue;
       }
 
       // DEBUG
-      SfdxFalconDebug.obj(`${dbgNs}start:userAnswers:`, this.userAnswers, `this.userAnswers (PRE-PROMPT): `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:userAnswers:`, this.userAnswers, `PRE-PROMPT: `);
 
       // Prompt the user with questions from the current Interview Group.
       const groupAnswers = await interviewGroup.prompt();
 
       // DEBUG
-      SfdxFalconDebug.obj(`${dbgNs}start:groupAnswers:`, groupAnswers, `groupAnswers: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:groupAnswers:`, groupAnswers);
       
       // Blend the answers just provided with those from the Interview as a whole.
       this.userAnswers = {
@@ -278,7 +271,7 @@ export class SfdxFalconInterview<T extends object> {
       } as T;
 
       // DEBUG
-      SfdxFalconDebug.obj(`${dbgNs}start:userAnswers:`, this.userAnswers, `this.userAnswers (POST-PROMPT): `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:userAnswers:`, this.userAnswers, `POST-PROMPT: `);
 
       // Check if this group has an "abort" function. If so, check the abort conditions.
       if (typeof interviewGroup.abort === 'function') {
@@ -366,12 +359,16 @@ export class SfdxFalconInterview<T extends object> {
   //─────────────────────────────────────────────────────────────────────────────┘
   private async proceedRestartAbort():Promise<T> {
 
+    // Define function-local debug namespace and reflect incoming arguments.
+    const funcName    = `proceedRestartAbort`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
     // Debug
-    SfdxFalconDebug.obj(`${dbgNs}proceedRestartAbort:`, this.finalAnswers, `this.finalAnswers: `);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:this.finalAnswers`, this.finalAnswers);
 
     // PROCEED if this Interview does NOT have confirmation questions.
     if (typeof this._confirmation === 'undefined') {
-      SfdxFalconDebug.msg(`${dbgNs}proceedRestartAbort:`, `No Confirmation Questions Found. PROCEED by default. `);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `No Confirmation Questions Found. PROCEED by default. `);
       return this.finalAnswers;
     }
 
@@ -406,18 +403,18 @@ export class SfdxFalconInterview<T extends object> {
 
     // ABORT
     if (proceed !== true && restart !== true) {
-      SfdxFalconDebug.obj(`${dbgNs}proceedRestartAbort:`, {confirmationAnswers: confirmationAnswers, invertConfirmation: invertConfirmation, proceed: proceed, restart: restart}, `ABORT DETECTED. Relevant Variables: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:confirmationDetails:`, {confirmationAnswers: confirmationAnswers, invertConfirmation: invertConfirmation, proceed: proceed, restart: restart}, `ABORT DETECTED. Relevant Variables: `);
       return this.abortInterview('Command Aborted');
     }
 
     // PROCEED
     if (proceed === true) {
-      SfdxFalconDebug.obj(`${dbgNs}proceedRestartAbort:`, {confirmationAnswers: confirmationAnswers, invertConfirmation: invertConfirmation, proceed: proceed, restart: restart}, `PROCEED DETECTED. Relevant Variables: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:confirmationDetails:`, {confirmationAnswers: confirmationAnswers, invertConfirmation: invertConfirmation, proceed: proceed, restart: restart}, `PROCEED DETECTED. Relevant Variables: `);
       return this.finalAnswers;
     }
 
     // RESTART
-    SfdxFalconDebug.obj(`${dbgNs}proceedRestartAbort:`, {confirmationAnswers: confirmationAnswers, invertConfirmation: invertConfirmation, proceed: proceed, restart: restart}, `RESTART DETECTED. Relevant Variables: `);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:confirmationDetails:`, {confirmationAnswers: confirmationAnswers, invertConfirmation: invertConfirmation, proceed: proceed, restart: restart}, `RESTART DETECTED. Relevant Variables: `);
     console.log(''); // Place a line break before the restart.
     return this.start();
   }
