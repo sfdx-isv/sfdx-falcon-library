@@ -3,141 +3,225 @@
  * @file          packages/prompt/src/prompt.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       INSERT_SUMMARY_HERE
- * @description   INSERT_DESCRIPTION_HERE
+ * @summary       Exports SfdxFalconPrompt which provides user interaction via the console.
+ * @description   Helps developers quickly build Inquirer based interviews. Prompts created this
+ *                way can be executed alone or as part of an SfdxFalconInterview group.
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import External Libraries, Modules, and Types
-//import  {ListrContext}      from  'listr';  // Type. Used by the context object that Listr passes from Task to Task in a single execution context.
-//import  {ListrTask}         from  'listr';  // Interface. Represents a Task object as defined by Listr.
-//import  {ListrTaskWrapper}  from  'listr';  // Class. An instantiated ListrTask that will eventually be in the process of being executed.
-//import  {ListrTaskResult}   from  'listr';  // Type. Possible return values from the execution of a Listr Task.
-//import  {Observable}        from  'rxjs';   // Class. Used to communicate status with Listr.
-//import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
-
-// Import SFDX-Falcon Libraries
-//import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Library. Async utility helper functions.
-//import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
+/** */// Import External Libraries, Modules, and Types
+import inquirer = require('inquirer');  // A collection of common interactive command line user interfaces.
 
 // Import SFDX-Falcon Classes & Functions
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-//import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-//import  {SfdxFalconResult}          from  '@sfdx-falcon/status';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+import  {SfdxFalconDebug}         from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconKeyValueTable} from  '@sfdx-falcon/status';  // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
 
 // Import SFDX-Falcon Types
-//import  {SfdxFalconResultType}      from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
-//import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
+import  {AnswersDisplay}          from  '@sfdx-falcon/types';   // Type. Defines a function that displays answers to a user.
+import  {ConfirmationAnswers}     from  '@sfdx-falcon/types';   // Interface. Represents what an answers hash should look like during Yeoman/Inquirer interactions where the user is being asked to proceed/retry/abort something.
+import  {PromptOptions}           from  '@sfdx-falcon/types';   // Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
+import  {Questions}               from  '@sfdx-falcon/types';   // Type. Alias to the Questions type from the yeoman-generator module.
+import  {QuestionsBuilder}        from  '@sfdx-falcon/types';   // Type. Funcion type alias defining a function that returns Inquirer Questions.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:package-template';
+const dbgNs = '@sfdx-falcon:prompt';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
-// Define function-local debug namespace.
-const funcName    = `myFuncName`;
-const dbgNsLocal  = `${dbgNs}:${funcName}`;
-SfdxFalconDebug.msg(`${dbgNsLocal}:`, `This is how you do debug.`);
-
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * Type. Alias for the `this` context from the caller.
+ * @class       SfdxFalconPrompt
+ * @summary     Collection of one or more Inquirer Questions that can be used to gather user input.
+ * @description Allows easy creation of Inquirer prompts that have a "confirmation" question that
+ *              can be used to restart collection of the information.
+ * @public
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export type Context = any;  // tslint:disable-line: no-any
+export class SfdxFalconPrompt<T extends object> {
 
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * Interface. Represents the full suite of Task Status Message strings that are used by the
- * `TaskProgressNotifications.progressNotification()` function to display status messages to the
- * user while a `ListrTask` is running.
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface TaskStatusMessages {
-  /** The default status message. This message is shown when a task starts running. */
-  defaultMessage:   string;
-  /** Determines whether the status message should prepend the elapsed runtime in front of the status message. */
-  showTimer:        boolean;
-  /** The status message that's currently being displayed by the running task. */
-  currentMessage?:  string;
-  /** The status message that was previouly in use. Will be `null` if the status message has not been updated. */
-  prevMessage?:     string;
-  /** The status message that should be used the next time the Task Progress notification function executes. */
-  nextMessage?:     string;
+  // Public members
+  public readonly defaultAnswers:       T;                            // ???
+  public userAnswers:                   T;                            // ???
+  public confirmationAnswers:           ConfirmationAnswers;          // ???
+  public context:                       object;                       // ???
+  
+  // Private members
+  private readonly _questions:          Questions | QuestionsBuilder; // ???
+  private readonly _confirmation:       Questions | QuestionsBuilder; // ???
+  private readonly _questionsArgs:      unknown[];                    // ???
+  private readonly _confirmationArgs:   unknown[];                    // ???
+  private readonly _display:            AnswersDisplay<T>;            // ???
+  private readonly _invertConfirmation: boolean;                      // ???
+
+  // Public Accessors
+  public get confirmation():Questions {
+    if (typeof this._confirmation === 'function') {
+      return this._confirmation.call(this, this._confirmationArgs);
+    }
+    else {
+      return this._confirmation;
+    }
+  }
+  public get sharedData():object {
+    return this.context['sharedData'];
+  }
+  public get finalAnswers():T {
+    return {
+      ...this.defaultAnswers as object,
+      ...this.userAnswers as object
+    } as T;
+  }
+  public get questions():Questions {
+    if (typeof this._questions === 'function') {
+      return this._questions.apply(this, this._questionsArgs);
+    }
+    else {
+      return this._questions;
+    }
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @constructs  SfdxFalconPrompt
+   * @param       {PromptOptions<T>} opts Required. Options that define the
+   *              questions, default answers, confirmation questions, and
+   *              Prompt Engine that should be used by this SfdxFalconPrompt
+   *              object.
+   * @description Constructs an SfdxFalconPrompt object.
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  constructor(opts:PromptOptions<T>) {
+    this._questions           = opts.questions;
+    this._questionsArgs       = opts.questionsArgs || [];
+    this._confirmation        = opts.confirmation;
+    this._confirmationArgs    = opts.confirmationArgs || [];
+    this._display             = opts.display;
+    this._invertConfirmation  = opts.invertConfirmation || false;
+    this.defaultAnswers       = opts.defaultAnswers;
+    this.context              = opts.context  ||  {} as object;
+    this.confirmationAnswers  = {} as ConfirmationAnswers;
+    this.userAnswers          = {} as T;
+  }
+
+  //─────────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      prompt
+   * @returns     {Promise<T>}  Returns the answers provided by the user.
+   * @description Uses an Inquirer prompt() function to show the questions defined
+   *              in this SfdxFalconPrompt to the user and returns their input.
+   * @public @async
+   */
+  //─────────────────────────────────────────────────────────────────────────────┘
+  public async prompt():Promise<T> {
+
+    // Define function-local debug namespace.
+    const funcName    = `prompt`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
+    // Start the question loop. If a "confirmation" is specified, the loop will
+    // continue until the user indicates that they want to continue.
+    do {
+
+      // Grab questions first. This lets us debug AND use them without questions being built twice.
+      const questions = this.questions;
+
+      // DEBUG
+      SfdxFalconDebug.obj(`${dbgNsLocal}:questions:`, questions);
+
+      // Prompt the user and store the answers.
+      this.userAnswers = await inquirer.prompt(questions) as T;
+  
+      // If there is anything to display, displayAnswers() will take care of it.
+      await this.displayAnswers();
+
+    } while (await this.confirmRestart());
+
+    // Send back the user's answers.
+    return this.userAnswers;
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      confirmRestart
+   * @returns     {Promise<boolean>}  Returns true if the user wants to restart,
+   *              false if otherwise.
+   * @description If this.confirmation contains Questions, prompts the user with
+   *              those questions and then decides to continue or restart based
+   *              on the answers.
+   * @private @async
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private async confirmRestart():Promise<boolean> {
+
+    // Define function-local debug namespace.
+    const funcName    = `confirmRestart`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
+    // Debug - Keep commented out unless needed for troubleshooting.
+    //SfdxFalconDebug.obj(`${dbgNs}confirmRestart:`, this.confirmation, `this.confirmation: `);
+    //SfdxFalconDebug.obj(`${dbgNs}confirmRestart:`, this.confirmationAnswers, `this.confirmationAnswers: `);
+
+    // If "confirmation" is undefined then the user should be allowed to proceed.
+    if (typeof this._confirmation === 'undefined') {
+      this.confirmationAnswers.proceed  = true;
+      this.confirmationAnswers.restart  = false;
+      this.confirmationAnswers.abort    = false;
+      return false;
+    }
+
+    // Tell Yeoman to prompt the user for confirmation of installation.
+    this.confirmationAnswers = await inquirer.prompt(this.confirmation) as ConfirmationAnswers;
+
+    // DEBUG
+    SfdxFalconDebug.obj(`${dbgNsLocal}:this.confirmationAnswers:`, this.confirmationAnswers);
+
+    // Check if the Confirmation Answer "proceed" was provided. If it's TRUE, do not restart.
+    if (this.confirmationAnswers.proceed === true) {
+      return false;
+    }
+
+    // Convert the "invert confirmation" and "restart" booleans into numbers.
+    const invertConfirmation  = this._invertConfirmation ? 1 : 0;
+    const restart             = this.confirmationAnswers.restart ? 1 : 0;
+
+    // XOR the values of "invert" and "restart" numbers to get the correct boolean.
+    if ((invertConfirmation ^ restart) === 0) {
+      return false; // Do not restart the prompts.
+    }
+    else {
+      console.log('');  // Separate confirmation question from restarted prompts with a blank line.
+      return true;      // Restart the prompts.
+    }
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      displayAnswers
+   * @returns     {Promise<void>}
+   * @description Uses the Display function (if present) to display the User
+   *              Answers from the prompt to the user. If the Display function
+   *              returns void, it means that it rendered output to the user.
+   *              If it returns an Array, it means that we need to manually
+   *              render the returned data in a FalconTable.
+   * @private @async
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private async displayAnswers():Promise<void> {
+
+    // If there's a Display Function, use that to build/display the output.
+    if (typeof this._display === 'function') {
+
+      // The display function *might* render something on its own. If it does, it will return void.
+      const displayResults = await this._display(this.userAnswers);
+
+      // If the display function returned an Array, then we'll show it to the user with a Falcon Table.
+      if (Array.isArray(displayResults)) {
+        const falconTable = new SfdxFalconKeyValueTable();
+        console.log('');
+        falconTable.render(displayResults);
+        console.log('');
+      }
+    }
+  }
 }
-
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @class       ObservableTaskResult
- * @description Creates the structure needed to wrap the output of any task as an `SfdxFalconResult`
- *              while also managing access to the Observer that Listr uses to monitor the progress
- *              of a task.
- * @public
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @constructs  ObservableTaskResult
-   * @param       {ObservableTaskResultOptions} opts  Required. Options that
-   *              determine how this `ObservableTaskResult` will be constructed.
-   * @description Constructs an `ObservableTaskResult` object.
-   * @public
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @method      finalizeFailure
-   * @param       {ErrorOrResult} errorOrResult Required.
-   * @returns     {void}
-   * @description Finalizes this `ObservableTaskResult` in a manner that
-   *              indicates the associated task was NOT successful.
-   * @public
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-
-
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @class       SfdxFalconTask
- * @description Abstraction of a single Listr Task with a lot of extra functionality bundled in.
- * @public
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @constructs  SfdxFalconTask
-   * @param       {SfdxFalconTaskOptions} opts  Required. Options used to
-   *              construct this instance of an `SfdxFalconTask` object.
-   * @description Constructs an `SfdxFalconTask` object.
-   * @public
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @method      build
-   * @returns     {ListrTask}
-   * @description Builds an Observable `ListrTask` object based on the info
-   *              that the caller provided to us when this `SfdxFalconTask`
-   *              object was constructed.
-   * @public
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-
-// ────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @function    progressNotification
- * @param       {SfdxFalconStatus}  status  Required. Helps determine current running time.
- * @param       {TaskStatusMessages}  taskStatusMessages Required. Determines what gets displayed
- *              as part of the status message and whether or not the runtime gets shown.
- * @param       {Subscriber}  subscriber  Required. `Subscriber` to an `Observable` object.
- * @returns     {void}
- * @description Computes the current Run Time from a `SfdxFalconResult` object and composes a
- *              message that `updateSubscriber()` will handle.
- * @private
- */
-// ────────────────────────────────────────────────────────────────────────────────────────────────┘
