@@ -40,10 +40,15 @@ export interface PermissionSetAssignment extends SObject {
  * Interface. Represents the Salesforce User SObject.
  */
 export interface User extends SObject {
-  username?: string;
+  username?: UserName;
 }
 
 /**
  * Type. Alias for an array of objects that may have "Id" and "Name" properties.
  */
 export type SObjectFindResult = Array<{Id?: string; Name?: string; }>;
+
+/**
+ * Type. Represents a Salesforce username. Alias for string.
+ */
+export type UserName = string;
