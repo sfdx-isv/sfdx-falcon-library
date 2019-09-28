@@ -325,19 +325,19 @@ export type SfdxFalconTableData = SfdxFalconKeyValueTableDataRow[];
 /**
  * Type. Defines a function that displays answers to a user.
  */
-export type AnswersDisplay<T extends object> = (userAnswers?:T) => Promise<void | SfdxFalconTableData>;
+export type AnswersDisplay<T extends JsonMap> = (userAnswers?:T) => Promise<void | SfdxFalconTableData>;
 
 /**
  * Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
  */
-export interface PromptOptions<T extends object> {
+export interface PromptOptions<T extends JsonMap> {
   questions:            Questions | QuestionsBuilder; // Required. Questions for the user.
   questionsArgs?:       unknown[];                    // Optional. Array of arguments to be passed to a QuestionsBuilder function.
   defaultAnswers:       T;                            // Required. Default answers to the Questions.
   confirmation?:        Questions | QuestionsBuilder; // Optional. Confirmation Questions.
   confirmationArgs?:    unknown[];                    // Optional. Array of arguments to be passed to a QuestionsBuilder function.
-  invertConfirmation?:  boolean;                      // Optional. Treats
-  display?:             AnswersDisplay<T>;            // ???
+  invertConfirmation?:  boolean;                      // Optional. ???
+  display?:             AnswersDisplay<T>;            // Optional. ???
   context?:             object;                       // Optional. The scope of the caller who creates an SfdxFalconPrompt.
   data?:                object;                       // Optional. ???
 }
@@ -345,7 +345,7 @@ export interface PromptOptions<T extends object> {
 /**
  * Interface. Represents the options that can be set by the SfdxFalconInterview constructor.
  */
-export interface InterviewOptions<T extends object> {
+export interface InterviewOptions<T extends JsonMap> {
   defaultAnswers:       T;                            // Required. Default answers to the Questions.
   confirmation?:        Questions | QuestionsBuilder; // Optional. Confirmation Questions.
   confirmationHeader?:  string;                       // Optional. Text to be shown above the Interview's Confirmation Question.
@@ -359,7 +359,7 @@ export interface InterviewOptions<T extends object> {
 /**
  * Interface. Represents the options that can be set by the InterviewGroup constructor.
  */
-export interface InterviewGroupOptions<T extends object> {
+export interface InterviewGroupOptions<T extends JsonMap> {
   questions:            Questions | QuestionsBuilder;
   questionsArgs?:       unknown[];
   confirmation?:        Questions | QuestionsBuilder;
@@ -412,7 +412,7 @@ export type Question = Question;
 /**
  * Interface. Represents the initialization requirements for Yeoman Generators that implement SfdxFalconYeomanGenerator.
  */
-export interface GeneratorRequirements {
+export interface GeneratorRequirementsDELETE {
   git:              boolean;
   gitRemoteUri:     string;
   localFile:        string;

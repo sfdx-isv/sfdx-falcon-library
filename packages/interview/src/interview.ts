@@ -27,6 +27,7 @@ import  {ConfirmationAnswers}       from  '@sfdx-falcon/types';     // Interface
 import  {InterviewGroupOptions}     from  '@sfdx-falcon/types';     // Interface. Represents the options that can be set by the InterviewGroup constructor.
 import  {InterviewOptions}          from  '@sfdx-falcon/types';     // Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
 import  {InterviewStatus}           from  '@sfdx-falcon/types';     // Interface. Represents a set of status indicators for an SfdxFalconInterview.
+import  {JsonMap}                   from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 import  {Questions}                 from  '@sfdx-falcon/types';     // Type. Alias to the Questions type from the yeoman-generator module.
 import  {QuestionsBuilder}          from  '@sfdx-falcon/types';     // Type. Function type alias defining a function that returns Inquirer Questions.
 import  {ShowInterviewGroup}        from  '@sfdx-falcon/types';     // Type. Alias defining a function that checks whether an Interview Group should be shown.
@@ -47,7 +48,7 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
  * @public
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export class InterviewGroup<T extends object> {
+export class InterviewGroup<T extends JsonMap> {
 
   // Public members.
   public  readonly  title:        string;
@@ -102,7 +103,7 @@ export class InterviewGroup<T extends object> {
  * @public
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export class SfdxFalconInterview<T extends object> {
+export class SfdxFalconInterview<T extends JsonMap> {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**

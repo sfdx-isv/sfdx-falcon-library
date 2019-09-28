@@ -10,7 +10,7 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 /** */// Import External Libraries, Modules, and Types
-import inquirer = require('inquirer');  // A collection of common interactive command line user interfaces.
+import  inquirer                  = require('inquirer');        // A collection of common interactive command line user interfaces.
 
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}         from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
@@ -19,6 +19,7 @@ import  {SfdxFalconKeyValueTable} from  '@sfdx-falcon/status';  // Class. Uses t
 // Import SFDX-Falcon Types
 import  {AnswersDisplay}          from  '@sfdx-falcon/types';   // Type. Defines a function that displays answers to a user.
 import  {ConfirmationAnswers}     from  '@sfdx-falcon/types';   // Interface. Represents what an answers hash should look like during Yeoman/Inquirer interactions where the user is being asked to proceed/retry/abort something.
+import  {JsonMap}                 from  '@sfdx-falcon/types';   // Interface. Any JSON-compatible object.
 import  {PromptOptions}           from  '@sfdx-falcon/types';   // Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
 import  {Questions}               from  '@sfdx-falcon/types';   // Type. Alias to the Questions type from the yeoman-generator module.
 import  {QuestionsBuilder}        from  '@sfdx-falcon/types';   // Type. Funcion type alias defining a function that returns Inquirer Questions.
@@ -37,7 +38,7 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
  * @public
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export class SfdxFalconPrompt<T extends object> {
+export class SfdxFalconPrompt<T extends JsonMap> {
 
   // Public members
   public readonly defaultAnswers:       T;                            // ???
@@ -67,8 +68,8 @@ export class SfdxFalconPrompt<T extends object> {
   }
   public get finalAnswers():T {
     return {
-      ...this.defaultAnswers as object,
-      ...this.userAnswers as object
+      ...this.defaultAnswers,
+      ...this.userAnswers
     } as T;
   }
   public get questions():Questions {
