@@ -3,248 +3,323 @@
  * @file          packages/generator/src/generator.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       INSERT_SUMMARY_HERE
- * @description   INSERT_DESCRIPTION_HERE
+ * @summary       Exports `SfdxFalconGenerator` for use with custom Yeoman generators.
+ * @description   Exports an abstract class that extends Yeoman's `Generator` class, adding
+ *                customized support for SFDX-Falcon specific tools and capabilities.
  * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-//import  {ListrContext}      from  'listr';  // Type. Used by the context object that Listr passes from Task to Task in a single execution context.
-//import  {ListrTask}         from  'listr';  // Interface. Represents a Task object as defined by Listr.
-//import  {ListrTaskWrapper}  from  'listr';  // Class. An instantiated ListrTask that will eventually be in the process of being executed.
-//import  {ListrTaskResult}   from  'listr';  // Type. Possible return values from the execution of a Listr Task.
-//import  {Observable}        from  'rxjs';   // Class. Used to communicate status with Listr.
-//import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
+import  {JsonMap}       from  '@salesforce/ts-types'; // Any JSON-compatible object.
+import  chalk           from  'chalk';                // Helps write colored text to the console.
+import  * as path       from  'path';                 // Library. Helps resolve local paths at runtime.
+import  * as Generator  from  'yeoman-generator';     // Class. Custom Generator classes must extend this.
 
 // Import SFDX-Falcon Libraries
-//import  {AsyncUtil}                 from  '@sfdx-falcon/util';          // Library. Async utility helper functions.
-//import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
+import  {GitUtil}                 from  '@sfdx-falcon/util';                  // Library. Git Helper functions specific to SFDX-Falcon.
+//import  listrTasks            from  '@sfdx-falcon/util';          // Library. Helper functions that make using Listr with SFDX-Falcon easier.
+import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-//import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-//import  {SfdxFalconResult}          from  '@sfdx-falcon/status';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';       // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxEnvironment}           from  '@sfdx-falcon/environment'; // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconError}           from  '@sfdx-falcon/error';       // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {SfdxFalconInterview}       from  '@sfdx-falcon/interview';   // Class. Provides a standard way of building a multi-group Interview to collect user input.
+import  {SfdxFalconResult}          from  '@sfdx-falcon/status';      // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+import  {printStyledMessage}        from  '@sfdx-falcon/status';      // Function. Prints a Styled Message to the console using Chalk.
+import  {SfdxFalconKeyValueTable}   from  '@sfdx-falcon/status';      // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
+import  {GeneratorStatus}           from  '@sfdx-falcon/status';      // Class. Status tracking object for use with Yeoman Generators.
 
 // Import SFDX-Falcon Types
-//import  {SfdxFalconResultType}      from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
-//import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
-
-// Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:package-template';
-SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
-
-// Define function-local debug namespace.
-const funcName    = `myFuncName`;
-const dbgNsLocal  = `${dbgNs}:${funcName}`;
-SfdxFalconDebug.msg(`${dbgNsLocal}:`, `This is how you do debug.`);
-
-
-
-
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @file          modules/sfdx-falcon-yeoman-generator/index.ts
- * @copyright     Vivek M. Chawla - 2018
- * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       Exports SfdxFalconYeomanGenerator for use with custom Yeoman generators.
- * @description   Exports an abstract class that extends Yeoman's Generator class, adding customized
- *                support for SFDX-Falcon specific tools and capabilities.
- * @version       1.0.0
- * @license       MIT
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import External Libraries, Modules, and Types
-import chalk          from  'chalk';            // Helps write colored text to the console.
-import * as path      from  'path';             // Library. Helps resolve local paths at runtime.
-import * as Generator from  'yeoman-generator'; // Class. Custom Generator classes must extend this.
-
-// Import Internal Libraries
-import * as gitHelper             from  '../sfdx-falcon-util/git';                  // Library. Git Helper functions specific to SFDX-Falcon.
-import * as listrTasks            from  '../sfdx-falcon-util/listr-tasks';          // Library. Helper functions that make using Listr with SFDX-Falcon easier.
-import * as typeValidator         from  '../sfdx-falcon-validators/type-validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
-
-// Import Internal Classes & Functions
-import {SfdxFalconDebug}          from  '../sfdx-falcon-debug';           // Class. Specialized debug provider for SFDX-Falcon code.
-import {SfdxFalconError}          from  '../sfdx-falcon-error';           // Class. Specialized Error object. Wraps SfdxError.
-import {SfdxFalconInterview}      from  '../sfdx-falcon-interview';       // Class. Provides a standard way of building a multi-group Interview to collect user input.
-import {SfdxFalconResult}         from  '../sfdx-falcon-result';          // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
-import {printStyledMessage}       from  '../sfdx-falcon-util/ux';         // Function. Prints a Styled Message to the console using Chalk.
-import {SfdxFalconKeyValueTable}  from  '../sfdx-falcon-util/ux';         // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
-import {GeneratorStatus}          from  '../sfdx-falcon-util/yeoman';     // Class. Status tracking object for use with Yeoman Generators.
-
-// Import Internal Types
-import {GeneratorRequirements}    from  '../sfdx-falcon-types';           // Interface. Represents the initialization requirements for Yeoman Generators that implement SfdxFalconYeomanGenerator.
-import {InquirerChoices}          from  '../sfdx-falcon-types';           // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
-import {ListrContextFinalizeGit}  from  '../sfdx-falcon-types';           // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
-import {ListrTaskBundle}          from  '../sfdx-falcon-types';           // Interface. Represents the suite of information required to run a Listr Task Bundle.
-import {StatusMessageType}        from  '../sfdx-falcon-types';           // Enum. Represents the various types/states of a Status Message.
-import {StyledMessage}            from  '../sfdx-falcon-types';           // Interface. Allows for specification of a message string and chalk-specific styling information.
-import {SfdxFalconTableData}      from  '../sfdx-falcon-util/ux';         // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
-import {GeneratorOptions}         from  '../sfdx-falcon-yeoman-command';  // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
+import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
+import  {SfdxEnvironmentRequirements} from  '@sfdx-falcon/environment'; // Interface. Represents the elements of the local SFDX Environment that are required by the calling code.
+import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
+import  {InquirerChoices}           from  '@sfdx-falcon/types';       // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
+import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';       // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
+import  {ListrTaskBundle}           from  '@sfdx-falcon/types';       // Interface. Represents the suite of information required to run a Listr Task Bundle.
+import  {StatusMessageType}         from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
+import  {StyledMessage}             from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
 
 // Requires
-const {version}         = require('../../../package.json'); // The version of the SFDX-Falcon plugin
-const {falcon}          = require('../../../package.json'); // The custom "falcon" key from package.json. This holds custom project-level values.
+//const {version}         = require('../../../package.json'); // The version of the SFDX-Falcon plugin
+//const {falcon}          = require('../../../package.json'); // The custom "falcon" key from package.json. This holds custom project-level values.
 const yosay             = require('yosay');                 // ASCII art creator brings Yeoman to life.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'GENERATOR:sfdx-falcon-yeoman-generator:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:generator';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
+// Define function-local debug namespace.
+//const funcName    = `myFuncName`;
+//const dbgNsLocal  = `${dbgNs}:${funcName}`;
+//SfdxFalconDebug.msg(`${dbgNsLocal}:`, `This is how you do debug.`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @class       SfdxFalconYeomanGenerator
+ * Interface. Collection of objects that represent the Answers that will be leveraged by an
+ * `SfdxFalconGenerator`.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface Answers<T extends JsonMap> {
+  /** Required. The set of default answers for the Interview of an `SfdxFalconGenerator`. */
+  default:  T;
+  /** Required. The set of answers provided by the user for the Interview of an `SfdxFalconGenerator`. */
+  user:     T;
+  /** Required. The set of final answers for the Interview of an `SfdxFalconGenerator`. In other words, the merging of User and Default answers in case the user did not supply some answers. */
+  final:    T;
+  /** Optional. Special set of answers. Provides a means to send meta values (usually template tags) to EJS templates. */
+  meta?:    T;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Collection of message strings that are displayed at various times during the execution
+ * of an `SfdxFalconGenerator`.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface GeneratorMessage {
+  /** Required. Message shown to the user before exiting the initializing() run-loop function. */
+  confirmation: string;
+  /** Required. Message that will be displayed by the yosay "Yeoman" ASCII art when the generator is loaded. */
+  opening:      string;
+  /** Required. Message that will be displayed by the `end()` run-loop function upon successful completion of the Generator. */
+  success:      string;
+  /** Required. Message that will be displayed by the `end()` run-loop function upon failure of the Generator. */
+  failure:      string;
+  /** Required. Message that will be displayed by the `end()` run-loop function upon partial success of the Generator.  */
+  warning:      string;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Collection of requirements for the initialization process of an `SfdxFalconGenerator`.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface GeneratorRequirements {
+  gitEnvReqs:   object;
+  sfdxEnvReqs:  SfdxEnvironmentRequirements;
+  localEnvReqs: object;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Collection of status `boolean` variables that reflect the status of various Yeoman
+ * run-loop functions.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface RunLoopStatus {
+  /** Required. Indicates that the `initializing()` run-loop function has completed successfully. */
+  initializingComplete:   boolean;
+  /** Required. Indicates that the `prompting()` run-loop function has completed successfully. */
+  promptingComplete:      boolean;
+  /** Required. Indicates that the `configuring()` run-loop function has completed successfully. */
+  configuringComplete:    boolean;
+  /** Required. Indicates that the `writing()` run-loop function has completed successfully. */
+  writingComplete:        boolean;
+  /** Required. Indicates that the `install()` run-loop function has completed successfully. */
+  installComplete:        boolean;
+  /** Required. Indicates that the `end()` run-loop function completed successfully. */
+  endComplete:            boolean;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @class       SfdxFalconGenerator
  * @extends     Generator
  * @summary     Abstract base class class for building Yeoman Generators for SFDX-Falcon commands.
- * @description Classes that extend SfdxFalconYeomanGenerator must provide a type parameter to
- *              ensure that the "xAnswers" family of member variables has the appropriate interface
+ * @description Classes that extend `SfdxFalconGenerator` must provide a type parameter to
+ *              ensure that the "answers" family of member variables (`defaultAnswers`,
+ *              `userAnswers`, `metaAnswers`, and `finalAnswers`) has the appropriate interface
  *              type which defines the answers that are relevant to a concrete child class.
  * @public @abstract
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export abstract class SfdxFalconYeomanGenerator<T extends object> extends Generator {
+export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
-  // Define class members.
-  protected cliCommandName:         string;                     // Name of the CLI command that kicked off this generator.
-  protected pluginVersion:          string;                     // Version of the plugin, taken from package.json.
-  protected sfdcApiVersion:         string;                     // Default Salesforce API version, taken from package.json.
-  protected successMessage:         string;                     // Message that will be displayed upon successful completion of the Generator.
-  protected failureMessage:         string;                     // Message that will be displayed upon failure of the Generator.
-  protected warningMessage:         string;                     // Message that will be displayed upon partial success of the Generator.
-  protected openingMessage:         string;                     // Message that is displayed by the yosay "Yeoman" ASCII art when the generator is loaded.
-  protected generatorStatus:        GeneratorStatus;            // Used to keep track of status and to return messages to the caller.
-  protected generatorResult:        SfdxFalconResult;           // Used to keep track of status and to return messages to the caller.
-  protected generatorRequirements:  GeneratorRequirements;      // Determines which steps are followed during the Default Initialization process.
-  protected generatorType:          string;                     // Tracks the name (type) of generator being run, eg. 'clone-appx-package-project'.
-  protected initializingComplete:   boolean;                    // Indicates that the initializing() function completed successfully.
-  protected promptingComplete:      boolean;                    // Indicates that the prompting() function completed successfully.
-  protected configuringComplete:    boolean;                    // Indicates that the configuring() function completed successfully.
-  protected writingComplete:        boolean;                    // Indicates that the writing() function completed successfully.
-  protected installComplete:        boolean;                    // Indicates that the install() function completed successfully.
-  protected endComplete:            boolean;                    // Indicates that the end() function completed successfully.
-  protected falconTable:            SfdxFalconKeyValueTable;    // Falcon Table from ux-helper.
-  protected userInterview:          SfdxFalconInterview<T>;     // Why?
-  protected defaultAnswers:         T;                          // Why?
-  protected finalAnswers:           T;                          // Why?
-  protected metaAnswers:            T;                          // Provides a means to send meta values (usually template tags) to EJS templates.
-  protected confirmationQuestion:   string;                     // Why?
-  protected standardOrgAliasChoices:      InquirerChoices;      // Array of ALL Standard (ie. non-scratch) Org aliases/usernames in the form of Inquirer choices.
-  protected scratchOrgAliasChoices:       InquirerChoices;      // Array of ALL Scratch Org aliases/usernames in the form of Inquirer choices.
-  protected devHubAliasChoices:           InquirerChoices;      // Array of DevOrg aliases/usernames in the form of Inquirer choices.
-  protected envHubAliasChoices:           InquirerChoices;      // Array of EnvHub aliases/usernames in the form of Inquirer choices.
-  protected pkgOrgAliasChoices:           InquirerChoices;      // Array of ALL Packaging Org aliases/usernames in the form of Inquirer choices.
-  protected managedPkgOrgAliasChoices:    InquirerChoices;      // Array of MANAGED Packaging Org aliases/usernames in the form of Inquirer choices.
-  protected unmanagedPkgOrgAliasChoices:  InquirerChoices;      // Array of UNMANAGED Packaging Org aliases/usernames in the form of Inquirer choices.
-  protected sharedData:                   object;               // Used to share data between the Generator, Inqurirer Prompts, and Listr Tasks.
+  // Protected class members
+  /** Name of the CLI command that kicked off this Generator. */
+  protected readonly  commandName:              string;
+  /** Version of the plugin that's running this Generator. Taken dynamically from `package.json`. */
+  protected readonly  pluginVersion:            string;
+  /** Custom `falcon` options key from `package.json`. Can be used to read package-global settings that a plugin developer chooses to add to `package.json`. */
+  protected readonly  falcon:                   JsonMap;
+  /** Specifies the various messages used by this Generator. */
+  protected readonly  generatorMessage:         GeneratorMessage;
+  /** Tracks the name (type) of Generator being run, eg. `clone-appx-package-project`. */
+  protected readonly  generatorType:            string;
+  /** Tracks the path to the of the source file containing the Generator being run, eg `../../generators`. */
+  protected readonly  generatorPath:            string;
+  /** Used to keep track of status and to return messages to the caller. */
+  protected readonly  generatorStatus:          GeneratorStatus;
+  /** Used to keep track of status and to return messages to the caller. */
+  protected readonly  generatorResult:          SfdxFalconResult;
+  /** Determines which initialization tasks are performed during the Default Initialization process. */
+  protected readonly  generatorReqs:            GeneratorRequirements;
+  /** Tracks the status of various run-loop functions. */
+  protected readonly  runLoopStatus:            RunLoopStatus;
+  /** Collection of objects that represent the Answers to questions that will be asked during the Interview. */
+  protected readonly  answers:                  Answers<T>;
+  /** Used to share data between the Generator, Inqurirer Prompts, and Listr Tasks. */
+  protected readonly  sharedData:               object;
+  /** Holds the `SfdxFalconInterview` object that will be run during the `prompting()` run-loop function. */
+  protected userInterview:                      SfdxFalconInterview<T>;
+  /** Represents the SFDX Environment. */
+  protected sfdxEnv:                            SfdxEnvironment;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @constructs  SfdxFalconYeomanGenerator
-   * @param       {string|string[]} args Required. Not used (as far as I know).
-   * @param       {GeneratorOptions}  opts Required. Sets generator options.
-   * @description Constructs a SfdxFalconYeomanGenerator object.
+   * @constructs  SfdxFalconGenerator
+   * @param       {string|string[]} args Required. Array of arguments that are
+   *              passed to this generator by Yeoman if the generator is being
+   *              invoked from the command line. Passed directly through to
+   *              the superclass constructor without modification.
+   * @param       {GeneratorOptions}  opts Required. Object containing options
+   *              that help specify how a specific generator is run. These
+   *              options are set when external code uses a Yeoman Environment
+   *              to `run()` a Generator that's derived from this class.
+   * @description Constructs an `SfdxFalconGenerator` object.
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  constructor(args:string|string[], opts:GeneratorOptions) {
+  constructor(args:string|string[], opts:GeneratorOptions, reqs:GeneratorRequirements) {
 
-    // Make sure we get a valid SfdxFalconResult GENERATOR Result object in the options.
-    if ((opts.generatorResult instanceof SfdxFalconResult) !== true) {
-      throw new SfdxFalconError( `Options provided to SfdxFalconYeomanGenerator must have `
-                               + `a 'generatorResult' key containing an SfdxFalconResult object.`
-                               , `InvalidOption`
-                               , `${dbgNs}constructor`);
-    }
+    // Define function-local debug namespace and debug incoming arguments.
+    const funcName    = `constructor`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Validate core options.
+    TypeValidator.throwOnEmptyNullInvalidObject (reqs,               `${dbgNsLocal}`, `GeneratorRequirements`);
+    TypeValidator.throwOnEmptyNullInvalidObject (reqs.gitEnvReqs,    `${dbgNsLocal}`, `GeneratorRequirements.gitEnvReqs`);
+    TypeValidator.throwOnEmptyNullInvalidObject (reqs.localEnvReqs,  `${dbgNsLocal}`, `GeneratorRequirements.localEnvReqs`);
+    TypeValidator.throwOnEmptyNullInvalidObject (reqs.sfdxEnvReqs,   `${dbgNsLocal}`, `GeneratorRequirements.sfdxEnvReqs`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts,               `${dbgNsLocal}`, `GeneratorOptions`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.commandName,   `${dbgNsLocal}`, `GeneratorOptions.commandName`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.generatorType, `${dbgNsLocal}`, `GeneratorOptions.generatorType`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.generatorPath, `${dbgNsLocal}`, `GeneratorOptions.generatorPath`);
+    TypeValidator.throwOnNullInvalidInstance    (opts.generatorResult,  SfdxFalconResult,  `${dbgNsLocal}`, `GeneratorOptions.generatorType`);
 
     // Call the parent constructor to initialize the Yeoman Generator.
     super(args, opts);
 
-    // Initialize class members.
-    this.cliCommandName       = opts.commandName;               // Name of the command that's executing the Generator (eg. 'falcon:adk:clone').
-    this.generatorType        = opts.generatorType;             // Type (ie. file name minus the .ts extension) of the Generator being run.
-    this.generatorResult      = opts.generatorResult;           // Used for activity tracking and communication back to the calling command.
-    this.generatorStatus      = new GeneratorStatus();          // Tracks status and build messages to the user.
-    this.pluginVersion        = version;                        // Version of the plugin, taken from package.json.
-    this.sfdcApiVersion       = falcon.sfdcApiVersion;          // Version of the Salesforce API to use by default (when such is needed).
-    this.initializingComplete = false;                          // Should be marked true only after the "initializing" Yeoman phase is completely successful.
-    this.promptingComplete    = false;                          // Should be marked true only after the "prompting" Yeoman phase is completely successful.
-    this.configuringComplete  = false;                          // Should be marked true only after the "configuring" Yeoman phase is completely successful.
-    this.writingComplete      = false;                          // Should be marked true only after the "writing" Yeoman phase is completely successful.
-    this.installComplete      = false;                          // Should be marked true only after the "install" Yeoman phase is completely successful.
-    this.endComplete          = false;                          // Should be marked true only after the "end" Yeoman phase is completely successful.
-    this.falconTable          = new SfdxFalconKeyValueTable();  // Initialize the Falcon Table for end-of-command output.
-    this.defaultAnswers       = {} as T;                        // Set of default answers.
-    this.finalAnswers         = {} as T;                        // Set of final answers, ie. merging of User and Default answers in case user did not supply some answers.
-    this.metaAnswers          = {} as T;                        // Special set of answers that can be used by special file copy templates.
-    this.sharedData           = {} as object;                   // Special context for sharing data between Generator, Inquirer Questions, and Listr Tasks.
-    this.standardOrgAliasChoices      = [] as InquirerChoices;  // Eventually populated if generatorRequirements.standardOrgs is TRUE.
-    this.scratchOrgAliasChoices       = [] as InquirerChoices;  // Eventually populated if generatorRequirements.scratchOrgs is TRUE.
-    this.devHubAliasChoices           = [] as InquirerChoices;  // Eventually populated if generatorRequirements.devHubOrgs is TRUE.
-    this.envHubAliasChoices           = [] as InquirerChoices;  // Eventually populated if generatorRequirements.envHubOrgs is TRUE.
-    this.pkgOrgAliasChoices           = [] as InquirerChoices;  // Eventually populated if generatorRequirements.pkgHubOrgs is TRUE.
-    this.managedPkgOrgAliasChoices    = [] as InquirerChoices;  // Eventually populated if generatorRequirements.managedPkgOrgs is TRUE.
-    this.unmanagedPkgOrgAliasChoices  = [] as InquirerChoices;  // Eventually populated if generatorRequirements.unmanagedPkgOrgs is TRUE.
-    
-    // Set defaults for the success, failure, and warning messages.
-    this.successMessage   = `${this.cliCommandName} completed successfully`;
-    this.failureMessage   = `${this.cliCommandName} exited without completing the expected tasks`;
-    this.warningMessage   = `${this.cliCommandName} completed successfully, but with some warnings (see above)`;
-    this.openingMessage   = `SFDX-Falcon Plugin\n${this.cliCommandName}\nv${this.pluginVersion}`;
-
-    // Start the Generator Status and add it to the detail of the GENERATOR Result.
-    this.generatorStatus.start();
-    this.generatorResult.setDetail({
-      generatorType:      this.generatorType,
-      generatorStatus:    this.generatorStatus,
-      userAnswers:        null,
-      defaultAnswers:     this.defaultAnswers,
-      finalAnswers:       this.finalAnswers,
-      interviewQuestions: null
-    });
-
-    // Set defaults for the Generator Requirements. By default, all should be FALSE or EMPTY.
-    this.generatorRequirements = {
-      git:              false,
-      gitRemoteUri:     '',
-      localFile:        '',
-      localDirectory:   '',
-      standardOrgs:     false,
-      scratchOrgs:      false,
-      devHubOrgs:       false,
-      envHubOrgs:       false,
-      managedPkgOrgs:   false,
-      unmanagedPkgOrgs: false
+    // Resolve Generator Requirements
+    const generatorReqs:GeneratorRequirements = {
+      sfdxEnvReqs: {
+        standardOrgs:     (reqs.sfdxEnvReqs.standardOrgs      === true ? true : false),
+        scratchOrgs:      (reqs.sfdxEnvReqs.scratchOrgs       === true ? true : false),
+        devHubOrgs:       (reqs.sfdxEnvReqs.devHubOrgs        === true ? true : false),
+        envHubOrgs:       (reqs.sfdxEnvReqs.envHubOrgs        === true ? true : false),
+        managedPkgOrgs:   (reqs.sfdxEnvReqs.managedPkgOrgs    === true ? true : false),
+        unmanagedPkgOrgs: (reqs.sfdxEnvReqs.unmanagedPkgOrgs  === true ? true : false)
+      },
+      gitEnvReqs: {
+        // TODO: Implement once Git Environment is fleshed out.
+      },
+      localEnvReqs: {
+        // TODO: Implement once Local Environment is fleshed out.
+      }
     };
 
-    // Initialize the "Confirmation Question". This should be overridden by the subclass.
-    this.confirmationQuestion = 'Would you like to proceed based on the above settings?';
+    // Determine the path to the package.json file for the currently running package.
+    const pkgDotJsonPath    = '../../../package.json';
+
+    // Attempt to pull the VERSION key from package.json.
+    let pkgVersion:string = `??.??.??`;
+    try {
+      const {version} = require(pkgDotJsonPath);
+      pkgVersion  = TypeValidator.isNotEmptyNullInvalidString(version) ? version : pkgVersion;
+    }
+    catch (pkgVersionJsonError) {
+      SfdxFalconDebug.obj(`${dbgNsLocal}:pkgVersionJsonError:`, pkgVersionJsonError);
+    }
+    SfdxFalconDebug.str(`${dbgNsLocal}:pkgVersion:`, pkgVersion);
+
+    // Attempt to pull the FALCON key from package.json.
+    let pkgFalcon:JsonMap = {};
+    try {
+      const {falcon} = require(pkgDotJsonPath);
+      pkgFalcon = TypeValidator.isNotNullInvalidObject(falcon) ? falcon : pkgFalcon;
+    }
+    catch (pkgFalconJsonError) {
+      SfdxFalconDebug.obj(`${dbgNsLocal}:pkgFalconJsonError:`, pkgFalconJsonError);
+    }
+    SfdxFalconDebug.obj(`${dbgNsLocal}:pkgFalcon:`, pkgFalcon);
+
+    // Initialize class members.
+    this.commandName          = opts.commandName;       // Name of the command that's executing the Generator (eg. 'falcon:adk:clone').
+    this.generatorType        = opts.generatorType;     // Type (ie. file name minus the .ts extension) of the Generator being run.
+    this.generatorResult      = opts.generatorResult;   // Used for activity tracking and communication back to the calling command.
+    this.generatorReqs        = generatorReqs;          // Generator Requirements. Should be modified by the derived class.
+    this.generatorStatus      = new GeneratorStatus();  // Tracks status and build messages to the user.
+    this.pluginVersion        = pkgVersion;             // Version of the plugin, taken from package.json.
+    this.falcon               = pkgFalcon;              // Falcon global JsonMap, taken from package.json.
+    this.sharedData           = {} as object;           // Special context for sharing data between Generator, Inquirer Questions, and Listr Tasks.
+
+    // Initialize all Run-Loop Status booleans to `null`.
+    // In practice, `null` will mean an unset value, `false` means failure, `true` means success.
+    this.runLoopStatus = {
+      initializingComplete: null,
+      promptingComplete:    null,
+      configuringComplete:  null,
+      writingComplete:      null,
+      installComplete:      null,
+      endComplete:          null
+    };
+
+    // Initialize all Answer objects.
+    this.answers = {
+      default:  {} as T,
+      final:    {} as T,
+      user:     {} as T,
+      meta:     {} as T
+    };
+
+    // Set defaults for all Generator messages.
+    this.generatorMessage = {
+      opening:      `SFDX-Falcon Powered Plugin\n${this.commandName}\nv${this.pluginVersion}`,
+      confirmation: `Would you like to proceed based on the above settings?`,
+      success:      `${this.commandName} completed successfully`,
+      failure:      `${this.commandName} exited without completing the expected tasks`,
+      warning:      `${this.commandName} completed successfully, but with some warnings (see above)`
+    };
+
+    // Start the GeneratorStatus object and add it to the detail of the GENERATOR Result.
+    this.generatorStatus.start();
+    this.generatorResult.setDetail({
+      commandName:        this.commandName,
+      generatorType:      this.generatorType,
+      generatorPath:      this.generatorPath,
+      generatorReqs:      this.generatorReqs,
+      generatorMsgs:      this.generatorMessage,
+      interviewAnswers:   this.answers,
+      runLoopStatus:      this.runLoopStatus,
+      generatorStatus:    this.generatorStatus
+    });
+    this.generatorResult.debugResult(`After setting Detail in constructor`, `${dbgNsLocal}`);
 
     // Initialize Shared Data.
-    this.sharedData['cliCommandName']               = this.cliCommandName;
-    this.sharedData['generatorRequirements']        = this.generatorRequirements;
+    this.sharedData['cliCommandName']               = this.commandName;
+//    this.sharedData['generatorRequirements']        = this.generatorRequirements;
     this.sharedData['generatorStatus']              = this.generatorStatus;
-    this.sharedData['standardOrgAliasChoices']      = this.standardOrgAliasChoices;
-    this.sharedData['scratchOrgAliasChoices']       = this.scratchOrgAliasChoices;
-    this.sharedData['devHubAliasChoices']           = this.devHubAliasChoices;
-    this.sharedData['envHubAliasChoices']           = this.envHubAliasChoices;
-    this.sharedData['pkgOrgAliasChoices']           = this.pkgOrgAliasChoices;
-    this.sharedData['managedPkgOrgAliasChoices']    = this.managedPkgOrgAliasChoices;
-    this.sharedData['unmanagedPkgOrgAliasChoices']  = this.unmanagedPkgOrgAliasChoices;
-
-    // DEBUG
-    SfdxFalconDebug.str(`${dbgNs}constructor:`, this.cliCommandName, `this.cliCommandName: `);
   }
 
   // Define abstract methods.
-  protected abstract        _buildInterview():SfdxFalconInterview<T>; // Builds a complete Interview, which may include zero or more confirmation groupings.
-  protected abstract async  _buildInterviewAnswersTableData(userAnswers:T):Promise<SfdxFalconTableData>;  // Creates Interview Answers table data. Can be used to render a Falcon Table.
-  protected abstract async  initializing():Promise<void>;             // STEP ONE in the Yeoman run-loop. Uses Yeoman's "initializing" run-loop priority.
-  protected abstract async  prompting():Promise<void>;                // STEP TWO in the Yeoman run-loop. Interviews the User to get information needed by the "writing" and "installing" phases.
-  protected abstract async  configuring():Promise<void>;              // STEP THREE in the Yeoman run-loop. Perform any pre-install configuration steps based on the answers provided by the User.
-  protected abstract async  writing():Promise<void>;                  // STEP FOUR in the Yeoman run-loop. Typically, this is where you perform filesystem writes, git clone operations, etc.
-  protected abstract async  install():Promise<void>;                  // STEP FIVE in the Yeoman run-loop. Typically, this is where you perform operations that must happen AFTER files are written to disk. For example, if the "writing" step downloaded an app to install, the "install" step would run the installation.
-  protected abstract async  end():Promise<void>;                      // STEP SIX in the Yeoman run-loop. This is the FINAL step that Yeoman runs and it gives us a chance to do any post-Yeoman updates and/or cleanup.
+  /** Builds a complete `SfdxFalconInterview` object, which may include zero or more confirmation groupings. */
+  protected abstract        _buildInterview():SfdxFalconInterview<T>;
+  /** Creates Interview Answers table data. Can be used to render an `SfdxFalconTable` object. */
+  protected abstract async  _buildInterviewAnswersTableData(userAnswers:T):Promise<SfdxFalconTableData>;
+  /** STEP ONE in the Yeoman run-loop. Uses Yeoman's "initializing" run-loop priority. */
+  protected abstract async  _initializing():Promise<void>;
+  /** STEP TWO in the Yeoman run-loop. Interviews the User to get information needed by the `_writing()` and `_install()` functions. */
+  protected abstract async  _prompting():Promise<void>;
+  /** STEP THREE in the Yeoman run-loop. Perform any pre-install configuration steps based on the answers provided by the User. */
+  protected abstract async  _configuring():Promise<void>;
+  /** STEP FOUR in the Yeoman run-loop. Typically, this is where you perform filesystem writes, git clone operations, etc. */
+  protected abstract async  _writing():Promise<void>;
+  /** STEP FIVE in the Yeoman run-loop. Typically, this is where you perform operations that must happen AFTER files are written to disk. For example, if the `_writing()` step downloaded an app to install, the `_install()` step would run the installation. */
+  protected abstract async  _install():Promise<void>;
+  /** STEP SIX in the Yeoman run-loop. This is the FINAL step that Yeoman runs and it gives us a chance to do any post-Yeoman updates and/or cleanup. */
+  protected abstract async  _end():Promise<void>;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -262,9 +337,9 @@ export abstract class SfdxFalconYeomanGenerator<T extends object> extends Genera
   protected async _cloneRepository():Promise<string> {
 
     // Determine a number of Path/Git related strings required by this step.
-    const targetDirectory   = this.finalAnswers['targetDirectory'];
+    const targetDirectory   = this.answers.final['targetDirectory'] as string;
     const gitRemoteUri      = this['gitRemoteUri'];
-    const gitCloneDirectory = this['gitCloneDirectory'] || gitHelper.getRepoNameFromUri(gitRemoteUri);
+    const gitCloneDirectory = this['gitCloneDirectory'] || GitUtil.getRepoNameFromUri(gitRemoteUri);
     const localProjectPath  = path.join(targetDirectory, gitCloneDirectory);
 
     // Quick message saying we're going to start cloning.
@@ -272,7 +347,7 @@ export abstract class SfdxFalconYeomanGenerator<T extends object> extends Genera
 
     // Run a Listr Task that will clone the Remote Git Repo.
     return await listrTasks.cloneGitRemote.call(this, gitRemoteUri, targetDirectory, gitCloneDirectory).run()
-      .then(listrContext => {
+      .then((_listrContext:unknown) => {
         // Add a message that the cloning was successful.
         this.generatorStatus.addMessage({
           type:     StatusMessageType.SUCCESS,
@@ -370,7 +445,7 @@ export abstract class SfdxFalconYeomanGenerator<T extends object> extends Genera
     this.userInterview = this._buildInterview();
 
     // Start the User Interview.
-    this.finalAnswers = await this.userInterview.start();
+    this.answers.final = await this.userInterview.start();
 
     // Extract the "User Answers" from the Interview for inclusion in the GENERATOR Result's detail.
     (this.generatorResult.detail as object)['userAnswers'] = this.userInterview.userAnswers;
