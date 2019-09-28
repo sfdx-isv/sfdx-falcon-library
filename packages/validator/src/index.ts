@@ -1,6 +1,6 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/validator/src/yeoman.ts
+ * @file          packages/validator/src/index.ts
  * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
  * @summary       Collection of useful validation functions and primitives. Part of the SFDX-Falcon Library.
