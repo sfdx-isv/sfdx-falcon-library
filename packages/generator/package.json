@@ -51,13 +51,16 @@
     "node": ">=8.0.0"
   },
   "keywords": [
+    "generator",
     "salesforce",
     "salesforce-cli",
     "salesforce-cli-plugin",
     "salesforcedx",
     "sfdx-falcon",
     "sfdx-falcon-library",
-    "sfdx-plugin"
+    "sfdx-plugin",
+    "yeoman",
+    "yeoman-generator"
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
   "license": "MIT",
