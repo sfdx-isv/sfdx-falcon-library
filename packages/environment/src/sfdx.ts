@@ -38,6 +38,7 @@ import  {PackageVersionMap}        from  '@sfdx-falcon/types';   // Type. Alias 
 import  {QueryResult}              from  '@sfdx-falcon/types';   // Type. Alias to the JSForce definition of QueryResult.
 import  {RawStandardOrgInfo}       from  '@sfdx-falcon/types';   // Interface. Represents the standard (ie. non-scratch) org data returned by the sfdx force:org:list command.
 import  {RawScratchOrgInfo}        from  '@sfdx-falcon/types';   // Interface. Represents the "scratchOrgs" data returned by the sfdx force:org:list --all command.
+import  {UserName}                 from  '@sfdx-falcon/types';   // Type. Represents a Salesforce username. Alias for string.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:environment:sfdx';
@@ -105,12 +106,6 @@ export interface StandardOrgInfoOptions extends RawStandardOrgInfo {
   metadataPackageResults?:  QueryResult<MetadataPackage>;
 }
 
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * Type. Represents a Salesforce username. Alias for string.
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export type UserName = string;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
