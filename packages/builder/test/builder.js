@@ -2,6 +2,6 @@
 
 const debug = require('..');
 
-describe('task-library', () => {
+describe('builder', () => {
     it('needs tests');
 });

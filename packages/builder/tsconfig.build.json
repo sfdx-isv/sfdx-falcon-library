@@ -12,10 +12,7 @@
   "references": [
     {"path": "../types/tsconfig.build.json"},     // @SFDX-Falcon/types
     {"path": "../debug/tsconfig.build.json"},     // @SFDX-Falcon/debug
-    {"path": "../error/tsconfig.build.json"},     // @SFDX-Falcon/error
     {"path": "../validator/tsconfig.build.json"}, // @SFDX-Falcon/validator
-    {"path": "../status/tsconfig.build.json"},    // @SFDX-Falcon/status
-    {"path": "../util/tsconfig.build.json"},      // @SFDX-Falcon/util
-    {"path": "../task/tsconfig.build.json"}       // @SFDX-Falcon/task
+    {"path": "../status/tsconfig.build.json"}     // @SFDX-Falcon/status
   ]
 }

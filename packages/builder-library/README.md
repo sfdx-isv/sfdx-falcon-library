@@ -1,11 +1,11 @@
-# `util`
+# `builder`
 
 > TODO: description
 
 ## Usage
 
 ```
-const task-library = require('task-library');
+const builder = require('builder');
 
 // TODO: DEMONSTRATE API
 ```
