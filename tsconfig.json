@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": "./packages",
     "paths": {
+      "@sfdx-falcon/builder": ["builder/src"],
+      "@sfdx-falcon/builder-library": ["builder-library/src"],
       "@sfdx-falcon/command": ["command/src"],
       "@sfdx-falcon/debug": ["debug/src"],
       "@sfdx-falcon/environment": ["environment/src"],
@@ -13,7 +15,6 @@
       "@sfdx-falcon/status": ["status/src"],
       "@sfdx-falcon/task": ["task/src"],
       "@sfdx-falcon/task-bundle": ["task-bundle/src"],
-      "@sfdx-falcon/task-library": ["task-library/src"],
       "@sfdx-falcon/types": ["types/src"],
       "@sfdx-falcon/util": ["util/src"],
       "@sfdx-falcon/validator": ["validator/src"]

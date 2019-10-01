@@ -46,7 +46,9 @@ SFDX-Falcon packages are dependent upon one another in the following order.
 3. `@sfdx-falcon/error`
 4. `@sfdx-falcon/validator`
 5. `@sfdx-falcon/status`
-6. `@sfdx-falcon/util`
+6. Independent Siblings
+    * `@sfdx-falcon/builder`
+    * `@sfdx-falcon/util`
 7. Independent Siblings
     * `@sfdx-falcon/command`
     * `@sfdx-falcon/environment`
@@ -55,6 +57,6 @@ SFDX-Falcon packages are dependent upon one another in the following order.
 8. Independent Siblings
     * `@sfdx-falcon/interview`
     * `@sfdx-falcon/task-bundle`
-    * `@sfdx-falcon/task-library`
-9. `@sfdx-falcon/generator`
+9. `@sfdx-falcon/builder-library`
+10. `@sfdx-falcon/generator`
 
