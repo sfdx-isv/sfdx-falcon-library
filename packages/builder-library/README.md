@@ -1,11 +1,11 @@
-# `builder`
+# `builder-library`
 
 > TODO: description
 
 ## Usage
 
 ```
-const builder = require('builder');
+const builder-library = require('builder-library');
 
 // TODO: DEMONSTRATE API
 ```
