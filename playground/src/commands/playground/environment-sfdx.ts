@@ -96,7 +96,7 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async runCommand2():Promise<AnyJson> {
+  public async runCommand():Promise<AnyJson> {
 
     // Add your Playground Logic here.
     const opts:SfdxEnvironmentOptions = {
@@ -134,7 +134,7 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
     return null;
   }
 
-  protected async runCommand():Promise<string> {
+  protected async runCommand2():Promise<string> {
     console.log('This is from inside runCommand()');
     return null;
   }
