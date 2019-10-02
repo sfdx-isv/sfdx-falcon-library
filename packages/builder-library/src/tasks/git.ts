@@ -25,7 +25,7 @@ import  {SfdxFalconTask}            from  '@sfdx-falcon/task';            // Cla
 import  {waitASecond}               from  '@sfdx-falcon/util/lib/async';  // Function. Simple helper function that can be used to introduce a delay when called inside async functions using the "await" keyword.
 
 // Import SFDX-Falcon Types
-import  {ExternalContext}           from  '@sfdx-falcon/task';    // Interface. Collection of key data structures that represent the overall context of the external environment inside which an SfdxFalconTask is running.
+import  {ExternalContext}           from  '@sfdx-falcon/builder'; // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';   // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
 import  {ListrObject}               from  '@sfdx-falcon/types';   // Interface. Represents a "runnable" Listr object (ie. an object that has the run() method attached).
 import  {ShellExecResult}           from  '@sfdx-falcon/types';   // Interface. Represents the result of a call to shell.execL().

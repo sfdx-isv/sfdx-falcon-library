@@ -24,7 +24,7 @@ import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class
 //import  {SfdxFalconTask}            from  '@sfdx-falcon/task';          // Class. Abstraction of a single Listr Task with a lot of extra functionality bundled in.
 
 // Import SFDX-Falcon Types
-//import  {ExternalContext}           from  '@sfdx-falcon/task';          // Interface. Collection of key data structures that represent the overall context of the external environment inside which an SfdxFalconTask is running.
+//import  {ExternalContext}           from  '@sfdx-falcon/builder';       // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 //import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';         // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
 //import  {ListrObject}               from  '@sfdx-falcon/types';         // Interface. Represents a "runnable" Listr object (ie. an object that has the run() method attached).
 //import  {ShellExecResult}           from  '@sfdx-falcon/types';         // Interface. Represents the result of a call to shell.execL().
