@@ -56,17 +56,13 @@ export interface ExternalContext {
   generatorStatus?: GeneratorStatus;
 }
 
-
-/**
+/*
+ * NOTES:
  * I want to build a base class that all "builders" can derive from.
  * ALL builders must expect an ExternalContext object as a parameter in their constructors.
- * I'll build builders for Tasks, Questions, and maybe even TaskBuilders
+ * I'll build builders for Tasks, Questions, and maybe even TaskBundles
  * The Builder base class will know how to extract key info out of the debugnamespace
- *
- * Question: Can a base class constructor know the name of the highest-order constructor in the derived classes?
- *
  */
-
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
