@@ -29,6 +29,7 @@ import  {TaskStatus}                from  '@sfdx-falcon/status';    // Class. Ma
 import  {TaskStatusMessage}         from  '@sfdx-falcon/status';    // Class. Simplifies access to a TaskStatusOptions data structure to help ensure that an external caller can read/set messsages in a way that won't break normal functionality.
 
 // Import SFDX-Falcon Types
+import  {ExternalContext}           from  '@sfdx-falcon/builder'; // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {SfdxFalconResultType}      from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
 import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
 import  {TaskStatusOptions}         from  '@sfdx-falcon/status';  // Interface. Represents the full suite of options, including all message strings, that are used by the updateStatus() function when creating status update messages for running ListrTask objects.
@@ -86,23 +87,6 @@ export interface ObservableTaskResultOptions {
   minRuntime:     number;
   /** Specifies whether or not the status message shown by the `ListrTask` will be continually updated with an "elapsed seconds" counter. */
   showTimer:      boolean;
-}
-
-//─────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * Interface. Collection of key data structures that represent the overall context of the external
- * environment inside which an `SfdxFalconTask` is running.
- */
-//─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface ExternalContext {
-  /** The Debug Namespace that should be used within this `ObservableTaskResult` instance */
-  dbgNs:            string;
-  /** Provides a mechanism for internal task logic to share information with the external context. */
-  sharedData?:      object;
-  /** Reference to an `SfdxFalconResult` object that should be used as the parent of the `ObservableTaskResult` that will be created as part of an `SfdxFalconTask`. */
-  parentResult?:    SfdxFalconResult;
-  /** Reference to a `GeneratorStatus` object. Allows a task to directly specify `success`, `error`, and `warning` messages when running inside of an `SfdxFalconGenerator`. */
-  generatorStatus?: GeneratorStatus;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
