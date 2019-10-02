@@ -19,9 +19,6 @@ import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';     // Class. Provides
 import  {GeneratorStatus}     from  '@sfdx-falcon/status';    // Class. Specialized object used by Generators derived from SfdxFalconGenerator to track the running state of the Generator (eg. aborted or completed) as well as a collection of status messages that can be used to print out a final status report when the Generator is complete.
 import  {SfdxFalconResult}    from  '@sfdx-falcon/status';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
 
-//TODO: Remove definition of ExternalContext from @sfdx-falcon/task and point deps to here
-//import  {ExternalContext}     from  '@sfdx-falcon/task';
-
 // Import code for re-export.
 import  {QuestionsBuilder}    from  './questions';
 import  {TaskBuilder}         from  './task';
