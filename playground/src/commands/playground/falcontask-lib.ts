@@ -26,7 +26,7 @@ import  {AnyJson}                       from  '@sfdx-falcon/types';   // Type. A
 
 // Imports related to THIS specific playground
 //import  {SfdxFalconTask}  from '@sfdx-falcon/task';
-import  {GitTasks}        from '@sfdx-falcon/task-library';
+import  {GitTasks}        from '@sfdx-falcon/builder-library/lib/tasks';
 //import  {waitASecond}     from '@sfdx-falcon/util/lib/async';
 //import  Listr             = require('listr');
 

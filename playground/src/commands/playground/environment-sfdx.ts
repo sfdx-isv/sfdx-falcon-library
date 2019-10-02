@@ -25,11 +25,12 @@ import  {AnyJson}                       from  '@sfdx-falcon/types';   // Type. A
 
 // Imports related to THIS specific playground
 //import  {SfdxFalconTask}  from '@sfdx-falcon/task';
-//import  {GitTasks}        from '@sfdx-falcon/task-library';
+//import  {GitTasks}        from '@sfdx-falcon/builder';
 //import  {waitASecond}     from '@sfdx-falcon/util/lib/async';
 //import  Listr             = require('listr');
-import {Sfdx}             from '@sfdx-falcon/environment';
-import { waitASecond } from '@sfdx-falcon/util/lib/async';
+import  {SfdxEnvironment}         from '@sfdx-falcon/environment';
+import  {SfdxEnvironmentOptions}  from '@sfdx-falcon/environment';
+import  {waitASecond}             from '@sfdx-falcon/util/lib/async';
 
 // Set the File Local Debug Namespace
 const dbgNs = 'COMMAND:playground-environment-sfdx';
@@ -98,7 +99,7 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
   public async runCommand2():Promise<AnyJson> {
 
     // Add your Playground Logic here.
-    const opts:Sfdx.SfdxEnvironmentOptions = {
+    const opts:SfdxEnvironmentOptions = {
       requirements: {
         managedPkgOrgs: true,
         unmanagedPkgOrgs: true,
@@ -111,7 +112,7 @@ export default class GenericPlaygroundCommand extends SfdxFalconCommand {
 
     //SfdxFalconDebug.debugMessage('xxxx1111xxxx', 'BEFORE Environment Init');
     // @ts-ignore
-    const sfdxEnv = await Sfdx.SfdxEnvironment.initialize(opts);
+    const sfdxEnv = await SfdxEnvironment.initialize(opts);
 
     //SfdxFalconDebug.debugMessage('xxxx2222xxxx', 'AFTER Environment Init');
 
