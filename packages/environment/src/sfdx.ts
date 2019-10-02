@@ -28,8 +28,8 @@ import  {SfdxFalconResult}          from  '@sfdx-falcon/status';        // Class
 import  {SfdxFalconTask}            from  '@sfdx-falcon/task';          // Class. Abstraction of a single Listr Task with a lot of extra functionality bundled in.
 
 // Import SFDX-Falcon Types
+import  {ExternalContext}          from  '@sfdx-falcon/builder'; // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {SfdxFalconResultType}     from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
-import  {ExternalContext}          from  '@sfdx-falcon/task';    // Interface. Collection of key data structures that represent the overall context of the external environment inside which an SfdxFalconTask is running.
 import  {InquirerChoice}           from  '@sfdx-falcon/types';   // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
 import  {InquirerChoices}          from  '@sfdx-falcon/types';   // Type. Represents an array of Inquirer multi-choice/multi-select questions.
 import  {MetadataPackage}          from  '@sfdx-falcon/types';   // Interface. Represents a Metadata Package (033). Can be managed or unmanaged.
