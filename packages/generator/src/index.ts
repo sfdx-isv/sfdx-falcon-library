@@ -11,9 +11,11 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import from generator.
-//import  {SfdxFalconCommand}             from  './generator';
-//import  {SfdxFalconCommandType}         from  './generator';
-//import  {SfdxFalconCommandResultDetail} from  './generator';
+import  {Answers}               from  './generator';
+import  {GeneratorMessage}      from  './generator';
+import  {GeneratorRequirements} from  './generator';
+import  {RunLoopStatus}         from  './generator';
+import  {SfdxFalconGenerator}   from  './generator';
 
 // Import from project-generator.
 //import  {SfdxFalconGeneratorCommand}    from  './project-generator';
@@ -21,16 +23,12 @@
 
 // Export everything we've imported.
 /**  */
-//export {SfdxFalconCommand};
-
+export  {Answers};
 /**  */
-//export {SfdxFalconCommandType};
-
+export  {GeneratorMessage};
 /**  */
-//export {SfdxFalconCommandResultDetail};
-
+export  {GeneratorRequirements};
 /**  */
-//export {SfdxFalconGeneratorCommand};
-
+export  {RunLoopStatus};
 /**  */
-//export {GeneratorOptions};
+export  {SfdxFalconGenerator};
