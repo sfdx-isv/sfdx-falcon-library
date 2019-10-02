@@ -40,7 +40,7 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * Interface. Collection of key data structures that represent the overall context of the external
- * environment inside which an `SfdxFalconTask` is running.
+ * environment inside of which some a set of specialized logic will be run.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface ExternalContext {
