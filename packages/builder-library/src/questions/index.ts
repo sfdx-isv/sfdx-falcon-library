@@ -13,3 +13,4 @@
 //export {
 //  GitTasks
 //};
+export const tempVar:string = 'abc';
