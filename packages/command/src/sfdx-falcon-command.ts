@@ -249,10 +249,32 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
   }
 
   // Protected Abstract Methods
-  /** Builds a user-friendly error message that is specific to the command being implemented. */
-  protected abstract buildFinalError(cmdError:SfdxFalconError):SfdxError;
   /** Contains all off the execution logic that is specific to the command being implemented. */
   protected abstract async runCommand():Promise<unknown>;
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      buildFinalError
+   * @param       {SfdxFalconError} cmdError  Required. Error object used as
+   *              the basis for the "friendly error message" being created
+   *              by this method.
+   * @returns     {SfdxError}
+   * @description Derived classes should override this method in order to build
+   *              a user-friendly error message that is appropriate to the CLI
+   *              Command that they are implementing.  The output of this method
+   *              will **always** be used by the `onError()` method of the
+   *              `SfdxFalconCommand` base class to help communicate the
+   *              end-of-command error state to the user.
+   * @protected
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  protected buildFinalError(cmdError:SfdxFalconError):SfdxError {
+
+    // Default behavior is to simply return the provided Error, unmodified.
+    // Derived classes should override this method to provide more helpful
+    // errors to users.
+    return cmdError;
+  }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
