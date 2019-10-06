@@ -9,40 +9,35 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries & Modules
-import {fs}       from  '@salesforce/core'; // File System utility from the Core SFDX library.
+//import {fs}       from  '@salesforce/core'; // File System utility from the Core SFDX library.
 import chalk      from  'chalk';            // Helps write colored text to the console.
 import * as path  from  'path';             // Library. Helps resolve local paths at runtime.
 
 // Import Internal Libraries
-import * as iq                          from  '../modules/sfdx-falcon-util/interview-questions';  // Library. Helper functions that create Interview Questions.
-import * as listrTasks                  from  '../modules/sfdx-falcon-util/listr-tasks';          // Library. Helper functions that make using Listr with SFDX-Falcon easier.
+//import  {QBLibrary}                      from  '@sfdx-falcon/builder-library';  // Library. Builders for Interview Questions.
+//import  {TBLibrary}                      from  '@sfdx-falcon/builder-library';  // Library. Builders for Tasks.
 
-// Import Internal Classes & Functions
-import {SfdxFalconDebug}                from  '../modules/sfdx-falcon-debug';                     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import {SfdxFalconError}                from  '../modules/sfdx-falcon-error';                     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import {SfdxFalconInterview}            from  '../modules/sfdx-falcon-interview';                 // Class. Provides a standard way of building a multi-group Interview to collect user input.
-import {SfdxFalconYeomanGenerator}      from  '../modules/sfdx-falcon-yeoman-generator';          // Class. Abstract base class class for building Yeoman Generators for SFDX-Falcon commands.
-import TmFilePaths                      from  '../modules/tm-tools-objects/tm-file-paths';        // Class. Utility class for generatig File Paths required by various TM-Tools commands.
-import {TmToolsTransform}               from  '../modules/tm-tools-transform';                    // Class. Provides TM1 to TM2 transformation services given the location of source config.
+// Import SFDX-Falcon Classes & Functions
+import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';       // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+//import  {SfdxEnvironment}           from  '@sfdx-falcon/environment'; // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+//import  {SfdxFalconError}           from  '@sfdx-falcon/error';       // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {SfdxFalconGenerator}       from  '@sfdx-falcon/generator';   // Class. Abstract base class class for building Yeoman Generators for SFDX-Falcon commands.
+import  {SfdxFalconInterview}       from  '@sfdx-falcon/interview';   // Class. Provides a standard way of building a multi-group Interview to collect user input.
 
-// Import Falcon Types
-import  {SfdxFalconKeyValueTableDataRow} from  '../modules/sfdx-falcon-util/ux';                   // Interface. Represents a row of data in an SFDX-Falcon data table.
-import  {SfdxFalconTableData}            from  '../modules/sfdx-falcon-util/ux';                   // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
-import  {GeneratorOptions}               from  '../modules/sfdx-falcon-yeoman-command';            // Interface. Represents options used by SFDX-Falcon Yeoman generators.
-import  {ListrTaskBundle}                from  '../modules/sfdx-falcon-types';                     // Interface. Represents the suite of information required to run a Listr Task Bundle.
-import  {StatusMessageType}              from  '../modules/sfdx-falcon-types';                     // Enum. Represents the various types/states of a Status Message.
+// Import SFDX-Falcon Types
+//import  {SfdxFalconKeyValueTable}   from  '@sfdx-falcon/status';      // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
+import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
+import  {GeneratorRequirements}     from  '@sfdx-falcon/generator';   // Interface. Collection of requirements for the initialization process of an SfdxFalconGenerator.
+import  {SfdxFalconKeyValueTableDataRow} from  '@sfdx-falcon/status'; // Interface. Represents a row of data in an SFDX-Falcon data table.
+import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
+import  {JsonMap}                     from  '@sfdx-falcon/types';       // Interface. Any JSON-compatible object.
+//import  {ListrTaskBundle}                from  '../modules/sfdx-falcon-types';                     // Interface. Represents the suite of information required to run a Listr Task Bundle.
+//import  {StatusMessageType}              from  '../modules/sfdx-falcon-types';                     // Enum. Represents the various types/states of a Status Message.
 
-// Import TM-Tools Types
-import {TM1AnalysisReport}              from  '../modules/tm-tools-types';                        // Interface. Represents the data that is generated by a TM1 Analysis Report.
-import {TM1ExtractionReport}            from  '../modules/tm-tools-types';                        // Interface. Represents the data that is generated by a TM1 Extraction Report.
-import {TM1TransformFilePaths}          from  '../modules/tm-tools-types';                        // Interface. Represents the complete suite of file paths required by the TM1 Transform command.
-
-// Requires
-const yosay = require('yosay');   // ASCII art creator brings Yeoman to life.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'GENERATOR:tmtools-tm1-transform:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = 'playground-generator';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -51,31 +46,27 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
  * @description Represents answers to the questions asked in the Yeoman interview.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-interface InterviewAnswers {
+interface InterviewAnswers extends JsonMap {
   baseDirectory:  string;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @class       Tm1Transform
- * @extends     SfdxFalconYeomanGenerator
+ * @extends     SfdxFalconGenerator
  * @summary     Yeoman generator class. Transforms local TM1 configuration (data+metadata) files.
  * @description Uses Yeoman to run through an interview, then transforms TM1 configuration based on
  *              the specifications found in the user's tm1-extraction.json file.
  * @public
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAnswers> {
+export default class PlayGroundGenerator01 extends SfdxFalconGenerator<InterviewAnswers> {
 
   // Define class members specific to this Generator.
-  protected tm1TransformFilePaths:    TM1TransformFilePaths;    // Holds a complete set of known (and knowable) file paths needed by the Transform command.
-  protected tm1AnalysisReport:        TM1AnalysisReport;        // Report data created by a previously executed TM1 Analysis.
-  protected tm1ExtractionReport:      TM1ExtractionReport;      // Report data created by a previously executed TM1 Extraction.
-  protected tmToolsTransform:         TmToolsTransform;         // Holds the TM-Tools Transformation worker performs the transformation.
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @constructs  Tm1Transform
+   * @constructs  PlayGroundGenerator01
    * @param       {string|string[]} args Required. Not used (as far as I know).
    * @param       {GeneratorOptions}  opts Required. Sets generator options.
    * @description Constructs a Tm1Transform object.
@@ -84,19 +75,39 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
   //───────────────────────────────────────────────────────────────────────────┘
   constructor(args:string|string[], opts:GeneratorOptions) {
 
+    // Specify the Requirements for this Generator.
+    const genReqs:GeneratorRequirements = {
+      gitEnvReqs: {},
+      localEnvReqs: {},
+      sfdxEnvReqs: {
+        standardOrgs:     false,
+        scratchOrgs:      false,
+        devHubOrgs:       false,
+        envHubOrgs:       false,
+        managedPkgOrgs:   true,
+        unmanagedPkgOrgs: false
+      }
+    };
+
     // Call the parent constructor to initialize the Yeoman Generator.
-    super(args, opts);
+    super(args, opts, genReqs);
 
-    // Initialize the "Opening Message" and "Confirmation Question".
-    this.openingMessage       = `TM-Tools Plugin\n${this.cliCommandName}\nv${this.pluginVersion}`;
-    this.confirmationQuestion = 'Transform TM1 configuration (data/metadata) to TM2 using the above settings?';
+    // Customize the External Context. Specify ONLY the Debug Namespace and Context.
+    this.extCtx.dbgNs   = `${dbgNs}`;
+    this.extCtx.context = this;
 
-    // Initialize all Reports to NULL.
-    this.tm1AnalysisReport        = null;
-    this.tm1ExtractionReport      = null;
+    // Customize all Generator messages.
+    this.generatorMessage.opening       = `xxxSFDX-Falcon Powered Plugin\n${this.commandName}\nv${this.pluginVersion}`;
+    this.generatorMessage.preInterview  = `xxxStarting Interview...`;
+    this.generatorMessage.confirmation  = `xxxWould you like to proceed based on the above settings?`;
+    this.generatorMessage.postInterview = ``;
+    this.generatorMessage.success       = `${this.commandName} xxxcompleted successfully`;
+    this.generatorMessage.failure       = `${this.commandName} xxxexited without completing the expected tasks`;
+    this.generatorMessage.warning       = `${this.commandName} xxxcompleted successfully, but with some warnings (see above)`;
+
 
     // Initialize DEFAULT Interview Answers.
-    this.defaultAnswers.baseDirectory = path.resolve(opts.sourceDir as string);
+    this.answers.default.baseDirectory = path.resolve('/users/vchawla/devtest/nothing');
 
     // Initialize Shared Data.
     this.sharedData['reportJson']       = {};
@@ -118,8 +129,15 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
 
     // Initialize the Interview object.
     const interview = new SfdxFalconInterview<InterviewAnswers>({
-      defaultAnswers:     this.defaultAnswers,
-      confirmation:       iq.confirmProceedRestart,
+      defaultAnswers:     this.answers.default,
+//      confirmation:       QBLibrary.confirmProceedRestart,
+      confirmation:       [{
+        type:     'confirm',
+        name:     'isScratchOrg',
+        message:  'Is the target a Scratch Org?',
+        default:  true,
+        when:     true
+      }],
       confirmationHeader: chalk.yellow('Review Your Settings:'),
       display:            this._buildInterviewAnswersTableData,
       context:            this,
@@ -128,9 +146,14 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
 
     // Group 0: Specify the directory containing the TM1 config extraction.
     interview.createGroup({
-      title:          chalk.yellow('\nTM1 Extraction Directory:'),
-      questions:      iq.provideReportDirectory,
-      questionsArgs:  [TmFilePaths.getTmFileNames().tm1ExtractionReportFileName]
+      title:      chalk.yellow('\nTM1 Extraction Directory:'),
+      questions:  [{
+        type:     'confirm',
+        name:     'isScratchOrg',
+        message:  'Is the target a Scratch Org?',
+        default:  true,
+        when:     true
+      }]
     });
 
     // Finished building the Interview.
@@ -153,7 +176,9 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
 
     // Declare an array of Falcon Table Data Rows
     const tableData = new Array<SfdxFalconKeyValueTableDataRow>();
+    SfdxFalconDebug.obj(`${dbgNs}:`, interviewAnswers);
 
+    /*
     // Grab the TM1 Extraction Report from Shared Data, then extract required fields from it.
     const tm1ExtractionReport           = this.sharedData['reportJson'] as TM1ExtractionReport;
     const orgId                         = tm1ExtractionReport.orgInfo.orgId;
@@ -187,6 +212,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
     tableData.push({option:'Account Sharing Rules:',      value:`${accountSharingRulesCount}`});
     tableData.push({option:'Lead Sharing Rules:',         value:`${leadSharingRulesCount}`});
     tableData.push({option:'Opportunity Sharing Rules:',  value:`${opportunitySharingRulesCount}`});
+    //*/
 
     // Return the Falcon Table Data.
     return tableData;
@@ -201,6 +227,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
+  /*
   protected async _generateReport():Promise<void> {
     
     // Define function-local debug namespace.
@@ -235,7 +262,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
 
     // Run the Task Bundle.
     await this._runListrTaskBundle(taskBundle);
-  }
+  }//*/
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -249,6 +276,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
+  /*
   protected async _transformTm1Config():Promise<void> {
 
     // Define a Task Bundle
@@ -274,18 +302,18 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
         message:  `TM1 configuration could not be transformed to TM2`
       },
       listrObject:                                    // The Listr Tasks that will be run.
-        listrTasks.transformTm1Config.call( this,
+        TBLibrary.SfdxTasks.transformTm1Config.call( this,
                                             this.tm1AnalysisReport,
                                             this.tm1ExtractionReport,
                                             this.tm1TransformFilePaths)
     };
 
     // Run the Task Bundle.
-    await this._runListrTaskBundle(taskBundle);
+//    await this._runListrTaskBundle(taskBundle);
 
     // Extract the tmToolsTransform worker from shared data.
-    this.tmToolsTransform = this.sharedData['tmToolsTransform'];
-  }
+//    this.tmToolsTransform = this.sharedData['tmToolsTransform'];
+  }//*/
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -296,10 +324,9 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async initializing():Promise<void> {
+  protected async _initializing():Promise<void> {
 
-    // Show the Yeoman to announce that the generator is running.
-    this.log(yosay(this.openingMessage));
+
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -311,21 +338,9 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async prompting():Promise<void> {
+  protected async _prompting():Promise<void> {
 
-    // Call the default prompting() function. Replace with custom behavior if desired.
-    return this._default_prompting(
-      // Pre-Interview Styled Message
-      {
-        message:  `Starting TM1 Transformation Interview...`,
-        styling:  `yellow`
-      },
-      // Post-Interview Styled Message
-      {
-        message:  ``,
-        styling:  ``
-      }
-    );
+
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -337,7 +352,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async configuring():Promise<void> {
+  protected async _configuring():Promise<void> {
 
 
   }
@@ -351,7 +366,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async writing():Promise<void> {
+  protected async _writing():Promise<void> {
 
     // Transform the user's TM1 config.
     //await this._transformTm1Config();
@@ -372,7 +387,7 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async install():Promise<void> {
+  protected async _install():Promise<void> {
 
 
   }
@@ -387,8 +402,8 @@ export default class Tm1Transform extends SfdxFalconYeomanGenerator<InterviewAns
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async end():Promise<void> {
+  protected async _end():Promise<void> {
 
-    
+
   }
 }
