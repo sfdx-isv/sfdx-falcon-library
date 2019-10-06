@@ -18,8 +18,6 @@ import  {flags}                       from  '@salesforce/command';    // Require
 import  {SfdxCommand}                 from  '@salesforce/command';    // Required by child classe to create a CLI command
 import  {Messages}                    from  '@salesforce/core';       // Messages library that simplifies using external JSON for string reuse.
 import  {SfdxError}                   from  '@salesforce/core';       // Generalized SFDX error which also contains an action.
-import  {AnyJson}                     from  '@salesforce/ts-types';   // Any valid JSON value.
-import  {JsonMap}                     from  '@salesforce/ts-types';   // Any JSON-compatible object.
 import  * as path                     from  'path';                   // Helps resolve local paths at runtime.
 
 // Import SFDX-Falcon Libraries
@@ -27,14 +25,15 @@ import  {CoreValidator}               from  '@sfdx-falcon/validator'; // Library
 import  {TypeValidator}               from  '@sfdx-falcon/validator'; // Library. Contains type validation functions.
 
 // Import SFDX-Falcon Classes & Functions
-import {SfdxFalconDebug}              from  '@sfdx-falcon/debug';     // Class. Internal debugging framework for SFDX-Falcon.
-import {SfdxFalconError}              from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import {SfdxFalconResult}             from  '@sfdx-falcon/status';    // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
-import {TaskStatus}                   from  '@sfdx-falcon/status';    // Class. Manages progress notifications inside Falcon.
+import  {SfdxFalconDebug}             from  '@sfdx-falcon/debug';     // Class. Internal debugging framework for SFDX-Falcon.
+import  {SfdxFalconError}             from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {SfdxFalconResult}            from  '@sfdx-falcon/status';    // Class. Used to communicate results of SFDX-Falcon code execution at a variety of levels.
+import  {TaskStatus}                  from  '@sfdx-falcon/status';    // Class. Manages progress notifications inside Falcon.
 
 // Import SFDX-Falcon Types
-import {SfdxFalconResultType}         from  '@sfdx-falcon/status';    // Enum. Represents the different types of sources where Results might come from.
-//import {SfdxFalconJsonResponse}       from  '@sfdx-falcon/types';     // Interface. Represents the JSON reponse returned by SFDX-Falcon Commands.
+import  {SfdxFalconResultType}        from  '@sfdx-falcon/status';    // Enum. Represents the different types of sources where Results might come from.
+import  {AnyJson}                     from  '@sfdx-falcon/types';     // Type. Any valid JSON value.
+import  {JsonMap}                     from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:command:standard';
@@ -132,11 +131,13 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     })
   };
 
-  // Member vars for basic information about this command.
+  // Member vars for basic information about this command and the Package that a derived class is part of.
   /** Name of the command defined by the derived class, eg. `falcon:adk:clone`. */
   protected readonly commandName:         string;
   /** Type of command defined by the derived class. Possible values are `STANDARD` or `GENERATOR`. */
   protected readonly commandType:         SfdxFalconCommandType;
+  /** Reference to the package manifest (ie. `package.json`) of the package that owns the class that's extending `SfdxFalconCommand`. */
+  protected readonly packageJson:         JsonMap;
 
   // Member vars that help build and deliver a JSON response once command execution is done.
   /** Command-level `SfdxFalconResult` object. Should should be used as the ultimate parent to all other `SfdxFalconResult` objects used by logic executed by this command. */
@@ -204,6 +205,9 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
     
     // Attach the Results Detail object to the COMMAND result then debug it.
     this.commandResult.setDetail(this.commandResultDetail);
+
+    // Get a reference to `package.json` from the package that owns the dervived class.
+    this.packageJson = this.getDerivedPackageJson();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -344,6 +348,67 @@ export abstract class SfdxFalconCommand extends SfdxCommand {
 
     // Return the unmodified Resolved Promise so it can be processed by `prepareResponse()`.
     return resolvedPromise;
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @function    getDerivedPackageJson
+   * @returns     {JsonMap}
+   * @description Searches the package install location of whatever code has
+   *              implemented a class that's derived from `SfdxFalconCommand`
+   *              for that package's manifest (its `package.json` file), and
+   *              loads it as a `JsonMap` via Node's `require()` method.
+   * @private
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  private getDerivedPackageJson():JsonMap {
+
+    // Set function-local debug namespace.
+    const funcName    = `getDerivedPackageJson`;
+    const dbgNsLocal  = `${dbgNs}:${funcName}`;
+
+    // Debug the filenames of this module and its parent+grandparent modules.
+    // Any errors running this debug code mean that we won't be able to get the
+    // package.json from the derived class. In that case, just return NULL.
+    try {
+      SfdxFalconDebug.str(`${dbgNsLocal}:module.filename:`,               `${module.filename}`);
+      SfdxFalconDebug.str(`${dbgNsLocal}:module.parent.filename:`,        `${module.parent.filename}`);
+      SfdxFalconDebug.str(`${dbgNsLocal}:module.parent.parent.filename:`, `${module.parent.parent.filename}`);
+    }
+    catch (parentModuleError) {
+      SfdxFalconDebug.obj(`${dbgNsLocal}:parentModuleError:`, parentModuleError);
+      return null;
+    }
+
+    // Initialize Package JSON to NULL. If nothing is found, this is what will be returned.
+    let packageJson:JsonMap = null;
+
+    // Set the parameters for the search we're about to run.
+    const fileToCheck:string  = 'package.json';
+    let   pathToCheck:string  = path.dirname(module.parent.parent.filename);
+    let   loopCount:number    = 0;
+    const maxLoops:number     = 10;
+
+    // Starting from the Path to Check, walk backwards up the path until the desired file is found.
+    do {
+      loopCount++;
+      SfdxFalconDebug.str(`${dbgNsLocal}:loopCount:`, loopCount.toString());
+      try {
+        SfdxFalconDebug.str(`${dbgNsLocal}:pathToCheck:ATTEMPT:`, pathToCheck);
+        packageJson = require(path.join(pathToCheck, fileToCheck));
+        SfdxFalconDebug.str(`${dbgNsLocal}:pathToCheck:SUCCESS:`, pathToCheck);
+        SfdxFalconDebug.obj(`${dbgNsLocal}:packageJson:`,         packageJson);
+        break;
+      }
+      catch (requireError) {
+        SfdxFalconDebug.str(`${dbgNsLocal}:pathToCheck:FAILED:`, pathToCheck);
+        pathToCheck = path.resolve(pathToCheck, '../');
+      }
+    }
+    while (packageJson === null && loopCount < maxLoops);
+
+    // Return the Package JSON that we found. If nothing was found, NULL will be returned.
+    return packageJson;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
