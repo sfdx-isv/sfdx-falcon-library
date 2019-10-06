@@ -19,17 +19,21 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  {AnyJson}               from  '@salesforce/ts-types';   // Safe type for use where "any" might otherwise be used.
+import  * as path               from  'path';                   // Node.js native path library.
 import  * as yeoman             from  'yeoman-environment';     // Facilitates the discovery and execution of a Yeoman Generator.
+
+// Import SFDX-Falcon Libraries
+import  {TypeValidator}         from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}       from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}       from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 import  {SfdxFalconResult}      from  '@sfdx-falcon/status';    // Class. Provides a mechanism for sharing data among SFDX-Falcon code structures.
-import  {GeneratorStatus}       from  '@sfdx-falcon/status';    // Class. Status tracking object for use with Generators derived from SfdxFalconGenerator.
+//import  {GeneratorStatus}       from  '@sfdx-falcon/status';    // Class. Status tracking object for use with Generators derived from SfdxFalconGenerator.
 
 // Import SFDX-Falcon Types
 import  {SfdxFalconResultType}  from  '@sfdx-falcon/status';    // Interface. Represents various types of SFDX-Falcon Results.
+import  {JsonMap}               from  '@sfdx-falcon/types';     // Interface. Interface. Any JSON-compatible object.
 
 // Import Internal Modules
 import  {SfdxFalconCommand}     from  './sfdx-falcon-command';  // Abstract Class. Custom SFDX-Falcon base class for SFDX Commands.
@@ -44,17 +48,22 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @interface   GeneratorOptions
- * @description Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
+ * Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface GeneratorOptions {
-  commandName?:     string;
-  commandResult?:   SfdxFalconResult;
-  generatorType?:   string;
-  generatorStatus?: GeneratorStatus;
+  /** Required. The name of the command that is executing a Generator, eg. `falcon:adk:clone`. */
+  commandName:      string;
+  /** Required. Relative path to the directory containing a Generator class file. This file MUST implement a default exported class that's derived from `SfdxFalconGenerator`. The path provided must use UNIX-style directory syntax, eg. `../../generators` */
+  generatorPath:    string;
+  /** Required. The name of the file containing the Generator class to be run. Must NOT include file extensions, eg. `clone-appx-demo-kit` */
+  generatorType:    string;
+  /** Required. Reference to package.json of the module that's implementing a command derived from `SfdxFalconGeneratorCommand` */
+  packageJson:      JsonMap;
+  /** Optional. A GENERATOR-type `SfdxFalconResult` object. If not provided, will be automatically created inside of the `SfdxFalconGeneratorCommand.runGenerator()` method. */
   generatorResult?: SfdxFalconResult;
-  [key:string]: AnyJson | GeneratorStatus | SfdxFalconResult | string | number;
+  /** Optional. An object containing all custom options that should be passed to the specified Generator when it is run. */
+  customOpts?:      object;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -93,65 +102,64 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @function    runGenerator
-   * @param       {GeneratorOptions}  generatorOptions  Required. Options that
-   *              specify how the Generator should run.
+   * @param       {GeneratorOptions}  opts  Required. Options object that
+   *              specifies which Generator to run and any additional custom
+   *              options that should be passed to the Generator, eg. user
+   *              supplied arguments and flags.
    * @returns     {Promise<SfdxFalconResult>}  Returns a promise that resolves
    *              and rejects with an SFDX-Falcon Result. The output of this
    *              function is intended to be consumed by the `onSuccess()` and
    *              `onError()` methods.
-   * @description Runs the specified Generator using the given options.
+   * @description Runs the `SfdxFalconGenerator` specified by the `generatorPath`
+   *              and `generatorType` values supplied by the caller in the
+   *              `GeneratorOptions` object.  Will pass custom options to the
+   *              Generator, if provided.
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async runGenerator(generatorOptions:GeneratorOptions):Promise<SfdxFalconResult> {
+  protected async runGenerator(opts:GeneratorOptions):Promise<SfdxFalconResult> {
 
-    // Define the function-local debug namespace.
+    // Define the function-local debug namespace and reflect arguments.
     const funcName    = `runGenerator`;
     const dbgNsLocal  = `${dbgNs}:${funcName}`;
-  
-    // Make sure the caller provides a Generator Type.
-    if (!generatorOptions.generatorType) {
-      throw new SfdxFalconError( `A valid generator type must be provided to runGenerator(). You provided '${generatorOptions.generatorType}'.`
-                               , `InvalidGeneratorType`
-                               , `${dbgNsLocal}`);
-    }
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
-    // Initialize a GENERATOR Result. Pass it to the Generator so we can figure out how things went.
-    const generatorResult =
-      new SfdxFalconResult(generatorOptions.generatorType, SfdxFalconResultType.GENERATOR,
+    // Validate the REQUIRED options.
+    TypeValidator.throwOnEmptyNullInvalidObject (opts,                `${dbgNsLocal}`,  `GeneratorOptions`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.commandName,    `${dbgNsLocal}`,  `GeneratorOptions.commandName`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.generatorPath,  `${dbgNsLocal}`,  `GeneratorOptions.generatorPath`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.generatorType,  `${dbgNsLocal}`,  `GeneratorOptions.generatorType`);
+
+    // Validate the OPTIONAL options.
+    if (opts.generatorResult) TypeValidator.throwOnNullInvalidInstance    (opts.generatorResult,  SfdxFalconResult, `${dbgNsLocal}`,  `GeneratorOptions.generatorResult`);
+    if (opts.customOpts)      TypeValidator.throwOnEmptyNullInvalidObject (opts.customOpts,                         `${dbgNsLocal}`,  `GeneratorOptions.customOpts`);
+
+    // If one wasn't provided, initialize a GENERATOR Result. Pass it to the Generator so we can figure out how things went.
+    if (typeof opts.generatorResult === 'undefined') {
+      opts.generatorResult =
+      new SfdxFalconResult(opts.generatorType, SfdxFalconResultType.GENERATOR,
                           { startNow:       true,
                             bubbleError:    false,    // Do not bubble errors. Errors handled by inspecting the result of the Generator.
                             bubbleFailure:  false});  // Do not bubble failures.
-
-    // Combine incoming generatorOptions with the default options.
-    const resolvedGeneratorOptions = {
-      // Default options
-      commandName:      this.commandName,
-      generatorResult:  generatorResult,
-      options: [],
-      // User options
-      ...generatorOptions
-    } as GeneratorOptions;
-
-    // Pull the generator type out of the options.
-    const generatorType = resolvedGeneratorOptions.generatorType;
+    }
+    SfdxFalconDebug.obj(`${dbgNsLocal}:opts:`, opts);
 
     // Create a Yeoman environment.
     const yeomanEnv = yeoman.createEnv();
 
     // Register a generator with the Yeoman environment, based on generatorType.
     yeomanEnv.register(
-      require.resolve(`../../generators/${generatorType}`),
-      `sfdx-falcon:${generatorType}`
+      require.resolve(path.join(opts.generatorPath, opts.generatorType)),
+      `sfdx-falcon:${opts.generatorType}`
     );
 
     // Run the Yeoman Generator.
     return new Promise((resolve, reject) => {
-      yeomanEnv.run(`sfdx-falcon:${generatorType}`, resolvedGeneratorOptions, (generatorError:Error|SfdxFalconResult) => {
+      yeomanEnv.run(`sfdx-falcon:${opts.generatorType}`, opts, (generatorError:Error|SfdxFalconResult) => {
         if (generatorError) {
 
           // If the Generator Error is the same SfdxFalconResult that we passed into the Generator, just reject it.
-          if (generatorError === generatorResult) {
+          if (generatorError === opts.generatorResult) {
             return reject(generatorError);
           }
 
@@ -160,39 +168,39 @@ export abstract class SfdxFalconGeneratorCommand extends SfdxFalconCommand {
 
           // If the Generator Error is an Error, mark the Generator Result as an Error and reject it.
           if (generatorError instanceof Error) {
-            sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed. ${generatorError.message}`
+            sfdxFalconError = new SfdxFalconError ( `Generator '${opts.generatorType}' failed. ${generatorError.message}`
                                                   , `GeneratorError`
                                                   , `${dbgNsLocal}`
                                                   , generatorError);
-            generatorResult.error(sfdxFalconError);
-            return reject(generatorResult);
+            opts.generatorResult.error(sfdxFalconError);
+            return reject(opts.generatorResult);
           }
 
           // If the Generator Error is an SfdxFalconResult, craft an SfdxFalconError, mark the Generator Result as Error, then reject it.
           if (generatorError instanceof SfdxFalconResult) {
-            sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed`
+            sfdxFalconError = new SfdxFalconError ( `Generator '${opts.generatorType}' failed`
                                                   +  (generatorError.errObj ? `. ${generatorError.errObj.message}` : ` with an unknown error.`)
                                                   , `GeneratorResultError`
                                                   , `${dbgNsLocal}`
                                                   , generatorError.errObj);
-            generatorResult.addChild(generatorError);
-            generatorResult.error(sfdxFalconError);
-            return reject(generatorResult);
+            opts.generatorResult.addChild(generatorError);
+            opts.generatorResult.error(sfdxFalconError);
+            return reject(opts.generatorResult);
           }
 
           // If we get here, it means a completely unexpected result came back from the Generator.
-          sfdxFalconError = new SfdxFalconError ( `Generator '${generatorType}' failed with an unexpected result. See error.details for more information.`
+          sfdxFalconError = new SfdxFalconError ( `Generator '${opts.generatorType}' failed with an unexpected result. See error.details for more information.`
                                                 , `UnexpectedGeneratorFailure`
                                                 , `${dbgNsLocal}`
                                                 , null
                                                 , generatorError);
-          generatorResult.error(sfdxFalconError);
-          return reject(generatorResult);
+          opts.generatorResult.error(sfdxFalconError);
+          return reject(opts.generatorResult);
         }
         else {
           // No Generator Error means that the Generator was successful.
-          generatorResult.success();
-          return resolve(generatorResult);
+          opts.generatorResult.success();
+          return resolve(opts.generatorResult);
         }
       });
     }) as Promise<SfdxFalconResult>;
