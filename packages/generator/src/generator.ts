@@ -30,6 +30,7 @@ import  {printStyledMessage}        from  '@sfdx-falcon/status';      // Functio
 import  {GeneratorStatus}           from  '@sfdx-falcon/status';      // Class. Status tracking object for use with Yeoman Generators.
 
 // Import SFDX-Falcon Types
+import  {ExternalContext}             from  '@sfdx-falcon/builder';     // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
 import  {SfdxEnvironmentRequirements} from  '@sfdx-falcon/environment'; // Interface. Represents the elements of the local SFDX Environment that are required by the calling code.
 import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
@@ -78,16 +79,20 @@ export interface Answers<T extends JsonMap> {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface GeneratorMessage {
-  /** Required. Message shown to the user before exiting the initializing() run-loop function. */
-  confirmation: string;
   /** Required. Message that will be displayed by the yosay "Yeoman" ASCII art when the generator is loaded. */
-  opening:      string;
+  opening:        string;
+  /** Required. Message shown to the user before the interview starts during the prompting() run-loop function. */
+  preInterview:   string;
+  /** Required. Message shown to the user to help them decide to exit the prompting() run-loop function. */
+  confirmation:   string;
+  /** Required. Message shown to the user after the interview ends but before the prompting() run-loop function exits. */
+  postInterview:  string;
   /** Required. Message that will be displayed by the `end()` run-loop function upon successful completion of the Generator. */
-  success:      string;
+  success:        string;
   /** Required. Message that will be displayed by the `end()` run-loop function upon failure of the Generator. */
-  failure:      string;
+  failure:        string;
   /** Required. Message that will be displayed by the `end()` run-loop function upon partial success of the Generator.  */
-  warning:      string;
+  warning:        string;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -141,6 +146,8 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
   protected readonly  commandName:              string;
   /** Version of the plugin that's running this Generator. Taken dynamically from `package.json`. */
   protected readonly  pluginVersion:            string;
+  /** External Context describing an instance of the derived class. Used by Builder-derived classes. */
+  protected readonly  extCtx:                   ExternalContext;
   /** Custom `falcon` options key from `package.json`. Can be used to read package-global settings that a plugin developer chooses to add to `package.json`. */
   protected readonly  falcon:                   JsonMap;
   /** Specifies the various messages used by this Generator. */
@@ -190,9 +197,9 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Validate core options.
     TypeValidator.throwOnEmptyNullInvalidObject (reqs,               `${dbgNsLocal}`, `GeneratorRequirements`);
-    TypeValidator.throwOnEmptyNullInvalidObject (reqs.gitEnvReqs,    `${dbgNsLocal}`, `GeneratorRequirements.gitEnvReqs`);
-    TypeValidator.throwOnEmptyNullInvalidObject (reqs.localEnvReqs,  `${dbgNsLocal}`, `GeneratorRequirements.localEnvReqs`);
-    TypeValidator.throwOnEmptyNullInvalidObject (reqs.sfdxEnvReqs,   `${dbgNsLocal}`, `GeneratorRequirements.sfdxEnvReqs`);
+    TypeValidator.throwOnNullInvalidObject      (reqs.gitEnvReqs,    `${dbgNsLocal}`, `GeneratorRequirements.gitEnvReqs`);
+    TypeValidator.throwOnNullInvalidObject      (reqs.localEnvReqs,  `${dbgNsLocal}`, `GeneratorRequirements.localEnvReqs`);
+    TypeValidator.throwOnNullInvalidObject      (reqs.sfdxEnvReqs,   `${dbgNsLocal}`, `GeneratorRequirements.sfdxEnvReqs`);
     TypeValidator.throwOnEmptyNullInvalidObject (opts,               `${dbgNsLocal}`, `GeneratorOptions`);
     TypeValidator.throwOnEmptyNullInvalidString (opts.commandName,   `${dbgNsLocal}`, `GeneratorOptions.commandName`);
     TypeValidator.throwOnEmptyNullInvalidString (opts.generatorType, `${dbgNsLocal}`, `GeneratorOptions.generatorType`);
@@ -255,6 +262,15 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     this.falcon               = pkgFalcon;              // Falcon global JsonMap, taken from package.json.
     this.sharedData           = {} as object;           // Special context for sharing data between Generator, Inquirer Questions, and Listr Tasks.
 
+    // Initialize the External Context.
+    this.extCtx = {
+      dbgNs:            null,
+      context:          null,
+      generatorStatus:  this.generatorStatus,
+      parentResult:     this.generatorResult,
+      sharedData:       this.sharedData
+    };
+
     // Initialize all Run-Loop Status booleans to `null`.
     // In practice, `null` will mean an unset value, `false` means failure, `true` means success.
     this.runLoopStatus = {
@@ -276,11 +292,13 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Set defaults for all Generator messages.
     this.generatorMessage = {
-      opening:      `SFDX-Falcon Powered Plugin\n${this.commandName}\nv${this.pluginVersion}`,
-      confirmation: `Would you like to proceed based on the above settings?`,
-      success:      `${this.commandName} completed successfully`,
-      failure:      `${this.commandName} exited without completing the expected tasks`,
-      warning:      `${this.commandName} completed successfully, but with some warnings (see above)`
+      opening:        `SFDX-Falcon Powered Plugin\n${this.commandName}\nv${this.pluginVersion}`,
+      preInterview:   `Starting Interview...`,
+      confirmation:   `Would you like to proceed based on the above settings?`,
+      postInterview:  ``,
+      success:        `${this.commandName} completed successfully`,
+      failure:        `${this.commandName} exited without completing the expected tasks`,
+      warning:        `${this.commandName} completed successfully, but with some warnings (see above)`
     };
 
     // Start the GeneratorStatus object and add it to the detail of the GENERATOR Result.
