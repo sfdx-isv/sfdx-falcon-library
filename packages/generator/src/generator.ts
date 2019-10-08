@@ -39,7 +39,7 @@ import  {JsonMap}                     from  '@sfdx-falcon/types';       // Inter
 //import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';       // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
 //import  {ListrTaskBundle}           from  '@sfdx-falcon/types';       // Interface. Represents the suite of information required to run a Listr Task Bundle.
 import  {StatusMessageType}           from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
-import  {StyledMessage}               from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
+//import  {StyledMessage}               from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
 
 // Requires
 //const {version}         = require('../../../package.json'); // The version of the SFDX-Falcon plugin
@@ -142,12 +142,16 @@ export interface RunLoopStatus {
 export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
   // Protected class members
+  /** Debug namespace of the derived class. Makes it easier to debug superclass operations when extending `SfdxFalconGenerator`. */
+  protected readonly  dbgNs:                    string;
   /** Name of the CLI command that kicked off this Generator. */
   protected readonly  commandName:              string;
-  /** Version of the plugin that's running this Generator. Taken dynamically from `package.json`. */
-  protected readonly  pluginVersion:            string;
   /** External Context describing an instance of the derived class. Used by Builder-derived classes. */
   protected readonly  extCtx:                   ExternalContext;
+  /** Reference to the package manifest (`package.json`) of the module that owns the class that implements the command entrypoint. */
+  protected readonly  packageJson:              JsonMap;
+  /** Version of the plugin that's running this Generator. Taken dynamically from `package.json`. */
+  protected readonly  pluginVersion:            string;
   /** Custom `falcon` options key from `package.json`. Can be used to read package-global settings that a plugin developer chooses to add to `package.json`. */
   protected readonly  falcon:                   JsonMap;
   /** Specifies the various messages used by this Generator. */
@@ -201,6 +205,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     TypeValidator.throwOnNullInvalidObject      (reqs.localEnvReqs,  `${dbgNsLocal}`, `GeneratorRequirements.localEnvReqs`);
     TypeValidator.throwOnNullInvalidObject      (reqs.sfdxEnvReqs,   `${dbgNsLocal}`, `GeneratorRequirements.sfdxEnvReqs`);
     TypeValidator.throwOnEmptyNullInvalidObject (opts,               `${dbgNsLocal}`, `GeneratorOptions`);
+    TypeValidator.throwOnEmptyNullInvalidObject (opts.packageJson,   `${dbgNsLocal}`, `GeneratorOptions.packageJson`);
     TypeValidator.throwOnEmptyNullInvalidString (opts.commandName,   `${dbgNsLocal}`, `GeneratorOptions.commandName`);
     TypeValidator.throwOnEmptyNullInvalidString (opts.generatorType, `${dbgNsLocal}`, `GeneratorOptions.generatorType`);
     TypeValidator.throwOnEmptyNullInvalidString (opts.generatorPath, `${dbgNsLocal}`, `GeneratorOptions.generatorPath`);
@@ -227,37 +232,24 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
       }
     };
 
-    // Determine the path to the package.json file for the currently running package.
-    const pkgDotJsonPath    = '../../../package.json';
-
     // Attempt to pull the VERSION key from package.json.
-    let pkgVersion:string = `??.??.??`;
-    try {
-      const {version} = require(pkgDotJsonPath);
-      pkgVersion  = TypeValidator.isNotEmptyNullInvalidString(version) ? version : pkgVersion;
-    }
-    catch (pkgVersionJsonError) {
-      SfdxFalconDebug.obj(`${dbgNsLocal}:pkgVersionJsonError:`, pkgVersionJsonError);
-    }
+    const version     = opts.packageJson['version'] as string;
+    const pkgVersion  = TypeValidator.isNotEmptyNullInvalidString(version) ? version : `??.??.??`;
     SfdxFalconDebug.str(`${dbgNsLocal}:pkgVersion:`, pkgVersion);
 
     // Attempt to pull the FALCON key from package.json.
-    let pkgFalcon:JsonMap = {};
-    try {
-      const {falcon} = require(pkgDotJsonPath);
-      pkgFalcon = TypeValidator.isNotNullInvalidObject(falcon) ? falcon : pkgFalcon;
-    }
-    catch (pkgFalconJsonError) {
-      SfdxFalconDebug.obj(`${dbgNsLocal}:pkgFalconJsonError:`, pkgFalconJsonError);
-    }
+    const falcon    = opts.packageJson['falcon'] as JsonMap;
+    const pkgFalcon = TypeValidator.isNotNullInvalidObject(falcon) ? falcon : {} as JsonMap;
     SfdxFalconDebug.obj(`${dbgNsLocal}:pkgFalcon:`, pkgFalcon);
 
     // Initialize class members.
     this.commandName          = opts.commandName;       // Name of the command that's executing the Generator (eg. 'falcon:adk:clone').
+    this.dbgNs                = `${dbgNs}`;             // Initial debug namespace. This should be overwritten in the derived class's constructor.
     this.generatorType        = opts.generatorType;     // Type (ie. file name minus the .ts extension) of the Generator being run.
     this.generatorResult      = opts.generatorResult;   // Used for activity tracking and communication back to the calling command.
     this.generatorReqs        = generatorReqs;          // Generator Requirements. Should be modified by the derived class.
     this.generatorStatus      = new GeneratorStatus();  // Tracks status and build messages to the user.
+    this.packageJson          = opts.packageJson;       // Refers to the package manifest (package.json) of the module that implements the command that's executing this generator.
     this.pluginVersion        = pkgVersion;             // Version of the plugin, taken from package.json.
     this.falcon               = pkgFalcon;              // Falcon global JsonMap, taken from package.json.
     this.sharedData           = {} as object;           // Special context for sharing data between Generator, Inquirer Questions, and Listr Tasks.
@@ -316,27 +308,42 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     this.generatorResult.debugResult(`After setting Detail in constructor`, `${dbgNsLocal}`);
 
     // Initialize Shared Data.
-    this.sharedData['cliCommandName']               = this.commandName;
-//    this.sharedData['generatorRequirements']        = this.generatorRequirements;
-    this.sharedData['generatorStatus']              = this.generatorStatus;
+    this.sharedData['commandName']            = this.commandName;
+    this.sharedData['generatorRequirements']  = this.generatorReqs;
+    this.sharedData['generatorStatus']        = this.generatorStatus;
   }
+
+  // Public abstract methods.
+  public abstract async initializing():Promise<void>;
+  public abstract async prompting():Promise<void>;
+  public abstract async configuring():Promise<void>;
+  public abstract async writing():Promise<void>;
+  public abstract async install():Promise<void>;
+  public abstract async end():Promise<void>;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      initializing
+   * @method      __initializing
    * @returns     {Promise<void>}
-   * @description STEP ONE in the Yeoman run-loop.  Uses Yeoman's "initializing"
-   *              run-loop priority.  This is a "default" implementation and
-   *              should work for most SFDX-Falcon use cases. It must be called
-   *              from inside the initializing() method of the child class.
-   * @public @async
+   * @description STEP ONE in the Yeoman run-loop.  Intended to be executed as
+   *              part of Yeoman's `initializing` run-loop priority.  Will call
+   *              the matching single-underscore method `_initializing()` from
+   *              the derived class after executing logic that's specialized
+   *              for `SfdxFalconGenerator` based Generators. This method must
+   *              be called by the `initializing()` method that's implemented
+   *              by the dervived class.
+   * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async initializing():Promise<void> {
+  protected async __initializing():Promise<void> {
+
+    // Define function-local debug namespace.
+    const funcName    = `__initializing`;
+    const dbgNsLocal  = `${this.dbgNs}:${funcName}`;
 
     // Do nothing if the Generator has been aborted.
     if (this.generatorStatus.aborted) {
-      SfdxFalconDebug.msg(`${dbgNs}:initializing:`, `Generator has been aborted.`);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Generator has been aborted.`);
       return;
     }
 
@@ -345,12 +352,15 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Execute the initialization tasks for this generator
     try {
-      //await this._executeInitializationTasks();
-      throw new Error('YOU WANT TO SEE ME!!!');
+      this.sfdxEnv = await SfdxEnvironment.initialize({
+        requirements: this.generatorReqs.sfdxEnvReqs,
+        dbgNs:        this.dbgNs,
+        verbose:      true,
+        silent:       false
+      });
     }
     catch (initializationError) {
-
-      SfdxFalconDebug.obj(`${dbgNs}default_initializing:`, initializationError, `initializationError: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:initializationError:`, initializationError);
 
       // Add an "abort" item to the Generator Status object.
       this.generatorStatus.abort({
@@ -368,34 +378,43 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Add a line break to separate this section from the next in the console.
     console.log('');
+
+    // End by calling the matching "single-underscore" run-loop method from the derived class.
+    return await this._initializing();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      prompting
-   * @param       {StyledMessage} [preInterviewMessage] Optional. Message to
-   *              display to the user before the Interview starts.
-   * @param       {StyledMessage} [postInterviewMessage]  Optional. Message to
-   *              display to the user after the Interview ends.
+   * @method      __prompting
    * @returns     {Promise<void>}
-   * @description STEP TWO in the Yeoman run-loop. Interviews the User to get
-   *              information needed by the "writing" and "installing" phases.
-   *              This is a "default" implementation and should work for most
-   *              SFDX-Falcon use cases. It must be called from inside the
-   *              prompting() method of the child class.
-   * @public @async
+   * @description STEP TWO in the Yeoman run-loop.  Interviews the User to get
+   *              information needed by the `writing` and `installing` phases.
+   *              Intended to be executed as part of Yeoman's `prompting`
+   *              run-loop priority.  Will call the matching single-underscore
+   *              method `_prompting()` from the derived class after executing
+   *              logic that's specialized for `SfdxFalconGenerator` based
+   *              Generators. This method must be called by the `prompting()`
+   *              method that's implemented by the dervived class.
+   * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async prompting(preInterviewMessage?:StyledMessage, postInterviewMessage?:StyledMessage):Promise<void> {
+  protected async __prompting():Promise<void> {
+
+    // Define function-local debug namespace.
+    const funcName    = `__prompting`;
+    const dbgNsLocal  = `${this.dbgNs}:${funcName}`;
 
     // Do nothing if the Generator has been aborted.
     if (this.generatorStatus.aborted) {
-      SfdxFalconDebug.msg(`${dbgNs}:prompting:`, `Generator has been aborted.`);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Generator has been aborted.`);
       return;
     }
 
     // Show the pre-interview message.
-    printStyledMessage(preInterviewMessage);
+    printStyledMessage({
+      message:  this.generatorMessage.preInterview,
+      styling:  `yellow`
+    });
 
     // Build the User Interview.
     this.userInterview = this._buildInterview();
@@ -404,7 +423,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     this.answers.final = await this.userInterview.start();
 
     // Extract the "User Answers" from the Interview for inclusion in the GENERATOR Result's detail.
-    (this.generatorResult.detail as object)['userAnswers'] = this.userInterview.userAnswers;
+    this.generatorResult.detail['userAnswers'] = this.userInterview.userAnswers;
 
     // Check if the user aborted the Interview.
     if (this.userInterview.status.aborted) {
@@ -416,94 +435,134 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     }
 
     // Show the post-interview message.
-    printStyledMessage(postInterviewMessage);
+    printStyledMessage({
+      message:  this.generatorMessage.postInterview,
+      styling:  `yellow`
+    });
 
-    // Done
-    return;
+    // End by calling the matching "single-underscore" run-loop method from the derived class.
+    return await this._prompting();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      configuring
+   * @method      __configuring
    * @returns     {void}
    * @description STEP THREE in the Yeoman run-loop. Perform any pre-install
    *              configuration steps based on the answers provided by the User.
-   *              This is a "default" implementation and should work for most
-   *              SFDX-Falcon use cases. It must be called from inside the
-   *              configuring() method of the child class.
-   * @protected
+   *              Intended to be executed as part of Yeoman's `configuring`
+   *              run-loop priority.  Will call the matching single-underscore
+   *              method `_configuring()` from the derived class after executing
+   *              logic that's specialized for `SfdxFalconGenerator` based
+   *              Generators. this method must be called by the `configuring()`
+   *              method that's implemented by the dervived class.
+   * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async configuring():Promise<void> {
+  protected async __configuring():Promise<void> {
+
+    // Define function-local debug namespace.
+    const funcName    = `__configuring`;
+    const dbgNsLocal  = `${this.dbgNs}:${funcName}`;
 
     // Do nothing if the Generator has been aborted.
     if (this.generatorStatus.aborted) {
-      SfdxFalconDebug.msg(`${dbgNs}_default_configuring:`, `Generator has been aborted.`);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Generator has been aborted.`);
       return;
     }
+
+    // End by calling the matching "single-underscore" run-loop method from the derived class.
+    return await this._configuring();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      writing
+   * @method      __writing
    * @returns     {Promise<void>}
-   * @description STEP FOUR in the Yeoman run-loop. Typically, this is where
+   * @description __STEP FOUR in the Yeoman run-loop.__ Typically, this is where
    *              you perform filesystem writes, git clone operations, etc.
-   *              This is a "default" implementation and should work for most
-   *              SFDX-Falcon use cases. It must be called from inside the
-   *              writing() method of the child class.
-   * @public @async
+   *              Intended to be executed as part of Yeoman's `writing` run-loop
+   *              priority.  Will call the matching single-underscore method
+   *              `_writing()` from the derived class after executing logic
+   *              that's specialized for `SfdxFalconGenerator` based Generators.
+   *              This method must] be called by the `writing()` method that's
+   *              implemented by the dervived class.
+   * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async writing():Promise<void> {
+  protected async __writing():Promise<void> {
+
+    // Define function-local debug namespace.
+    const funcName    = `__writing`;
+    const dbgNsLocal  = `${this.dbgNs}:${funcName}`;
 
     // Do nothing if the Generator has been aborted.
     if (this.generatorStatus.aborted) {
-      SfdxFalconDebug.msg(`${dbgNs}_default_writing:`, `Generator has been aborted.`);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Generator has been aborted.`);
       return;
     }
+
+    // End by calling the matching "single-underscore" run-loop method from the derived class.
+    return await this._writing();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      install
    * @returns     {Promise<void>}
-   * @description STEP FIVE in the Yeoman run-loop. Typically, this is where
+   * @description __STEP FIVE in the Yeoman run-loop.__ Typically, this is where
    *              you perform operations that must happen AFTER files are
-   *              written to disk. For example, if the "writing" step downloaded
-   *              an app to install, the "install" step would run the
-   *              installation. This is a "default" implementation and should
-   *              work for most SFDX-Falcon use cases. It must be called from
-   *              inside the install() method of the child class.
-   * @public @async
+   *              written to disk. For example, if the `writing` step downloaded
+   *              an app to install, the `install` step would run the
+   *              installation. Intended to be executed as part of Yeoman's
+   *              `install` run-loop priority.  Will call the matching
+   *              single-underscore method `_install()` from the derived class
+   *              after executing logic that's specialized for `SfdxFalconGenerator`
+   *              based Generators. This method must be called by the `install()`
+   *              method that's implemented by the dervived class.
+   * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async install():Promise<void> {
+  protected async __install():Promise<void> {
+
+    // Define function-local debug namespace.
+    const funcName    = `__install`;
+    const dbgNsLocal  = `${this.dbgNs}:${funcName}`;
 
     // Do nothing if the Generator has been aborted.
     if (this.generatorStatus.aborted) {
-      SfdxFalconDebug.msg(`${dbgNs}_default_install:`, `Generator has been aborted.`);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Generator has been aborted.`);
       return;
     }
+
+    // End by calling the matching "single-underscore" run-loop method from the derived class.
+    return await this._install();
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      end
+   * @method      __end
    * @returns     {Promise<void>}
-   * @description STEP SIX in the Yeoman run-loop. This is the FINAL step that
-   *              Yeoman runs and it gives us a chance to do any post-Yeoman
-   *              updates and/or cleanup. This is a "default" implementation
-   *              and should work for most SFDX-Falcon use cases. It must be
-   *              called from inside the end() method of the child class.
-   * @public @async
+   * @description __STEP SIX in the Yeoman run-loop.__ This is the FINAL step
+   *              that Yeoman runs and it gives us a chance to do any post-Yeoman
+   *              updates and/or cleanup. Intended to be executed as part of the
+   *              `end` run-loop priority.  Will call the matching single-underscore
+   *              method `_end()` from the derived class after executing logic
+   *              that's specialized for `SfdxFalconGenerator` based Generators.
+   *              This method must be called by the `end()` method that's
+   *              implemented by the dervived class.
+   * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async end():Promise<void> {
+  protected async __end():Promise<void> {
+
+    // Define function-local debug namespace.
+    const funcName    = `__end`;
+    const dbgNsLocal  = `${this.dbgNs}:${funcName}`;
 
     // Check if the Yeoman interview/installation process was aborted.
     if (this.generatorStatus.aborted) {
-      SfdxFalconDebug.msg(`${dbgNs}end:`, `generatorStatus.aborted found as TRUE inside end()`);
+      SfdxFalconDebug.msg(`${dbgNsLocal}:`, `Generator has been aborted.`);
 
       // Add a final error message
       this.generatorStatus.addMessage({
@@ -527,7 +586,9 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Print the final status table.
     this.generatorStatus.printStatusMessages();
-    return;
+
+    // End by calling the matching "single-underscore" run-loop method from the derived class.
+    return await this._end();
   }
 
   // Define abstract methods.
@@ -547,47 +608,12 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
   protected abstract async  _install():Promise<void>;
   /** STEP SIX in the Yeoman run-loop. This is the FINAL step that Yeoman runs and it gives us a chance to do any post-Yeoman updates and/or cleanup. */
   protected abstract async  _end():Promise<void>;
-
-
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @method      _executeInitializationTasks
-   * @returns     {Promise<void>}
-   * @description Runs a series of initialization tasks using the Listr UX/Task
-   *              Runner module.  Listr provides a framework for executing tasks
-   *              while also providing an attractive, realtime display of task
-   *              status (running, successful, failed, etc.).
-   * @protected @async
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-  /*
-  protected async _executeInitializationTasks():Promise<void> {
-
-    // Define the first group of tasks (Git Initialization).
-    const gitInitTasks = listrTasks.gitEnvironmentCheck.call(this, this.generatorRequirements.gitRemoteUri);
-
-    // Define the second group of tasks (SFDX Initialization).
-    const sfdxInitTasks = listrTasks.sfdxInitTasks.call(this);
-
-    // Show a message to the User letting them know we're going to initialize this command.
-    console.log(chalk`{yellow Initializing ${this.cliCommandName}...}`);
-
-    // If required, run the Git Init Tasks.
-    if (this.generatorRequirements.git || this.generatorRequirements.gitRemoteUri) {
-      const gitInitResults = await gitInitTasks.run();
-      SfdxFalconDebug.obj(`${dbgNs}_executeInitializationTasks:`, gitInitResults, `gitInitResults: `);
-    }
-
-    // If required, run the SFDX Init Tasks.
-    if (    this.generatorRequirements.standardOrgs     === true
-        ||  this.generatorRequirements.scratchOrgs      === true
-        ||  this.generatorRequirements.devHubOrgs       === true
-        ||  this.generatorRequirements.envHubOrgs       === true
-        ||  this.generatorRequirements.managedPkgOrgs   === true
-        ||  this.generatorRequirements.unmanagedPkgOrgs === true
-    ) {
-      const sfdxInitResults = await sfdxInitTasks.run();
-      SfdxFalconDebug.obj(`${dbgNs}_executeInitializationTasks:`, sfdxInitResults, `sfdxInitResults: `);
-    }
-  }//*/
 }
+
+/*
+async function showInitBanner(initMsg:string=''):Promise<void> {
+
+  // Amount of characters of the default top frame of the speech bubble → `╭──────────────────────────╮`
+  const FRAME_WIDTH = 28;
+
+}//*/
