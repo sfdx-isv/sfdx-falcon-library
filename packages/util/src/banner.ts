@@ -9,68 +9,83 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  ansiRegex   = require('ansi-regex');
-import  ansiStyles  = require('ansi-styles');
-import  chalk       from 'chalk';
-import  cliBoxes    = require('cli-boxes');
-import  pad         = require('pad-component');
-import  stringWidth = require('string-width');
-import  stripAnsi   from 'strip-ansi';
-import  wrap        = require('wrap-ansi');
+import  ansiRegex         = require('ansi-regex');
+import  ansiStyles        = require('ansi-styles');
+import  boxen             = require('boxen');
+import  chalk             from 'chalk';
+import  cliBoxes          = require('cli-boxes');
+import  pad               = require('pad-component');
+import  stringWidth       = require('string-width');
+import  stripAnsi         from 'strip-ansi';
+import  wrap              = require('wrap-ansi');
 
 // Import SFDX-Falcon Libraries
-import  {TypeValidator} from  '@sfdx-falcon/validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
+import  {TypeValidator}   from  '@sfdx-falcon/validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
+
+// Import SFDX-Falcon Classes & Functions
+import  {SfdxFalconDebug} from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 
 // Import SFDX-Falcon Types
-import  {JsonMap}       from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
+import  {JsonMap}         from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 
-//const chalk = require('chalk');
-//const pad = require('pad');
-//const wrap = require('wrap-ansi');
-//const stringWidth = require('string-width');
-//const stripAnsi = require('strip-ansi');
-//const ansiStyles = require('ansi-styles');
-//const ansiRegex = require('ansi-regex')();
-//const cliBoxes = require('cli-boxes');
+// Set the File Local Debug Namespace
+const dbgNs = '@sfdx-falcon:util:banner';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
-const border = cliBoxes.round;
-const leftOffset = 17;
-const defaultGreeting =
-  '\n     _-----_     ' +
-  '\n    |       |    ' +
-  '\n    |' + chalk.red('--(o)--') + '|    ' +
-  '\n   `---------´   ' +
-  '\n    ' + chalk.yellow('(') + ' _' + chalk.yellow('´U`') + '_ ' + chalk.yellow(')') + '    ' +
-  '\n    /___A___\\   /' +
-  '\n     ' + chalk.yellow('|  ~  |') + '     ' +
-  '\n   __' + chalk.yellow('\'.___.\'') + '__   ' +
-  '\n ´   ' + chalk.red('`  |') + '° ' + chalk.red('´ Y') + ' ` ';
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @function    buildBanner
- * @param       {string}  message Required. Message to show inside of the banner.
- * @param       {string}  [opts]  Optional. Options that determine how the banner is built.
+ * @function    falconSay
+ * @param       {string}  message Required. Message to show inside of the FalconSay banner.
+ * @param       {string}  [opts]  Optional. Options that determine how the FalconSay banner is built.
  * @returns     {string}  String that contains terminal-ready output for showing the constructed
  *              banner inside of a CLI.
  * @description Given a string with a message and optional settings, builds the ANSI code-enabled
- *              string that can be sent to `console.log()` in order to render a stylized banner.
+ *              string that can be sent to `console.log()` in order to render a stylized banner
+ *              with a logo and message.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function buildBanner(message:string, opts:JsonMap={}):string {
+export function falconSay(message:string, opts:JsonMap={}):string {
 
   // Set a default message if one was not provided.
-  message = (message || 'SFDX-Falcon Library').trim();
+  const originalMessage = (message || 'SFDX-Falcon Library').trim();
 
   // Make sure options is an object.
   if (TypeValidator.isNullInvalidObject(opts)) {
     opts = {};
   }
 
-  console.log(`RAW Message:\n%O`, {message: message});
-  console.log(message);
+  const border = cliBoxes.round;
+  const leftOffset = 17;
+  const defaultGreeting =
+    '\n     _-----_     ' +
+    '\n    |       |    ' +
+    '\n    |' + chalk.red('--(o)--') + '|    ' +
+    '\n   `---------´   ' +
+    '\n    ' + chalk.yellow('(') + ' _' + chalk.yellow('´U`') + '_ ' + chalk.yellow(')') + '    ' +
+    '\n    /___A___\\   /' +
+    '\n     ' + chalk.yellow('|  ~  |') + '     ' +
+    '\n   __' + chalk.yellow('\'.___.\'') + '__   ' +
+    '\n ´   ' + chalk.red('`  |') + '° ' + chalk.red('´ Y') + ' ` ';
+  
+  // console.log(`Original Message (RAW):\n%O`, {rawString: originalMessage});
+  // console.log(`Original Message (STYLED):\n${originalMessage}`);
 
+  /*
+   * Things to keep in mind.
+   * 1. escape sequences like `\n` and `\u001b` are interpreted as ONE character of length.
+   *    Example: The string `123456789*123456789*123456789*` is represented in code with
+   *    30 chars, and has a length of 30.
+   *
+   *    Example 2: The string `123456789*\n123456789*\n123456789*` is represented in code with
+   *    34 chars, but only has a length of 32. Each newline `\n` escape code results in one char
+   *    of extra length.
+   *
+   *    Example 3: The string `123456789*\u001b[34m123456789*\u001b[39m123456789*` is represented
+   *    in code with 50 chars, but only has a length of 40. Each ANSI code results in five chars
+   *    of extra length.
+   */
 
   /*
    * What you're about to see may confuse you. And rightfully so. Here's an
@@ -94,23 +109,14 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
   const borderWidth   = 1;
   const horizPadding  = 1;
   const defaultMaxLen = 30;
-  const maxWordLength = stripAnsi(message).toLowerCase().split(/\s|\n/).sort()[0].length;
+  const maxWordLength = stripAnsi(originalMessage).toLowerCase().split(/\s|\n/).sort()[0].length;
   const maxLength     = TypeValidator.isNullInvalidNumber(opts.maxLength)
                       ? (((maxWordLength < defaultMaxLen)   ? defaultMaxLen   : maxWordLength) as number) + horizPadding
                       : (((maxWordLength < opts.maxLength)  ? opts.maxLength  : maxWordLength) as number) + horizPadding;
   const regExNewLine  = new RegExp(`\\s{${maxLength}}`);
-
-  // There is a "magic number" that makes the chat bubble work.
-  // I'm not sure why this number works, but it does.
-  // TODO: Figure out why the magic number works the way it does.
-  const magicNumber = 8;
-
-  // ???
   const styledIndexes = {};
   let completedString = '';
   let topOffset       = 4;
-
-
 
   // Number of characters in the logo column                            → `    /___A___\   /`
   const LOGO_WIDTH = 17;
@@ -124,14 +130,13 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
   // Total number of characters across an entire line
   const TOTAL_CHARACTERS_PER_LINE = LOGO_WIDTH + FRAME_WIDTH;
 
-
-  console.log(`defaultMaxLen: ${defaultMaxLen}`);
-  console.log(`maxWordLength: ${maxWordLength}`);
-  console.log(`maxLength: ${maxLength}`);
-  console.log(`LOGO_WIDTH: ${LOGO_WIDTH}`);
-  console.log(`FRAME_WIDTH: ${FRAME_WIDTH}`);
-  console.log(`TOTAL_CHARACTERS_PER_LINE: ${TOTAL_CHARACTERS_PER_LINE}\n\n`);
-
+  //console.log(`defaultMaxLen: ${defaultMaxLen}`);
+  //console.log(`maxWordLength: ${maxWordLength}`);
+  //console.log(`maxLength: ${maxLength}`);
+  //console.log(`originalMessage.length: ${originalMessage.length}`);
+  //console.log(`LOGO_WIDTH: ${LOGO_WIDTH}`);
+  //console.log(`FRAME_WIDTH: ${FRAME_WIDTH}`);
+  //console.log(`TOTAL_CHARACTERS_PER_LINE: ${TOTAL_CHARACTERS_PER_LINE}\n\n`);
 
   // The speech bubble will overflow the Yeoman character if the message is too long.
   const MAX_MESSAGE_LINES_BEFORE_OVERFLOW = LOGO_HEIGHT - 2;
@@ -141,27 +146,36 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
 
   // Create the top, left, and bottom borders of the message frame.
   const messageFrame = {
-    // top: ansiStyles.yellow.open + border.topLeft + borderHorizontal + border.topRight + ansiStyles.yellow.close,
-    // side: ansiStyles.reset.open + ansiStyles.yellow.open + border.vertical + ansiStyles.yellow.close + ansiStyles.reset.open,
-    // bottom: ansiStyles.reset.open + ansiStyles.yellow.open + border.bottomLeft + borderHorizontal + border.bottomRight + ansiStyles.yellow.close + ansiStyles.reset.open
     top: border.topLeft + borderHorizontal + border.topRight,
     side: ansiStyles.reset.open + border.vertical + ansiStyles.reset.open,
     bottom: ansiStyles.reset.open + border.bottomLeft + borderHorizontal + border.bottomRight
   };
 
-  // TODO: What is actually happening here?
-  message.replace(ansiRegex(), (match, offset) => {
+  // Search the message string for all occurances of ANSI codes.
+  // For each ANSI code found, store that code in the Styled Indexes object
+  // using the string offset (ie. the character index where the match was found)
+  // as the object property key where the ANSI code that was found will be
+  // saved.
+  originalMessage.replace(ansiRegex(), (match, offset) => {
+
+    // Start by figuring out the total length of all ANSI codes captured so far.
+    let ansiCodesTotalLength = 0;
     Object.keys(styledIndexes).forEach(key => {
-      offset -= styledIndexes[key].length;
+      ansiCodesTotalLength += styledIndexes[key].length;
     });
 
-    const someTest = styledIndexes[offset] = styledIndexes[offset] ? styledIndexes[offset] + match : match;
-    console.log(`someTest:\n%O`, {someTest: someTest});
+    const adustedOffset = offset - ansiCodesTotalLength;
+    //console.log(`Match found at offset ${offset} (adjusted offset ${adustedOffset}): %O`, {rawString: match, rawStringLen: match.length});
 
-    return styledIndexes[offset] = styledIndexes[offset] ? styledIndexes[offset] + match : match;
+    // Add the latest ANSI code to the Styled Index object map.
+    styledIndexes[adustedOffset] = styledIndexes[adustedOffset] ? styledIndexes[adustedOffset] + match : match;
+    //const ansiStyleCode = styledIndexes[adustedOffset] = styledIndexes[adustedOffset] ? styledIndexes[adustedOffset] + match : match;
+    //console.log(`ansiStyleCode (offset=${offset}):\n%O`, {rawString: ansiStyleCode});
+
+    return null;
   });
 
-  const strippedMessage = stripAnsi(message);
+  const strippedMessage = stripAnsi(originalMessage);
   const spacesIndex = [];
 
   strippedMessage.split(' ').reduce((accu, cur) => {
@@ -222,12 +236,17 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
         })
         .trim();
 
+      //console.log(`maxLength before pad(): ${maxLength}`);
+
       const paddedString = pad({
         length: stringWidth(str),
         valueOf: () => {
           return ansiStyles.reset.open + str + ansiStyles.reset.open;
         }
-      }.valueOf(), maxLength + magicNumber);
+      }, maxLength);
+
+      //console.log(`stringWidth(str): ${stringWidth(str)}`);
+      //console.log(`paddedString -->${paddedString}<--`);
 
       if (index === 0) {
         // Need to adjust the top position of the speech bubble depending on the
@@ -269,4 +288,22 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
       return greeting;
     }, defaultGreeting.split(/\n/))
     .join('\n') + '\n';
+}
+
+// ────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    buildBanner
+ * @param       {string}  message Required. Message to show inside of a rectangular banner.
+ * @param       {string}  [opts]  Optional. Options that determine how the banner is built.
+ * @returns     {string}  String that contains terminal-ready output for showing the constructed
+ *              banner inside of a CLI.
+ * @description Given a string with a message and optional settings, builds the ANSI code-enabled
+ *              string that can be sent to `console.log()` in order to render a stylized banner
+ *              with a logo and message.
+ * @public
+ */
+// ────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function buildBanner(message:string, opts:JsonMap={}):string {
+
+  return null;
 }
