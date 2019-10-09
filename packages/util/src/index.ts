@@ -25,6 +25,7 @@ import {JsonMap}            from  '@sfdx-falcon/types'; // Interface. Any JSON-c
 
 // Import all Utility exports for re-export to anyone importing the @sfdx-falcon:util module.
 import  * as AsyncUtil      from  './async';
+import  * as BannerUtil     from  './banner';
 import  * as BulkApiUtil    from  './bulk-api';
 import  * as CsvUtil        from  './csv';
 import  * as GitUtil        from  './git';
@@ -37,6 +38,7 @@ import  * as ZipUtil        from  './zip';
 // Export all of the Utilities we just imported, above.
 export {
   AsyncUtil,
+  BannerUtil,
   BulkApiUtil,
   CsvUtil,
   GitUtil,
