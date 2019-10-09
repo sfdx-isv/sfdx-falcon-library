@@ -13,7 +13,7 @@ import  ansiRegex   = require('ansi-regex');
 import  ansiStyles  = require('ansi-styles');
 import  chalk       from 'chalk';
 import  cliBoxes    = require('cli-boxes');
-import  pad         = require('pad');
+import  pad         = require('pad-component');
 import  stringWidth = require('string-width');
 import  stripAnsi   from 'strip-ansi';
 import  wrap        = require('wrap-ansi');
@@ -68,6 +68,10 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
     opts = {};
   }
 
+  console.log(`RAW Message:\n%O`, {message: message});
+  console.log(message);
+
+
   /*
    * What you're about to see may confuse you. And rightfully so. Here's an
    * explanation.
@@ -87,39 +91,59 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
   // Determine the length of the largest single word in the message. If the
   // Max Word Length is LESS THAN the max length being requested by the caller
   // use the caller's choice for Max Length. Otherwise use the Max Word Length.
-  const defaultMaxLen = 24;
-  const maxWordLength = stripAnsi(message).toLowerCase().split(' ').sort()[0].length;
+  const borderWidth   = 1;
+  const horizPadding  = 1;
+  const defaultMaxLen = 30;
+  const maxWordLength = stripAnsi(message).toLowerCase().split(/\s|\n/).sort()[0].length;
   const maxLength     = TypeValidator.isNullInvalidNumber(opts.maxLength)
-                      ? ((maxWordLength < defaultMaxLen)   ? defaultMaxLen   : maxWordLength) as number
-                      : ((maxWordLength < opts.maxLength)  ? opts.maxLength  : maxWordLength) as number;
+                      ? (((maxWordLength < defaultMaxLen)   ? defaultMaxLen   : maxWordLength) as number) + horizPadding
+                      : (((maxWordLength < opts.maxLength)  ? opts.maxLength  : maxWordLength) as number) + horizPadding;
+  const regExNewLine  = new RegExp(`\\s{${maxLength}}`);
+
+  // There is a "magic number" that makes the chat bubble work.
+  // I'm not sure why this number works, but it does.
+  // TODO: Figure out why the magic number works the way it does.
+  const magicNumber = 8;
 
   // ???
-  const defaultFrameWidth = 28;
-  const horizPadding  = 1;
-//  const vertPadding   = 1;
   const styledIndexes = {};
   let completedString = '';
-  let topOffset = 4;
+  let topOffset       = 4;
+
+
 
   // Number of characters in the logo column                            → `    /___A___\   /`
   const LOGO_WIDTH = 17;
 
+  // Number of lines in the logo
+  const LOGO_HEIGHT = 9;
+
   // Number of characters in the default top frame of the text box → `╭──────────────────────────╮`
-  const FRAME_WIDTH = (maxLength > (defaultFrameWidth - 2 - (2*horizPadding)))
-                        ? maxLength + 2 + (2*horizPadding)
-                        : defaultFrameWidth;
+  const FRAME_WIDTH = maxLength + (2 * borderWidth) + (2 * horizPadding);
 
   // Total number of characters across an entire line
   const TOTAL_CHARACTERS_PER_LINE = LOGO_WIDTH + FRAME_WIDTH;
 
-  // The speech bubble will overflow the Yeoman character if the message is too long.
-  const MAX_MESSAGE_LINES_BEFORE_OVERFLOW = 7;
 
-  // ???
-  const regExNewLine = new RegExp(`\\s{${maxLength}}`);
+  console.log(`defaultMaxLen: ${defaultMaxLen}`);
+  console.log(`maxWordLength: ${maxWordLength}`);
+  console.log(`maxLength: ${maxLength}`);
+  console.log(`LOGO_WIDTH: ${LOGO_WIDTH}`);
+  console.log(`FRAME_WIDTH: ${FRAME_WIDTH}`);
+  console.log(`TOTAL_CHARACTERS_PER_LINE: ${TOTAL_CHARACTERS_PER_LINE}\n\n`);
+
+
+  // The speech bubble will overflow the Yeoman character if the message is too long.
+  const MAX_MESSAGE_LINES_BEFORE_OVERFLOW = LOGO_HEIGHT - 2;
+
+  // Create the horizontal border for the message frame.
   const borderHorizontal = border.horizontal.repeat(maxLength + 2);
 
-  const frame = {
+  // Create the top, left, and bottom borders of the message frame.
+  const messageFrame = {
+    // top: ansiStyles.yellow.open + border.topLeft + borderHorizontal + border.topRight + ansiStyles.yellow.close,
+    // side: ansiStyles.reset.open + ansiStyles.yellow.open + border.vertical + ansiStyles.yellow.close + ansiStyles.reset.open,
+    // bottom: ansiStyles.reset.open + ansiStyles.yellow.open + border.bottomLeft + borderHorizontal + border.bottomRight + ansiStyles.yellow.close + ansiStyles.reset.open
     top: border.topLeft + borderHorizontal + border.topRight,
     side: ansiStyles.reset.open + border.vertical + ansiStyles.reset.open,
     bottom: ansiStyles.reset.open + border.bottomLeft + borderHorizontal + border.bottomRight
@@ -130,6 +154,9 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
     Object.keys(styledIndexes).forEach(key => {
       offset -= styledIndexes[key].length;
     });
+
+    const someTest = styledIndexes[offset] = styledIndexes[offset] ? styledIndexes[offset] + match : match;
+    console.log(`someTest:\n%O`, {someTest: someTest});
 
     return styledIndexes[offset] = styledIndexes[offset] ? styledIndexes[offset] + match : match;
   });
@@ -153,8 +180,8 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
 
       let offset = 0;
 
-      for (let i = 0; i < spacesIndex.length; i++) {
-        const char = completedString[spacesIndex[i] - offset];
+      for (const spaceIndex of spacesIndex) {
+        const char = completedString[spaceIndex - offset];
         if (char) {
           if (char !== ' ') {
             offset += 1;
@@ -163,6 +190,8 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
           break;
         }
       }
+
+      console.log(completedString);
 
       str = completedString
         .substr(completedString.length - str.length)
@@ -195,10 +224,10 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
 
       const paddedString = pad({
         length: stringWidth(str),
-        valueOf() {
+        valueOf: () => {
           return ansiStyles.reset.open + str + ansiStyles.reset.open;
         }
-      }, maxLength);
+      }.valueOf(), maxLength + magicNumber);
 
       if (index === 0) {
         // Need to adjust the top position of the speech bubble depending on the
@@ -221,24 +250,23 @@ export function buildBanner(message:string, opts:JsonMap={}):string {
             greeting.unshift('');
           }
 
-          frame.top = pad(TOTAL_CHARACTERS_PER_LINE, frame.top);
+          messageFrame.top = pad.left(messageFrame.top, TOTAL_CHARACTERS_PER_LINE);
         }
 
-        greeting[topOffset - 1] += frame.top;
+        greeting[topOffset - 1] += messageFrame.top;
       }
 
       greeting[index + topOffset] =
-        (greeting[index + topOffset] || pad(leftOffset, '')) +
-        frame.side + ' ' + paddedString + ' ' + frame.side;
+        (greeting[index + topOffset] || pad.left('', leftOffset)) +
+        messageFrame.side + ' ' + paddedString + ' ' + messageFrame.side;
 
       if (array.length === index + 1) {
         greeting[index + topOffset + 1] =
-          (greeting[index + topOffset + 1] || pad(leftOffset, '')) +
-          frame.bottom;
+          (greeting[index + topOffset + 1] || pad.left('', leftOffset)) +
+          messageFrame.bottom;
       }
 
       return greeting;
     }, defaultGreeting.split(/\n/))
     .join('\n') + '\n';
 }
-
