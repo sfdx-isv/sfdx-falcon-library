@@ -12,6 +12,7 @@
 import  ansiRegex         = require('ansi-regex');
 import  ansiStyles        = require('ansi-styles');
 import  boxen             = require('boxen');
+import  {BorderStyle}     from 'boxen';
 import  chalk             from 'chalk';
 import  cliBoxes          = require('cli-boxes');
 import  pad               = require('pad-component');
@@ -303,7 +304,34 @@ export function falconSay(message:string, opts:JsonMap={}):string {
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function buildBanner(message:string, opts:JsonMap={}):string {
+export function buildBanner(message:string, opts:boxen.Options={}):string {
 
-  return null;
+  // Set a default message if one was not provided.
+  const originalMessage = (message || 'SFDX-Falcon Library').trim();
+
+  // Make sure options is an object.
+  if (TypeValidator.isNullInvalidObject(opts)) {
+    opts = {};
+  }
+
+  // Set the default options, then merge with the caller-supplied opts.
+  const resolvedOpts:boxen.Options = {
+    borderColor:  'yellow',
+    borderStyle:  BorderStyle.Round,
+    dimBorder:    false,
+    padding: {
+      left:   1,
+      right:  1,
+      top:    0,
+      bottom: 0
+    },
+    margin:       0,
+    float:        'left',
+    backgroundColor: null,
+    align:        'center',
+    ...opts
+  };
+
+  // Create the banner and return it to the caller.
+  return boxen(originalMessage, resolvedOpts);
 }
