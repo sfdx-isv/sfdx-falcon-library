@@ -10,24 +10,20 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-//import  chalk           from  'chalk';                // Helps write colored text to the console.
-//import  * as path       from  'path';                 // Library. Helps resolve local paths at runtime.
-import  * as Generator  from  'yeoman-generator';     // Class. Custom Generator classes must extend this.
+import  * as Generator              from  'yeoman-generator';           // Class. Custom Generator classes must extend this.
 
 // Import SFDX-Falcon Libraries
-//import  {GitUtil}                 from  '@sfdx-falcon/util';                  // Library. Git Helper functions specific to SFDX-Falcon.
-//import  listrTasks            from  '@sfdx-falcon/util';          // Library. Helper functions that make using Listr with SFDX-Falcon easier.
+import  {BannerUtil}                from  '@sfdx-falcon/util';          // Library. Helper functions for building and showing banners to the user.
 import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';       // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import  {SfdxEnvironment}           from  '@sfdx-falcon/environment'; // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import  {SfdxFalconError}           from  '@sfdx-falcon/error';       // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import  {SfdxFalconInterview}       from  '@sfdx-falcon/interview';   // Class. Provides a standard way of building a multi-group Interview to collect user input.
-import  {SfdxFalconResult}          from  '@sfdx-falcon/status';      // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-import  {printStyledMessage}        from  '@sfdx-falcon/status';      // Function. Prints a Styled Message to the console using Chalk.
-//import  {SfdxFalconKeyValueTable}   from  '@sfdx-falcon/status';      // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
-import  {GeneratorStatus}           from  '@sfdx-falcon/status';      // Class. Status tracking object for use with Yeoman Generators.
+import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxEnvironment}           from  '@sfdx-falcon/environment';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {SfdxFalconInterview}       from  '@sfdx-falcon/interview';     // Class. Provides a standard way of building a multi-group Interview to collect user input.
+import  {SfdxFalconResult}          from  '@sfdx-falcon/status';        // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+import  {printStyledMessage}        from  '@sfdx-falcon/status';        // Function. Prints a Styled Message to the console using Chalk.
+import  {GeneratorStatus}           from  '@sfdx-falcon/status';        // Class. Status tracking object for use with Yeoman Generators.
 
 // Import SFDX-Falcon Types
 import  {ExternalContext}             from  '@sfdx-falcon/builder';     // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
@@ -35,25 +31,11 @@ import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Inter
 import  {SfdxEnvironmentRequirements} from  '@sfdx-falcon/environment'; // Interface. Represents the elements of the local SFDX Environment that are required by the calling code.
 import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
 import  {JsonMap}                     from  '@sfdx-falcon/types';       // Interface. Any JSON-compatible object.
-//import  {InquirerChoices}           from  '@sfdx-falcon/types';       // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
-//import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';       // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
-//import  {ListrTaskBundle}           from  '@sfdx-falcon/types';       // Interface. Represents the suite of information required to run a Listr Task Bundle.
 import  {StatusMessageType}           from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
-//import  {StyledMessage}               from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
-
-// Requires
-//const {version}         = require('../../../package.json'); // The version of the SFDX-Falcon plugin
-//const {falcon}          = require('../../../package.json'); // The custom "falcon" key from package.json. This holds custom project-level values.
-const yosay             = require('yosay');                 // ASCII art creator brings Yeoman to life.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:generator';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
-
-// Define function-local debug namespace.
-//const funcName    = `myFuncName`;
-//const dbgNsLocal  = `${dbgNs}:${funcName}`;
-//SfdxFalconDebug.msg(`${dbgNsLocal}:`, `This is how you do debug.`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -78,7 +60,7 @@ export interface Answers<T extends JsonMap> {
  * of an `SfdxFalconGenerator`.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export interface GeneratorMessage {
+export interface GeneratorMessages {
   /** Required. Message that will be displayed by the yosay "Yeoman" ASCII art when the generator is loaded. */
   opening:        string;
   /** Required. Message shown to the user before the interview starts during the prompting() run-loop function. */
@@ -155,7 +137,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
   /** Custom `falcon` options key from `package.json`. Can be used to read package-global settings that a plugin developer chooses to add to `package.json`. */
   protected readonly  falcon:                   JsonMap;
   /** Specifies the various messages used by this Generator. */
-  protected readonly  generatorMessage:         GeneratorMessage;
+  protected readonly  generatorMessage:         GeneratorMessages;
   /** Tracks the name (type) of Generator being run, eg. `clone-appx-package-project`. */
   protected readonly  generatorType:            string;
   /** Tracks the path to the of the source file containing the Generator being run, eg `../../generators`. */
@@ -323,6 +305,24 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
+   * @method      _showOpener
+   * @returns     {Promise<void>}
+   * @description Shows an opening message when the `initializing` run-loop
+   *              function is executed. Uses the string from
+   *              `this.generatorMessage.opening` as the source of the message
+   *              contents. Can be overridden by derived class to customize the
+   *              opener behavior.
+   * @protected @async
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  protected async _showOpener():Promise<void> {
+
+    // Use the SFDX-Falcon Banner Utility to show the opening message.
+    console.error(BannerUtil.buildBanner(this.generatorMessage.opening));
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
    * @method      __initializing
    * @returns     {Promise<void>}
    * @description STEP ONE in the Yeoman run-loop.  Intended to be executed as
@@ -348,16 +348,23 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     }
 
     // Show the Yeoman to announce that the generator is running.
-    this.log(yosay(this.generatorMessage.opening));
+    await this._showOpener();
 
     // Execute the initialization tasks for this generator
     try {
+
+      // SFDX Environment Initialization
       this.sfdxEnv = await SfdxEnvironment.initialize({
         requirements: this.generatorReqs.sfdxEnvReqs,
         dbgNs:        this.dbgNs,
         verbose:      true,
         silent:       false
       });
+
+      // TODO: Git Initialization
+
+      // TODO: Local Initialization
+
     }
     catch (initializationError) {
       SfdxFalconDebug.obj(`${dbgNsLocal}:initializationError:`, initializationError);
@@ -609,11 +616,3 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
   /** STEP SIX in the Yeoman run-loop. This is the FINAL step that Yeoman runs and it gives us a chance to do any post-Yeoman updates and/or cleanup. */
   protected abstract async  _end():Promise<void>;
 }
-
-/*
-async function showInitBanner(initMsg:string=''):Promise<void> {
-
-  // Amount of characters of the default top frame of the speech bubble → `╭──────────────────────────╮`
-  const FRAME_WIDTH = 28;
-
-}//*/
