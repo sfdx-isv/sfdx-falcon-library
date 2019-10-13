@@ -12,7 +12,7 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import from generator.
 import  {Answers}               from  './generator';
-import  {GeneratorMessage}      from  './generator';
+import  {GeneratorMessages}     from  './generator';
 import  {GeneratorRequirements} from  './generator';
 import  {RunLoopStatus}         from  './generator';
 import  {SfdxFalconGenerator}   from  './generator';
@@ -25,7 +25,7 @@ import  {SfdxFalconGenerator}   from  './generator';
 /**  */
 export  {Answers};
 /**  */
-export  {GeneratorMessage};
+export  {GeneratorMessages};
 /**  */
 export  {GeneratorRequirements};
 /**  */
