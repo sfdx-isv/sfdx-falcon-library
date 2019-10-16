@@ -137,7 +137,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
   /** Custom `falcon` options key from `package.json`. Can be used to read package-global settings that a plugin developer chooses to add to `package.json`. */
   protected readonly  falcon:                   JsonMap;
   /** Specifies the various messages used by this Generator. */
-  protected readonly  generatorMessage:         GeneratorMessages;
+  protected readonly  generatorMessages:        GeneratorMessages;
   /** Tracks the name (type) of Generator being run, eg. `clone-appx-package-project`. */
   protected readonly  generatorType:            string;
   /** Tracks the path to the of the source file containing the Generator being run, eg `../../generators`. */
@@ -265,7 +265,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     };
 
     // Set defaults for all Generator messages.
-    this.generatorMessage = {
+    this.generatorMessages = {
       opening:        `SFDX-Falcon Powered Plugin\n${this.commandName}\nv${this.pluginVersion}`,
       preInterview:   `Starting Interview...`,
       confirmation:   `Would you like to proceed based on the above settings?`,
@@ -282,7 +282,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
       generatorType:      this.generatorType,
       generatorPath:      this.generatorPath,
       generatorReqs:      this.generatorReqs,
-      generatorMsgs:      this.generatorMessage,
+      generatorMsgs:      this.generatorMessages,
       interviewAnswers:   this.answers,
       runLoopStatus:      this.runLoopStatus,
       generatorStatus:    this.generatorStatus
@@ -318,7 +318,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
   protected async _showOpener():Promise<void> {
 
     // Use the SFDX-Falcon Banner Utility to show the opening message.
-    console.error(BannerUtil.buildBanner(this.generatorMessage.opening));
+    console.error(BannerUtil.buildBanner(this.generatorMessages.opening));
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -419,7 +419,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Show the pre-interview message.
     printStyledMessage({
-      message:  this.generatorMessage.preInterview,
+      message:  this.generatorMessages.preInterview,
       styling:  `yellow`
     });
 
@@ -443,7 +443,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Show the post-interview message.
     printStyledMessage({
-      message:  this.generatorMessage.postInterview,
+      message:  this.generatorMessages.postInterview,
       styling:  `yellow`
     });
 
@@ -575,7 +575,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
       this.generatorStatus.addMessage({
         type:     StatusMessageType.ERROR,
         title:    'Command Failed',
-        message:  `${this.generatorMessage.failure}\n`
+        message:  `${this.generatorMessages.failure}\n`
       });
     }
     else {
@@ -585,8 +585,8 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
           type:     StatusMessageType.SUCCESS,
           title:    'Command Succeded',
           message:  this.generatorStatus.hasWarning
-                    ? `${this.generatorMessage.warning}\n`
-                    : `${this.generatorMessage.success}\n`
+                    ? `${this.generatorMessages.warning}\n`
+                    : `${this.generatorMessages.success}\n`
         }
       ]);
     }
