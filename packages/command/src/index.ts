@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/command/src/command.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       Exports SFDX-Falcon flavored extensions to @sfdx/command. Part of the SFDX-Falcon Library.
- * @description   Exports SFDX-Falcon flavored extensions to @sfdx/command. Part of the SFDX-Falcon Library.
- * @license       MIT
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/command/src/index.ts
+ * @summary       Exports SFDX-Falcon flavored extensions to `@sfdx/command`.
+ * @description   Exports SFDX-Falcon flavored extensions to `@sfdx/command`.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import from sfdx-falcon-command.

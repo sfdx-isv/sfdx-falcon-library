@@ -1,14 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/command/src/sfdx-falcon-command.ts
- * @copyright     Vivek M. Chawla - 2018
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/command/src/sfdx-falcon-command.ts
  * @summary       Exports an abstract class that provides a framework for running an SFDX-Falcon
  *                flavored Salesforce CLI command.
  * @description   Exports an abstract class that provides a framework for running an SFDX-Falcon
  *                flavored Salesforce CLI command.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types

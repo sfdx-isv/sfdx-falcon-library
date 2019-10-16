@@ -1,21 +1,21 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/command/src/sfdx-falcon-generator-command.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/command/src/sfdx-falcon-generator-command.ts
  * @summary       Exports an abstract class that adds support for running a Yeoman Generator inside
- *                of the SFDX-Falcon flavor of a Salesforce CLI command.
+ *                of an SFDX-Falcon flavored Salesforce CLI command.
  * @description   Exports an abstract class that adds support for running a Yeoman Generators inside
- *                of the SFDX-Falcon flavor of a Salesforce CLI command. Generators are specialized
+ *                of an SFDX-Falcon flavored Salesforce CLI command. Generators are specialized
  *                classes that define user interaction and task execution in a standardized mannner.
  *
- *                Generator classes must be present at the root of your package's source tree in a
- *                `./generators` directory and must be included when publishing your CLI plugin.
- *                The Generator's file name must match the string passed to the `generatorType`
- *                option.  For example, if `generatorType==='my-generator'`, there MUST be a
- *                corresponding source file located at `./generators/my-generator.ts`.
- * @version       1.0.0
- * @license       MIT
+ *                Generator classes must be present in your package's source tree and must be
+ *                included when publishing your CLI plugin. The Generator's file name must match
+ *                string passed to the `generatorType` option.  For example, if
+ *                `generatorType==='my-generator'`, there MUST be a corresponding source file
+ *                somewhere in your project named `my-generator.ts`.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -29,7 +29,6 @@ import  {TypeValidator}         from  '@sfdx-falcon/validator'; // Library of Ty
 import  {SfdxFalconDebug}       from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}       from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 import  {SfdxFalconResult}      from  '@sfdx-falcon/status';    // Class. Provides a mechanism for sharing data among SFDX-Falcon code structures.
-//import  {GeneratorStatus}       from  '@sfdx-falcon/status';    // Class. Status tracking object for use with Generators derived from SfdxFalconGenerator.
 
 // Import SFDX-Falcon Types
 import  {SfdxFalconResultType}  from  '@sfdx-falcon/status';    // Interface. Represents various types of SFDX-Falcon Results.
