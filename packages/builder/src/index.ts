@@ -14,7 +14,8 @@
 // Import code for re-export.
 import  {Builder}                   from  './builder';
 import  {determineDbgNsExt}         from  './builder';
-import  {ExternalContext}           from  './builder';
+import  {ExternalContext}           from  './external-context';
+import  {ExternalContextOptions}    from  './external-context';
 import  {InterviewQuestionsBuilder} from  './questions';
 import  {QuestionsBuilder}          from  './questions';
 import  {TaskBuilder}               from  './task';
@@ -24,6 +25,7 @@ import  {TaskGroupBuilder}          from  './task';
 export  {Builder};
 export  {determineDbgNsExt};
 export  {ExternalContext};
+export  {ExternalContextOptions};
 export  {InterviewQuestionsBuilder};
 export  {QuestionsBuilder};
 export  {TaskBuilder};

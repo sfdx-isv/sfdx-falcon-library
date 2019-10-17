@@ -14,18 +14,19 @@ import  {TypeValidator}       from  '@sfdx-falcon/validator'; // Library of Type
 
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconError}     from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+
+// Import Package-Local Classes & Functions
+import  {Builder}             from  './builder';              // Abstract Class. Basis for creating "builder" classes that can create Tasks, Questions, and more.
+import  {ExternalContext}     from  './external-context';     // Class. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 
 // Import SFDX-Falcon Types
 import  {ConfirmationAnswers} from  '@sfdx-falcon/types';     // Interface. Represents what an answers hash should look like during Yeoman/Inquirer interactions where the user is being asked to proceed/retry/abort something.
 import  {JsonMap}             from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 import  {Questions}           from  '@sfdx-falcon/types';     // Interface. Represents mulitple Inquirer Questions.
 
-// Import Package-Local Code
-import  {Builder}             from  './builder';
-import  {ExternalContext}     from  './builder';
-
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:builder:questions';
+const dbgNs = '@sfdx-falcon:builder';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
@@ -109,13 +110,18 @@ export abstract class InterviewQuestionsBuilder extends Builder {
   //───────────────────────────────────────────────────────────────────────────┘
   constructor(extCtx?:ExternalContext) {
 
+    // Call the superclass constructor.
+    super(extCtx);
 
-    SfdxFalconDebug.debugString(`xxxxxxx`, `ARGGGGH!!!`);
+    // Define the local and external debug namespaces.
+    const baseClassName     = `InterviewQuestionsBuilder`;
+    const derivedClassName  = this.constructor.name;
+    const funcName          = `constructor`;
+    const dbgNsLocal        = `${dbgNs}:${baseClassName}:${funcName}`;
+    const dbgNsExt          = `${this.dbgNsExt}:${derivedClassName}:${funcName}(${baseClassName})`;
 
-    // Define the local debug namespace.
-    const funcName    = `constructor`;
-    const dbgNsLocal = `${dbgNs}:${funcName}`;
-    const dbgNsExt    = (typeof extCtx === 'object' && typeof extCtx.dbgNs === 'string' && extCtx.dbgNs) ? `${extCtx.dbgNs}:InterviewQuestionsBuilder:${funcName}` : dbgNsLocal;
+    // Debug incoming arguments.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Ensure that an External Context argument was provided.
     TypeValidator.throwOnEmptyNullInvalidObject (extCtx, `${dbgNsExt}`, `ExternalContext`);
@@ -130,11 +136,13 @@ export abstract class InterviewQuestionsBuilder extends Builder {
     TypeValidator.throwOnEmptyNullInvalidObject (extCtx.context['answers']['confirmation'], `${dbgNsExt}`, `ExternalContext.context.answers.confirmation`);
     TypeValidator.throwOnNullInvalidObject      (extCtx.context['sharedData'],              `${dbgNsExt}`, `ExternalContext.context.sharedData`);
 
-    // Make sure we're only using one Shared Data object.
-    extCtx.sharedData = extCtx.context['sharedData'];
-
-    // Call the superclass constructor.
-    super(extCtx);
+    // Make sure that there is only one Shared Data object in use.
+    if (extCtx.sharedData !== extCtx.context['sharedData']) {
+      throw new SfdxFalconError ( `ExternalContext member 'sharedData' must point to the same object `
+                                + `as the 'sharedData' variable in the caller's context.`
+                                , `SharedDataMismatch`
+                                , `${dbgNsExt}`);
+    }
   }
 
   // Require that the `build()` method must be implemented to return an Inquirer `Questions` object.
