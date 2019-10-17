@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/builder/src/questions.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/builder/src/questions.ts
  * @summary       Exports the `QuestionsBuilder` and `InterviewQuestionsBuilder` abstract classes.
  * @description   Exports the `QuestionsBuilder` and `InterviewQuestionsBuilder` abstract classes.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import SFDX-Falcon Libraries
@@ -20,8 +21,8 @@ import  {JsonMap}             from  '@sfdx-falcon/types';     // Interface. Any 
 import  {Questions}           from  '@sfdx-falcon/types';     // Interface. Represents mulitple Inquirer Questions.
 
 // Import Package-Local Code
-import  {Builder}             from  './index';
-import  {ExternalContext}     from  './index';
+import  {Builder}             from  './builder';
+import  {ExternalContext}     from  './builder';
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:builder:questions';

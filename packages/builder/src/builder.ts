@@ -1,16 +1,16 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/builder/src/index.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/builder/src/builder.ts
  * @summary       Exports "builder" functions for Tasks, Questions, and Task Bundles.
  * @description   Exports a collection of functions for building pre-defined SFDX-Falcon Tasks,
  *                Questions, and Task Bundles. Allows developers to quickly build common Task and
  *                Interview-driven workflows in their CLI plugins.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-
 // Import SFDX-Falcon Libraries
 import  {TypeValidator}       from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
@@ -18,7 +18,6 @@ import  {TypeValidator}       from  '@sfdx-falcon/validator'; // Library of Type
 import  {SfdxFalconDebug}     from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {GeneratorStatus}     from  '@sfdx-falcon/status';    // Class. Specialized object used by Generators derived from SfdxFalconGenerator to track the running state of the Generator (eg. aborted or completed) as well as a collection of status messages that can be used to print out a final status report when the Generator is complete.
 import  {SfdxFalconResult}    from  '@sfdx-falcon/status';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:builder';
@@ -33,13 +32,13 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface ExternalContext {
   /** Required. The Debug Namespace in use by the externally defined logic. Makes it easier for users to dial-in on the specific debug operations in code that consumes an External Context. */
-  dbgNs: string;
+  dbgNs:            string;
   /** Optional. Reference to the context (ie. `this`) of the externally defined logic. */
-  context?:    object;
+  context?:         object;
   /** Optional. Provides a mechanism for internal logic to share information with the external context. */
-  sharedData?: object;
+  sharedData?:      object;
   /** Optional. Reference to an `SfdxFalconResult` object that should be used as the parent result for any `SfdxFalconResult` objects used by the internal logic. */
-  parentResult?: SfdxFalconResult;
+  parentResult?:    SfdxFalconResult;
   /** Optional. Reference to a `GeneratorStatus` object. Allows internal logic to directly specify `success`, `error`, and `warning` messages. */
   generatorStatus?: GeneratorStatus;
 }
