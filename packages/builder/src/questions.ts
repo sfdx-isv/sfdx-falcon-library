@@ -134,12 +134,19 @@ export abstract class InterviewQuestionsBuilder extends Builder {
     TypeValidator.throwOnNullInvalidObject      (extCtx.context['answers']['final'],        `${dbgNsExt}`, `ExternalContext.context.answers.final`);
     TypeValidator.throwOnNullInvalidObject      (extCtx.context['answers']['meta'],         `${dbgNsExt}`, `ExternalContext.context.answers.meta`);
     TypeValidator.throwOnEmptyNullInvalidObject (extCtx.context['answers']['confirmation'], `${dbgNsExt}`, `ExternalContext.context.answers.confirmation`);
-    TypeValidator.throwOnNullInvalidObject      (extCtx.context['sharedData'],              `${dbgNsExt}`, `ExternalContext.context.sharedData`);
+
+    // Make sure that the external context has a reference to a `sharedData` object variable.
+    if (TypeValidator.isNullInvalidObject(extCtx.context['sharedData'])) {
+      throw new SfdxFalconError ( `The context referenced by 'ExternalContext.context' must have a 'sharedData' `
+                                + `object varialbe defined in order to use instances of ${derivedClassName}.`
+                                , `SharedDataNotFound`
+                                , `${dbgNsExt}`);
+    }
 
     // Make sure that there is only one Shared Data object in use.
     if (extCtx.sharedData !== extCtx.context['sharedData']) {
       throw new SfdxFalconError ( `ExternalContext member 'sharedData' must point to the same object `
-                                + `as the 'sharedData' variable in the caller's context.`
+                                + `as the 'sharedData' variable that is defined in the caller's context.`
                                 , `SharedDataMismatch`
                                 , `${dbgNsExt}`);
     }
