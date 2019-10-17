@@ -17,10 +17,10 @@ import  Listr =             require('listr');           // Provides asynchronous
 import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug'; // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 
 // Import Package-Local Code
-import  {Builder}           from  './index';            // Abstract Class. Basis for creating "builder" classes that can create Tasks, Questions, and more.
+import  {Builder}           from  './builder';          // Abstract Class. Basis for creating "builder" classes that can create Tasks, Questions, and more.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:builder:task';
+const dbgNs = '@sfdx-falcon:builder';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
