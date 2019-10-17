@@ -229,7 +229,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Initialize class members.
     this.commandName          = opts.commandName;       // Name of the command that's executing the Generator (eg. 'falcon:adk:clone').
-    this.dbgNs                = `${dbgNs}`;             // Initial debug namespace. This should be overwritten in the derived class's constructor.
+    this.dbgNs                = this.constructor.name;  // Initial debug namespace. By default, the name of the derived class.
     this.generatorType        = opts.generatorType;     // Type (ie. file name minus the .ts extension) of the Generator being run.
     this.generatorResult      = opts.generatorResult;   // Used for activity tracking and communication back to the calling command.
     this.generatorReqs        = generatorReqs;          // Generator Requirements. Should be modified by the derived class.
@@ -241,7 +241,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
 
     // Initialize the External Context.
     this.extCtx = new ExternalContext({
-      dbgNs:            this.constructor.name,
+      dbgNs:            this.dbgNs,
       context:          this,
       generatorStatus:  this.generatorStatus,
       parentResult:     this.generatorResult,
