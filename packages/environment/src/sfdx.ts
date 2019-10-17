@@ -978,10 +978,10 @@ export class SfdxEnvironment {
     const dbgNsExt    = `${this._dbgNs}:sfdxEnvInit`;
 
     // Initialize an External Context that will be shared by all tasks.
-    const extCtx:ExternalContext = {
+    const extCtx = new ExternalContext({
       dbgNs:        dbgNsExt,
       parentResult: this._initializationResult
-    };
+    });
     SfdxFalconDebug.obj(`${dbgNsLocal}:extCtx:`, extCtx);
 
     // Determine if Initialization should happen or not.

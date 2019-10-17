@@ -17,6 +17,7 @@ import  {BannerUtil}                from  '@sfdx-falcon/util';          // Libra
 import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
+import  {ExternalContext}           from  '@sfdx-falcon/builder';       // Class. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxEnvironment}           from  '@sfdx-falcon/environment';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
@@ -26,7 +27,6 @@ import  {printStyledMessage}        from  '@sfdx-falcon/status';        // Funct
 import  {GeneratorStatus}           from  '@sfdx-falcon/status';        // Class. Status tracking object for use with Yeoman Generators.
 
 // Import SFDX-Falcon Types
-import  {ExternalContext}             from  '@sfdx-falcon/builder';     // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
 import  {SfdxEnvironmentRequirements} from  '@sfdx-falcon/environment'; // Interface. Represents the elements of the local SFDX Environment that are required by the calling code.
 import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
@@ -240,13 +240,13 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
     this.sharedData           = {} as object;           // Special context for sharing data between Generator, Inquirer Questions, and Listr Tasks.
 
     // Initialize the External Context.
-    this.extCtx = {
-      dbgNs:            null,
-      context:          null,
+    this.extCtx = new ExternalContext({
+      dbgNs:            this.constructor.name,
+      context:          this,
       generatorStatus:  this.generatorStatus,
       parentResult:     this.generatorResult,
       sharedData:       this.sharedData
-    };
+    });
 
     // Initialize all Run-Loop Status booleans to `null`.
     // In practice, `null` will mean an unset value, `false` means failure, `true` means success.

@@ -15,7 +15,8 @@ import  {flags}                         from  '@salesforce/command';   // Allows
 import  {Messages}                      from  '@salesforce/core';      // Messages library that simplifies using external JSON for string reuse.
 import  {SfdxError}                     from  '@salesforce/core';      // Generalized SFDX error which also contains an action.
 
-// Import Internal Classes & Functions
+// Import SFDX-Falcon Classes & Functions
+import  {ExternalContext}               from  '@sfdx-falcon/builder'; // Class. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {SfdxFalconCommand}             from  '@sfdx-falcon/command'; // Abstract Class. Extend when building Salesforce CLI commands that use the SFDX-Falcon Library.
 import  {SfdxFalconDebug}               from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconError}               from  '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
@@ -112,12 +113,12 @@ export default class FalconTaskPlayground extends SfdxFalconCommand {
     // Define a Falcon Task.
     const falconTask = new SfdxFalconTask({
       title:  'this is my test task',
-      extCtx:   {
+      extCtx:   new ExternalContext({
         dbgNs:  `xxxx`
         //sharedData: {}
         //parentResult: {} as any,
         //generatorStatus: {} as any
-      },
+      }),
 //        extCtxReqs: {
 //          sharedData: true
 //          parentResult: false,
