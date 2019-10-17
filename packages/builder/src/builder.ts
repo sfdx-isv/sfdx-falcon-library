@@ -60,8 +60,11 @@ export interface ExternalContext {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export abstract class Builder {
+
+  // Protected class members
   protected readonly extCtx:  ExternalContext;
 
+  // Protected accessors.
   protected get dbgNsExt():string {
     return this.extCtx.dbgNs;
   }
@@ -78,11 +81,12 @@ export abstract class Builder {
   //───────────────────────────────────────────────────────────────────────────┘
   constructor(extCtx?:ExternalContext) {
 
-    // Define the local debug namespace.
-    const className   = `Builder`;
-    const funcName    = `constructor`;
-    const dbgNsLocal  = `${dbgNs}:${funcName}`;
-    const dbgNsExt    = determineDbgNsExt(extCtx, className, funcName, dbgNsLocal);
+    // Define the local and external debug namespaces.
+    const baseClassName     = `Builder`;
+    const derivedClassName  = this.constructor.name;
+    const funcName          = `constructor`;
+    const dbgNsLocal        = `${dbgNs}:${baseClassName}:${funcName}`;
+    const dbgNsExt          = `${determineDbgNsExt(extCtx, derivedClassName, funcName, dbgNsLocal)}(${baseClassName})`;
 
     // Debug the incoming arguments.
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
@@ -112,7 +116,6 @@ export abstract class Builder {
     // Initialize the External Context member var.
     this.extCtx = extCtx;
     SfdxFalconDebug.obj(`${dbgNsLocal}:this.extCtx:`, this.extCtx);
-
   }
 
   // Abstract Public Methods.
@@ -124,7 +127,7 @@ export abstract class Builder {
  * @function    determineDbgNsExt
  * @param       {ExternalContext} extCtx  Required. Defines the context of the external environment
  *              that this function is being called from.
- * @param       {string}  className Required. Name of the class that will use the external `dbgNs`.
+ * @param       {string}  derivedClassName  Required. Name of the class that will use the external `dbgNs`.
  * @param       {string}  funcName  Required. Name of the function that will use the external `dbgNs`.
  * @param       {string}  dbgNsAlt  Required. Alternative DbgNs to be used if the External Context
  *              did not contain a valid `dbgNs` string.
@@ -135,20 +138,20 @@ export abstract class Builder {
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function determineDbgNsExt(extCtx:ExternalContext, className:string, funcName:string, dbgNsAlt:string):string {
+export function determineDbgNsExt(extCtx:ExternalContext, derivedClassName:string, funcName:string, dbgNsAlt:string):string {
 
   // Define local debug namespace.
   const dbgNsLocal = `${dbgNs}:determineDbgNsExt`;
 
   // Validate arguments.
-  TypeValidator.throwOnEmptyNullInvalidString(className,  `${dbgNsLocal}`,  `className`);
-  TypeValidator.throwOnEmptyNullInvalidString(funcName,   `${dbgNsLocal}`,  `funcName`);
-  TypeValidator.throwOnEmptyNullInvalidString(dbgNsAlt,   `${dbgNsLocal}`,  `dbgNsAlt`);
+  TypeValidator.throwOnEmptyNullInvalidString(derivedClassName, `${dbgNsLocal}`,  `derivedClassName`);
+  TypeValidator.throwOnEmptyNullInvalidString(funcName,         `${dbgNsLocal}`,  `funcName`);
+  TypeValidator.throwOnEmptyNullInvalidString(dbgNsAlt,         `${dbgNsLocal}`,  `dbgNsAlt`);
 
   // Construct the appropriate External Debug Namespace.
   const dbgNsExt =  (TypeValidator.isNotEmptyNullInvalidObject(extCtx) && TypeValidator.isNotEmptyNullInvalidString(extCtx.dbgNs))
-                    ? `${extCtx.dbgNs}:${className}:${funcName}`
+                    ? `${extCtx.dbgNs}:${derivedClassName}:${funcName}`
                     : dbgNsAlt;
-  SfdxFalconDebug.str(`${dbgNsLocal}:dbgNsExt:`, dbgNsExt);
+  SfdxFalconDebug.debugString(`${dbgNsLocal}:dbgNsExt:`, dbgNsExt);
   return dbgNsExt;
 }
