@@ -14,7 +14,8 @@ import chalk      from  'chalk';            // Helps write colored text to the c
 import * as path  from  'path';             // Library. Helps resolve local paths at runtime.
 
 // Import Internal Libraries
-//import  {QBLibrary}                      from  '@sfdx-falcon/builder-library';  // Library. Builders for Interview Questions.
+//import  * as QB from '../builders/questions-builder';
+import  {QBLibrary as QBL}                 from  '@sfdx-falcon/builder-library';  // Library. Builders for Interview Questions.
 //import  {TBLibrary}                      from  '@sfdx-falcon/builder-library';  // Library. Builders for Tasks.
 
 // Import SFDX-Falcon Classes & Functions
@@ -63,6 +64,8 @@ interface InterviewAnswers extends JsonMap {
 export default class PlayGroundGenerator01 extends SfdxFalconGenerator<InterviewAnswers> {
 
   // Define class members specific to this Generator.
+  public    publicTestVar;
+  protected protectedTestVar;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -92,19 +95,14 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
     // Call the parent constructor to initialize the Yeoman Generator.
     super(args, opts, genReqs);
 
-    // Customize the External Context. Specify ONLY the Debug Namespace and Context.
-    this.extCtx.dbgNs   = `${dbgNs}`;
-    this.extCtx.context = this;
-
     // Customize all Generator messages.
-    this.generatorMessage.opening       = `xxxSFDX-Falcon Powered Plugin\n${this.commandName}\nv${this.pluginVersion}`;
-    this.generatorMessage.preInterview  = `xxxStarting Interview...`;
-    this.generatorMessage.confirmation  = `xxxWould you like to proceed based on the above settings?`;
-    this.generatorMessage.postInterview = ``;
-    this.generatorMessage.success       = `${this.commandName} xxxcompleted successfully`;
-    this.generatorMessage.failure       = `${this.commandName} xxxexited without completing the expected tasks`;
-    this.generatorMessage.warning       = `${this.commandName} xxxcompleted successfully, but with some warnings (see above)`;
-
+    this.generatorMessages.opening        = chalk`xxxSFDX-Falcon {blue Powered} Plugin and a whole bunch of extra stuff\n{green ${this.commandName}}\nv${this.pluginVersion}`;
+    this.generatorMessages.preInterview   = `xxxStarting Interview...`;
+    this.generatorMessages.confirmation   = `xxxWould you like to proceed based on the above settings?`;
+    this.generatorMessages.postInterview  = ``;
+    this.generatorMessages.success        = `${this.commandName} xxxcompleted successfully`;
+    this.generatorMessages.failure        = `${this.commandName} xxxexited without completing the expected tasks`;
+    this.generatorMessages.warning        = `${this.commandName} xxxcompleted successfully, but with some warnings (see above)`;
 
     // Initialize DEFAULT Interview Answers.
     this.answers.default.baseDirectory = path.resolve('/users/vchawla/devtest/nothing');
@@ -113,6 +111,19 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
     this.sharedData['reportJson']       = {};
     this.sharedData['tmToolsTransform'] = {};
   }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  // Funnel each of Yeoman's "run loop" priority methods through the matching
+  // double-underscore (__) version which is defined on the SfdxFalconGenerator
+  // base class.  Those methods will, in turn, call on the single-underscore
+  // "_" versions that are implemented in this derived class.
+  //───────────────────────────────────────────────────────────────────────────┘
+  public async initializing():Promise<void> { await this.__initializing(); }
+  public async prompting():Promise<void>    { await this.__prompting(); }
+  public async configuring():Promise<void>  { await this.__configuring(); }
+  public async writing():Promise<void>      { await this.__writing(); }
+  public async install():Promise<void>      { await this.__install(); }
+  public async end():Promise<void>          { await this.__end(); }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
@@ -147,13 +158,17 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
     // Group 0: Specify the directory containing the TM1 config extraction.
     interview.createGroup({
       title:      chalk.yellow('\nTM1 Extraction Directory:'),
-      questions:  [{
-        type:     'confirm',
-        name:     'isScratchOrg',
-        message:  'Is the target a Scratch Org?',
-        default:  true,
-        when:     true
-      }]
+      questions:  new QBL.Sfdx.ChooseSingleOrg(
+        this.extCtx.append(`_buildInterview`),
+        this.sfdxEnv.scratchOrgChoices,
+        this.sfdxEnv.standardOrgChoices,
+        /*
+        {
+          promptIsScratchOrg:       'Hello!',
+          promptScratchOrgChoice:   'I am crazy!',
+          promptStandardOrgChoice:  'more on the way!'
+        }//*/
+      ).build()
     });
 
     // Finished building the Interview.
@@ -317,7 +332,7 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      initializing
+   * @method      _initializing
    * @returns     {Promise<void>}
    * @description STEP ONE in the Yeoman run-loop.  Uses Yeoman's "initializing"
    *              run-loop priority.
@@ -325,13 +340,15 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
    */
   //───────────────────────────────────────────────────────────────────────────┘
   protected async _initializing():Promise<void> {
-
-
+    
+    // Add custom implementation here.
+    SfdxFalconDebug.debugString(`${this.dbgNs}:_initializing:`, `Executing Custom Run Loop method.`);
+    return;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      prompting
+   * @method      _prompting
    * @returns     {Promise<void>}
    * @description STEP TWO in the Yeoman run-loop. Interviews the User to get
    *              information needed by the "writing" and "installing" phases.
@@ -340,12 +357,14 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
   //───────────────────────────────────────────────────────────────────────────┘
   protected async _prompting():Promise<void> {
 
-
+    // Add custom implementation here.
+    SfdxFalconDebug.debugString(`${this.dbgNs}:_prompting:`, `Executing Custom Run Loop method.`);
+    return;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      configuring
+   * @method      _configuring
    * @returns     {Promise<void>}
    * @description STEP THREE in the Yeoman run-loop. Perform any pre-install
    *              configuration steps based on the answers provided by the User.
@@ -354,12 +373,14 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
   //───────────────────────────────────────────────────────────────────────────┘
   protected async _configuring():Promise<void> {
 
-
+    // Add custom implementation here.
+    SfdxFalconDebug.debugString(`${this.dbgNs}:_configuring:`, `Executing Custom Run Loop method.`);
+    return;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      writing
+   * @method      _writing
    * @returns     {Promise<void>}
    * @description STEP FOUR in the Yeoman run-loop. Typically, this is where
    *              you perform filesystem writes, git clone operations, etc.
@@ -368,16 +389,14 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
   //───────────────────────────────────────────────────────────────────────────┘
   protected async _writing():Promise<void> {
 
-    // Transform the user's TM1 config.
-    //await this._transformTm1Config();
-
-    // Generate the final report.
-    //await this._generateReport();
+    // Add custom implementation here.
+    SfdxFalconDebug.debugString(`${this.dbgNs}:_writing:`, `Executing Custom Run Loop method.`);
+    return;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      install
+   * @method      _install
    * @returns     {Promise<void>}
    * @description STEP FIVE in the Yeoman run-loop. Typically, this is where
    *              you perform operations that must happen AFTER files are
@@ -389,12 +408,14 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
   //───────────────────────────────────────────────────────────────────────────┘
   protected async _install():Promise<void> {
 
-
+    // Add custom implementation here.
+    SfdxFalconDebug.debugString(`${this.dbgNs}:_install:`, `Executing Custom Run Loop method.`);
+    return;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @method      end
+   * @method      _end
    * @returns     {Promise<void>}
    * @description STEP SIX in the Yeoman run-loop. This is the FINAL step that
    *              Yeoman runs and it gives us a chance to do any post-Yeoman
@@ -404,6 +425,8 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
   //───────────────────────────────────────────────────────────────────────────┘
   protected async _end():Promise<void> {
 
-
+    // Add custom implementation here.
+    SfdxFalconDebug.debugString(`${this.dbgNs}:_end:`, `Executing Custom Run Loop method.`);
+    return;
   }
 }
