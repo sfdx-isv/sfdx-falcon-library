@@ -94,7 +94,7 @@ export default class PlaygroundGeneratorTest extends SfdxFalconGeneratorCommand 
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @function    runCommand
+   * @method      runCommand
    * @returns     {Promise<AnyJson>}  Resolves with a JSON object that the CLI
    *              will pass to the user as stdout if the `--json` flag was set.
    * @description Entrypoint function for `sfdx playground:generator-test`.
@@ -120,7 +120,7 @@ export default class PlaygroundGeneratorTest extends SfdxFalconGeneratorCommand 
     //*/
 
     // Run a Yeoman Generator to interact with and run tasks for the user.
-    return await super.runGenerator({
+    const generatorResult = await super.runGenerator({
       commandName:      this.commandName,
       generatorPath:    path.resolve(__dirname, '../../generators'),
       generatorType:    'playground-generator-01',
@@ -129,5 +129,9 @@ export default class PlaygroundGeneratorTest extends SfdxFalconGeneratorCommand 
         outputDir:        this.outputDirectory
       }
     });
+
+    SfdxFalconDebug.debugObject(`${dbgNsLocal}:generatorResult:`, generatorResult);
+    return generatorResult;
+
   }
 }
