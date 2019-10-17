@@ -72,9 +72,8 @@ export class ExternalContext {
   constructor(opts:ExternalContextOptions|string) {
 
     // Define local and external debug namespaces.
-    const className   = this.constructor.name;
     const funcName    = `constructor`;
-    const dbgNsLocal  = `${dbgNs}:${className}:${funcName}`;
+    const dbgNsLocal  = `${dbgNs}:${this.constructor.name}:${funcName}`;
 
     // Debug incoming arguments
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
@@ -109,6 +108,42 @@ export class ExternalContext {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
+   * @method      append
+   * @param       {string}  addedDbgNs  Required. String to append to the
+   *              current Debug Namespace attached to this `ExternalContext`
+   *              object before it is copied and returned.
+   * @returns     {ExternalContext}
+   * @description Makes a shallow copy of this `ExternalContext` object with a
+   *              new Debug Namespace that's created by appending the string
+   *              specified by the caller to the Debug Namespace that's
+   *              currently in use by this instance.
+   * @public
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public append(addedDbgNs:string):ExternalContext {
+
+    // Define the local debug namespace.
+    const funcName    = `append`;
+    const dbgNsLocal  = `${dbgNs}:${this.constructor.name}:${funcName}`;
+
+    // Debug incoming arguments.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+    // Validate incoming arguments.
+    TypeValidator.throwOnEmptyNullInvalidString(addedDbgNs, `${dbgNsLocal}`,  `addedDbgNs`);
+
+    // Build and return a new ExternalContext object with a new Debug Namespace.
+    return new ExternalContext({
+      dbgNs:            `${this.dbgNs}:${addedDbgNs}`,
+      context:          this.context,
+      sharedData:       this.sharedData,
+      generatorStatus:  this.generatorStatus,
+      parentResult:     this.parentResult
+    });
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
    * @method      copy
    * @param       {string}  newDbgNs  Required. Name of the new Debug Namespace
    *              that will be used by the copied `ExternalContext` object.
@@ -120,10 +155,9 @@ export class ExternalContext {
   //───────────────────────────────────────────────────────────────────────────┘
   public copy(newDbgNs:string):ExternalContext {
 
-    // Define local and external debug namespaces.
-    const className   = this.constructor.name;
-    const funcName    = `constructor`;
-    const dbgNsLocal  = `${dbgNs}:${className}:${funcName}`;
+    // Define the local debug namespace.
+    const funcName    = `copy`;
+    const dbgNsLocal  = `${dbgNs}:${this.constructor.name}:${funcName}`;
 
     // Debug incoming arguments.
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
