@@ -30,6 +30,7 @@ import  {ExternalContext}             from  '@sfdx-falcon/builder';     // Inter
 import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
 import  {SfdxEnvironmentRequirements} from  '@sfdx-falcon/environment'; // Interface. Represents the elements of the local SFDX Environment that are required by the calling code.
 import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
+import  {ConfirmationAnswers}         from  '@sfdx-falcon/types';       // Interface. Represents what an answers hash should look like during Yeoman/Inquirer interactions where the user is being asked to proceed/retry/abort something.
 import  {JsonMap}                     from  '@sfdx-falcon/types';       // Interface. Any JSON-compatible object.
 import  {StatusMessageType}           from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
 
@@ -45,13 +46,15 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface Answers<T extends JsonMap> {
   /** Required. The set of default answers for the Interview of an `SfdxFalconGenerator`. */
-  default:  T;
+  default:      T;
   /** Required. The set of answers provided by the user for the Interview of an `SfdxFalconGenerator`. */
-  user:     T;
+  user:         T;
   /** Required. The set of final answers for the Interview of an `SfdxFalconGenerator`. In other words, the merging of User and Default answers in case the user did not supply some answers. */
-  final:    T;
-  /** Optional. Special set of answers. Provides a means to send meta values (usually template tags) to EJS templates. */
-  meta?:    T;
+  final:        T;
+  /** Required. Special set of answers. Provides a means to send meta values (usually template tags) to EJS templates. */
+  meta:         T;
+  /** Required. The set of answers provided when the user is asked to proceed/retry/abort something. */
+  confirmation: ConfirmationAnswers;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -261,7 +264,12 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
       default:  {} as T,
       final:    {} as T,
       user:     {} as T,
-      meta:     {} as T
+      meta:     {} as T,
+      confirmation: {
+        proceed:  null,
+        restart:  null,
+        abort:    null
+      }
     };
 
     // Set defaults for all Generator messages.
