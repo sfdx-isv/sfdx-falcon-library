@@ -95,7 +95,7 @@ export class ExternalContext {
     // Finish validation knowing that we're working with an ExternalContextOptions object.
     TypeValidator.throwOnEmptyNullInvalidString(opts.dbgNs, `${dbgNsLocal}`,  `ExternalContextOptions.dbgNs`);
     if (opts.context)         TypeValidator.throwOnEmptyNullInvalidObject (opts.context,                            `${dbgNsLocal}`,  `ExternalContextOptions.context`);
-    if (opts.sharedData)      TypeValidator.throwOnEmptyNullInvalidObject (opts.sharedData,                         `${dbgNsLocal}`,  `ExternalContextOptions.sharedData`);
+    if (opts.sharedData)      TypeValidator.throwOnNullInvalidObject      (opts.sharedData,                         `${dbgNsLocal}`,  `ExternalContextOptions.sharedData`);
     if (opts.parentResult)    TypeValidator.throwOnInvalidInstance        (opts.parentResult,     SfdxFalconResult, `${dbgNsLocal}`,  `ExternalContextOptions.parentResult`);
     if (opts.generatorStatus) TypeValidator.throwOnInvalidInstance        (opts.generatorStatus,  GeneratorStatus,  `${dbgNsLocal}`,  `ExternalContextOptions.generatorStatus`);
 
