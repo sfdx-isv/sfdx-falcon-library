@@ -10,19 +10,20 @@
     "./src/**/*"
   ],
   "references": [
-    {"path": "../packages/types/tsconfig.build.json"},          // @SFDX-Falcon/types
-    {"path": "../packages/debug/tsconfig.build.json"},          // @SFDX-Falcon/debug
-    {"path": "../packages/error/tsconfig.build.json"},          // @SFDX-Falcon/error
-    {"path": "../packages/validator/tsconfig.build.json"},      // @SFDX-Falcon/validator
-    {"path": "../packages/status/tsconfig.build.json"},         // @SFDX-Falcon/status
-    {"path": "../packages/builder/tsconfig.build.json"},        // @SFDX-Falcon/builder
-    {"path": "../packages/util/tsconfig.build.json"},           // @SFDX-Falcon/util
-    {"path": "../packages/command/tsconfig.build.json"},        // @SFDX-Falcon/command
-    {"path": "../packages/environment/tsconfig.build.json"},    // @SFDX-Falcon/environment
-    {"path": "../packages/prompt/tsconfig.build.json"},         // @SFDX-Falcon/prompt
-    {"path": "../packages/task/tsconfig.build.json"},           // @SFDX-Falcon/task
-    {"path": "../packages/interview/tsconfig.build.json"},      // @SFDX-Falcon/interview
-    {"path": "../packages/task-bundle/tsconfig.build.json"},    // @SFDX-Falcon/task-bundle
-    {"path": "../packages/generator/tsconfig.build.json"}       // @SFDX-Falcon/generator
+    {"path": "../packages/types/tsconfig.build.json"},            // @SFDX-Falcon/types
+    {"path": "../packages/debug/tsconfig.build.json"},            // @SFDX-Falcon/debug
+    {"path": "../packages/error/tsconfig.build.json"},            // @SFDX-Falcon/error
+    {"path": "../packages/validator/tsconfig.build.json"},        // @SFDX-Falcon/validator
+    {"path": "../packages/status/tsconfig.build.json"},           // @SFDX-Falcon/status
+    {"path": "../packages/builder/tsconfig.build.json"},          // @SFDX-Falcon/builder
+    {"path": "../packages/util/tsconfig.build.json"},             // @SFDX-Falcon/util
+    {"path": "../packages/command/tsconfig.build.json"},          // @SFDX-Falcon/command
+    {"path": "../packages/environment/tsconfig.build.json"},      // @SFDX-Falcon/environment
+    {"path": "../packages/prompt/tsconfig.build.json"},           // @SFDX-Falcon/prompt
+    {"path": "../packages/task/tsconfig.build.json"},             // @SFDX-Falcon/task
+    {"path": "../packages/interview/tsconfig.build.json"},        // @SFDX-Falcon/interview
+    {"path": "../packages/task-bundle/tsconfig.build.json"},      // @SFDX-Falcon/task-bundle
+    {"path": "../packages/builder-library/tsconfig.build.json"},  // @SFDX-Falcon/builder-library
+    {"path": "../packages/generator/tsconfig.build.json"}         // @SFDX-Falcon/generator
   ]
 }
