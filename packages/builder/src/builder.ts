@@ -34,6 +34,17 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * Interface. Collection of debug namespace strings.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface DebugNamespaces {
+  ext?:     string;
+  local?:   string;
+  global?:  string;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @abstract
  * @class       Builder
  * @description Abstract Class. Basis for creating "builder" classes that can create Tasks,
@@ -94,6 +105,39 @@ export abstract class Builder {
 
   // Abstract Public Methods.
   public abstract build():unknown;
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      initializeDebug
+   * @param       {string}  callerDbgNs Required. The file-local `dbgNs` of the
+   *              function/method that inside of which this method is being called.
+   * @param       {string}  funcName  Required. Name of the function inside of
+   *              which this method is being called.
+   * @param       {IArguments}  args  Required. The `arguments` array from the
+   *              calling function/method.
+   * @returns     {DebugNamespaces}
+   * @description Given the name of a function/method and an `arguments` array,
+   *              returns a `DebugNamespaces` object after performing both local
+   *              and external debug of the provided `arguments`.
+   * @protected
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  protected initializeDebug(callerDbgNs:string, funcName:string, args:IArguments):DebugNamespaces {
+
+    // Declare a DebugNamespaces object.
+    const dbgNS:DebugNamespaces = {};
+
+    // Define local and external debug namespaces.
+    dbgNS.local = `${callerDbgNs}:${this.constructor.name}:${funcName}`;
+    dbgNS.ext   = `${this.dbgNsExt}:${this.constructor.name}:${funcName}`;
+
+    // Debug the arguments provided by the caller.
+    SfdxFalconDebug.obj(`${dbgNS.local}:arguments:`, args);
+    SfdxFalconDebug.obj(`${dbgNS.ext}:arguments:`,   args);
+
+    // Return the Debug Namespaces object.
+    return dbgNS;
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
