@@ -12,6 +12,7 @@
   "references": [
     {"path": "../types/tsconfig.build.json"},         // @SFDX-Falcon/types
     {"path": "../debug/tsconfig.build.json"},         // @SFDX-Falcon/debug
-    {"path": "../status/tsconfig.build.json"}         // @SFDX-Falcon/status
+    {"path": "../status/tsconfig.build.json"},        // @SFDX-Falcon/status
+    {"path": "../builder/tsconfig.build.json"}        // @SFDX-Falcon/builder
   ]
 }

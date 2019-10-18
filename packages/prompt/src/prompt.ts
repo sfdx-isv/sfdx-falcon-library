@@ -1,18 +1,20 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/prompt/src/prompt.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       Exports SfdxFalconPrompt which provides user interaction via the console.
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/prompt/src/prompt.ts
+ * @summary       Exports `SfdxFalconPrompt` which provides user interaction via the console.
  * @description   Helps developers quickly build Inquirer based interviews. Prompts created this
- *                way can be executed alone or as part of an SfdxFalconInterview group.
- * @license       MIT
+ *                way can be executed alone or as part of an `SfdxFalconInterview` group.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 /** */// Import External Libraries, Modules, and Types
 import  inquirer                  = require('inquirer');        // A collection of common interactive command line user interfaces.
 
 // Import SFDX-Falcon Classes & Functions
+import  {Builder}                 from  '@sfdx-falcon/builder'; // Abstract Class. Basis for creating "builder" classes that can create Tasks, Questions, and more.
 import  {SfdxFalconDebug}         from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconKeyValueTable} from  '@sfdx-falcon/status';  // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
 
@@ -20,7 +22,6 @@ import  {SfdxFalconKeyValueTable} from  '@sfdx-falcon/status';  // Class. Uses t
 import  {AnswersDisplay}          from  '@sfdx-falcon/types';   // Type. Defines a function that displays answers to a user.
 import  {ConfirmationAnswers}     from  '@sfdx-falcon/types';   // Interface. Represents what an answers hash should look like during Yeoman/Inquirer interactions where the user is being asked to proceed/retry/abort something.
 import  {JsonMap}                 from  '@sfdx-falcon/types';   // Interface. Any JSON-compatible object.
-import  {PromptOptions}           from  '@sfdx-falcon/types';   // Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
 import  {Questions}               from  '@sfdx-falcon/types';   // Type. Alias to the Questions type from the yeoman-generator module.
 import  {QuestionsBuilder}        from  '@sfdx-falcon/types';   // Type. Funcion type alias defining a function that returns Inquirer Questions.
 
@@ -28,6 +29,23 @@ import  {QuestionsBuilder}        from  '@sfdx-falcon/types';   // Type. Funcion
 const dbgNs = '@sfdx-falcon:prompt';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface PromptOptions<T extends JsonMap> {
+  questions: Questions | QuestionsBuilder | Builder;
+  questionsArgs?: unknown[];
+  defaultAnswers: T;
+  confirmation?: Questions | QuestionsBuilder | Builder;
+  confirmationArgs?: unknown[];
+  invertConfirmation?: boolean;
+  display?: AnswersDisplay<T>;
+  context?: object;
+  data?: object;
+}
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -44,18 +62,21 @@ export class SfdxFalconPrompt<T extends JsonMap> {
   public readonly defaultAnswers:       T;                            // ???
   public userAnswers:                   T;                            // ???
   public confirmationAnswers:           ConfirmationAnswers;          // ???
-  public context:                       object;                       // ???
   
   // Private members
-  private readonly _questions:          Questions | QuestionsBuilder; // ???
-  private readonly _confirmation:       Questions | QuestionsBuilder; // ???
-  private readonly _questionsArgs:      unknown[];                    // ???
-  private readonly _confirmationArgs:   unknown[];                    // ???
-  private readonly _display:            AnswersDisplay<T>;            // ???
-  private readonly _invertConfirmation: boolean;                      // ???
+  private readonly _questions:          Questions | QuestionsBuilder | Builder; // ???
+  private readonly _confirmation:       Questions | QuestionsBuilder | Builder; // ???
+  private readonly _questionsArgs:      unknown[];                              // ???
+  private readonly _confirmationArgs:   unknown[];                              // ???
+  private readonly _display:            AnswersDisplay<T>;                      // ???
+  private readonly _invertConfirmation: boolean;                                // ???
 
   // Public Accessors
+  /** Returns the set of Inquirer `Questions` that will be displayed during the 'confirmation' phase of the prompt. */
   public get confirmation():Questions {
+    if (this._confirmation instanceof Builder) {
+      return this._confirmation.build();
+    }
     if (typeof this._confirmation === 'function') {
       return this._confirmation.call(this, this._confirmationArgs);
     }
@@ -63,16 +84,18 @@ export class SfdxFalconPrompt<T extends JsonMap> {
       return this._confirmation;
     }
   }
-  public get sharedData():object {
-    return this.context['sharedData'];
-  }
+  /** Returns a union of Default and User Answers, representing the "final" set of answers to this prompt. */
   public get finalAnswers():T {
     return {
       ...this.defaultAnswers,
       ...this.userAnswers
     } as T;
   }
+  /** Returns the set of Inquirer `Questions` that will be displayed as the main part of this prompt. */
   public get questions():Questions {
+    if (this._questions instanceof Builder) {
+      return this._questions.build();
+    }
     if (typeof this._questions === 'function') {
       return this._questions.apply(this, this._questionsArgs);
     }
@@ -100,7 +123,6 @@ export class SfdxFalconPrompt<T extends JsonMap> {
     this._display             = opts.display;
     this._invertConfirmation  = opts.invertConfirmation || false;
     this.defaultAnswers       = opts.defaultAnswers;
-    this.context              = opts.context  ||  {} as object;
     this.confirmationAnswers  = {} as ConfirmationAnswers;
     this.userAnswers          = {} as T;
   }
