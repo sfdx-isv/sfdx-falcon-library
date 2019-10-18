@@ -1,41 +1,97 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/interview/src/interview.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/interview/src/interview.ts
  * @summary       Exports `SfdxFalconInterview` which provides complex interactions via the console.
  * @description   Helps developers quickly build complex Inquirer based interviews as a collection
  *                of `SfdxFalconPrompt` objects. Can export interviews to external consumers (like
  *                Yeoman), or directly run Inquirer-based interactions.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-// Import External Libraries, Modules, and Types
-
 // Import SFDX-Falcon Libraries
 import  {TypeValidator}             from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
+import  {Builder}                   from  '@sfdx-falcon/builder';   // Abstract Class. Basis for creating "builder" classes that can create Tasks, Questions, and more.
+import  {ExternalContext}           from  '@sfdx-falcon/builder';   // Class. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconPrompt}          from  '@sfdx-falcon/prompt';    // Class. Wraps user prompting/interaction functionality provided by Inquirer.
 import  {SfdxFalconKeyValueTable}   from  '@sfdx-falcon/status';    // Class. Uses table creation code borrowed from the SFDX-Core UX library to make it easy to build "Key/Value" tables.
 
 // Import SFDX-Falcon Types
-import  {AbortInterview}            from  '@sfdx-falcon/types';     // Type. Alias defining a function that checks whether an Interview should be aborted.
+import  {InquirerAnswers}           from  '@sfdx-falcon/types';     // Type. Alias to the Inquirer packaged type representing answers from a prompt.
 import  {AnswersDisplay}            from  '@sfdx-falcon/types';     // Type. Defines a function that displays answers to a user.
 import  {ConfirmationAnswers}       from  '@sfdx-falcon/types';     // Interface. Represents what an answers hash should look like during Yeoman/Inquirer interactions where the user is being asked to proceed/retry/abort something.
-import  {InterviewGroupOptions}     from  '@sfdx-falcon/types';     // Interface. Represents the options that can be set by the InterviewGroup constructor.
-import  {InterviewOptions}          from  '@sfdx-falcon/types';     // Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
-import  {InterviewStatus}           from  '@sfdx-falcon/types';     // Interface. Represents a set of status indicators for an SfdxFalconInterview.
 import  {JsonMap}                   from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 import  {Questions}                 from  '@sfdx-falcon/types';     // Type. Alias to the Questions type from the yeoman-generator module.
 import  {QuestionsBuilder}          from  '@sfdx-falcon/types';     // Type. Function type alias defining a function that returns Inquirer Questions.
-import  {ShowInterviewGroup}        from  '@sfdx-falcon/types';     // Type. Alias defining a function that checks whether an Interview Group should be shown.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:interview';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Represents the options that can be set by the `SfdxFalconInterview` constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface InterviewOptions<T extends JsonMap> {
+  defaultAnswers: T;
+  confirmation?: Questions | QuestionsBuilder | Builder;
+  confirmationHeader?: string;
+  invertConfirmation?: boolean;
+  display?: AnswersDisplay<T>;
+  displayHeader?: string;
+  context?: object;
+  sharedData?: object;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Represents the options that can be set by the `InterviewGroup` constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface InterviewGroupOptions<T extends JsonMap> {
+  questions: Questions | QuestionsBuilder | Builder;
+  questionsArgs?: unknown[];
+  confirmation?: Questions | QuestionsBuilder | Builder;
+  confirmationArgs?: unknown[];
+  invertConfirmation?: boolean;
+  display?: AnswersDisplay<T>;
+  when?: ShowInterviewGroup;
+  abort?: AbortInterview;
+  title?: string;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Interface. Represents a set of status indicators for an `SfdxFalconInterview`.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface InterviewStatus {
+  aborted?: boolean;
+  completed?: boolean;
+  reason?: string;
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * Type alias defining a function that checks whether an Interview should be aborted.
+ */
+export declare type AbortInterview = (groupAnswers:InquirerAnswers, userAnswers?:InquirerAnswers) => boolean | string;
+/**
+ * Type alias defining a function that can be used to determine boolean control-flow inside an Interview.
+ */
+export declare type InterviewControlFunction = (userAnswers:InquirerAnswers, sharedData?:object) => boolean | Promise<boolean>;
+/**
+ * Type alias defining a function or simple boolean that checks whether an Interview Group should be shown.
+ */
+export declare type ShowInterviewGroup = boolean | InterviewControlFunction;
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -105,49 +161,21 @@ export class InterviewGroup<T extends JsonMap> {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export class SfdxFalconInterview<T extends JsonMap> {
 
-  //───────────────────────────────────────────────────────────────────────────┐
-  /**
-   * @method      validateInterviewScope
-   * @param       {unknown} callingScope  Required. The calling scope, ie. the
-   *              caller's "this" scope, that will be validated by this method.
-   * @description Ensures that the calling scope has certain variables that are
-   *              required when Questions are required to be created within an
-   *              "Interview Scope".
-   * @public @static
-   */
-  //───────────────────────────────────────────────────────────────────────────┘
-  public static validateInterviewScope(callingScope:unknown):void {
-
-    // Define function-local debug namespace.
-    const funcName    = `validateInterviewScope`;
-    const dbgNsLocal  = `${dbgNs}:${funcName}`;
-
-    // Make sure we got a Calling Scope object.
-    TypeValidator.throwOnEmptyNullInvalidObject(callingScope, `${dbgNsLocal}`, `callingScope`);
-
-    // Make sure the Calling Scope has access to the required variables.
-    TypeValidator.throwOnNullInvalidObject(callingScope['userAnswers'],         `${dbgNsLocal}`, `callingScope.userAnswers`);
-    TypeValidator.throwOnNullInvalidObject(callingScope['defaultAnswers'],      `${dbgNsLocal}`, `callingScope.defaultAnswers`);
-    TypeValidator.throwOnNullInvalidObject(callingScope['confirmationAnswers'], `${dbgNsLocal}`, `callingScope.confirmationAnswers`);
-    TypeValidator.throwOnNullInvalidObject(callingScope['context'],             `${dbgNsLocal}`, `callingScope.context`);
-    TypeValidator.throwOnNullInvalidObject(callingScope['sharedData'],          `${dbgNsLocal}`, `callingScope.sharedData`);
-  }
-
   // Public members
-  public readonly   context:        object;                             // ???
-  public readonly   sharedData:     object;                             // ???
+//  public readonly   context:        object;                             // ???
+//  public readonly   sharedData:     object;                             // ???
   public readonly   defaultAnswers: T;                                  // ???
   public            status:         InterviewStatus;                    // ???
   public            userAnswers:    T;                                  // ???
   public            when:           ShowInterviewGroup;                 // ???
 
   // Private members
-  private readonly  _interviewGroups:     Array<InterviewGroup<T>>;     // ???
-  private readonly  _confirmation:        Questions | QuestionsBuilder; // ???
-  private readonly  _confirmationHeader:  string;                       // ???
-  private readonly  _display:             AnswersDisplay<T>;            // ???
-  private readonly  _displayHeader:       string;                       // ???
-  private readonly  _invertConfirmation:  boolean;                      // ???
+  private readonly  _interviewGroups:     Array<InterviewGroup<T>>;               // ???
+  private readonly  _confirmation:        Questions | QuestionsBuilder | Builder; // ???
+  private readonly  _confirmationHeader:  string;                                 // ???
+  private readonly  _display:             AnswersDisplay<T>;                      // ???
+  private readonly  _displayHeader:       string;                                 // ???
+  private readonly  _invertConfirmation:  boolean;                                // ???
 
   // Public Accessors
   public get finalAnswers():T {
@@ -182,8 +210,8 @@ export class SfdxFalconInterview<T extends JsonMap> {
     this._display             = opts.display;
     this._displayHeader       = opts.displayHeader      || '';
     this._invertConfirmation  = opts.invertConfirmation || false;
-    this.context              = opts.context            || {} as object;
-    this.sharedData           = opts.sharedData         || {} as object;
+//    this.context              = opts.context            || {} as object;
+//    this.sharedData           = opts.sharedData         || {} as object;
     this.userAnswers          = {} as T;
     this._interviewGroups     = new Array<InterviewGroup<T>>();
     this.status               = {aborted: false, completed: false};
@@ -450,5 +478,52 @@ export class SfdxFalconInterview<T extends JsonMap> {
     // This means that, by default, any Interview Group with an undefined "when"
     // will always run.
     return false;
+  }
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @function    validateInterviewScope
+ * @param       {unknown} unknownContext  Required. The calling scope, ie. the caller's `this`
+ *              scope or an `ExternalContext` object, that will be validated by this method.
+ * @param       {string}  [dbgNsExt]  Optional. Allows the caller to specify a Debug Namespace that
+ *              will be used by any `TypeValidator` errors to indicate where the callling code
+ *              originated.
+ * @description Ensures that the calling scope has access to a suite of certain variables that make
+ *              it easier to build multi-step `Questions`.
+ * @public
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export function validateInterviewScope(unknownContext:unknown, dbgNsExt?:string):void {
+
+  // Define function-local debug namespace.
+  const funcName    = `validateInterviewScope`;
+  const dbgNsLocal  = `${TypeValidator.isNotEmptyNullInvalidString(dbgNsExt) ? `${dbgNsExt}` : `${dbgNs}`}:${funcName}`;
+
+  // Make sure we got a Calling Scope object.
+  TypeValidator.throwOnEmptyNullInvalidObject(unknownContext, `${dbgNsLocal}`, `unknownContext`);
+
+  // Two paths for validation depending on whether or not the "unknown context" is an `External Context` object.
+  if (unknownContext instanceof ExternalContext) {
+
+    // If the "unknown context" is an `ExternalContext` object, dig into the `context` member var for validation.
+    TypeValidator.throwOnEmptyNullInvalidObject (unknownContext.context,                            `${dbgNsLocal}`, `ExternalContext.context`);
+    TypeValidator.throwOnEmptyNullInvalidObject (unknownContext.context['answers'],                 `${dbgNsLocal}`, `ExternalContext.context.answers`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext.context['answers']['default'],      `${dbgNsLocal}`, `ExternalContext.context.answers.default`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext.context['answers']['user'],         `${dbgNsLocal}`, `ExternalContext.context.answers.user`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext.context['answers']['final'],        `${dbgNsLocal}`, `ExternalContext.context.answers.final`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext.context['answers']['meta'],         `${dbgNsLocal}`, `ExternalContext.context.answers.meta`);
+    TypeValidator.throwOnEmptyNullInvalidObject (unknownContext.context['answers']['confirmation'], `${dbgNsLocal}`, `ExternalContext.context.answers.confirmation`);
+  }
+  else {
+
+    // If we get here, the "unknown context" is likely the caller's `this` context.
+    TypeValidator.throwOnEmptyNullInvalidObject (unknownContext['answers'],                 `${dbgNsLocal}`, `CallingContext.answers`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext['answers']['default'],      `${dbgNsLocal}`, `CallingContext.answers.default`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext['answers']['user'],         `${dbgNsLocal}`, `CallingContext.answers.user`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext['answers']['final'],        `${dbgNsLocal}`, `CallingContext.answers.final`);
+    TypeValidator.throwOnNullInvalidObject      (unknownContext['answers']['meta'],         `${dbgNsLocal}`, `CallingContext.answers.meta`);
+    TypeValidator.throwOnEmptyNullInvalidObject (unknownContext['answers']['confirmation'], `${dbgNsLocal}`, `CallingContext.answers.confirmation`);
+    TypeValidator.throwOnEmptyNullInvalidObject (unknownContext['answers']['sharedData'],   `${dbgNsLocal}`, `CallingContext.answers.sharedData`);
   }
 }
