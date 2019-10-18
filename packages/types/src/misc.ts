@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/types/misc.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/types/misc.ts
  * @summary       All types/interfaces that could not be organized into one of the other buckets.
  * @description   All types/interfaces that could not be organized into one of the other buckets.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Modules/Types
@@ -328,73 +329,6 @@ export type SfdxFalconTableData = SfdxFalconKeyValueTableDataRow[];
 export type AnswersDisplay<T extends JsonMap> = (userAnswers?:T) => Promise<void | SfdxFalconTableData>;
 
 /**
- * Interface. Represents the options that can be set by the SfdxFalconPrompt constructor.
- */
-export interface PromptOptions<T extends JsonMap> {
-  questions:            Questions | QuestionsBuilder; // Required. Questions for the user.
-  questionsArgs?:       unknown[];                    // Optional. Array of arguments to be passed to a QuestionsBuilder function.
-  defaultAnswers:       T;                            // Required. Default answers to the Questions.
-  confirmation?:        Questions | QuestionsBuilder; // Optional. Confirmation Questions.
-  confirmationArgs?:    unknown[];                    // Optional. Array of arguments to be passed to a QuestionsBuilder function.
-  invertConfirmation?:  boolean;                      // Optional. ???
-  display?:             AnswersDisplay<T>;            // Optional. ???
-  context?:             object;                       // Optional. The scope of the caller who creates an SfdxFalconPrompt.
-  data?:                object;                       // Optional. ???
-}
-
-/**
- * Interface. Represents the options that can be set by the SfdxFalconInterview constructor.
- */
-export interface InterviewOptions<T extends JsonMap> {
-  defaultAnswers:       T;                            // Required. Default answers to the Questions.
-  confirmation?:        Questions | QuestionsBuilder; // Optional. Confirmation Questions.
-  confirmationHeader?:  string;                       // Optional. Text to be shown above the Interview's Confirmation Question.
-  invertConfirmation?:  boolean;                      // Optional. Inverts the relevant Confirmation Answers before considering their value.
-  display?:             AnswersDisplay<T>;            // Optional. Async function that returns void if the function renders something, or an array of Falcon Data Table rows if not.
-  displayHeader?:       string;                       // Optional. Text to be shown above the Display Table.
-  context?:             object;                       // Optional. ???
-  sharedData?:          object;                       // Optional. ???
-}
-
-/**
- * Interface. Represents the options that can be set by the InterviewGroup constructor.
- */
-export interface InterviewGroupOptions<T extends JsonMap> {
-  questions:            Questions | QuestionsBuilder;
-  questionsArgs?:       unknown[];
-  confirmation?:        Questions | QuestionsBuilder;
-  confirmationArgs?:    unknown[];
-  invertConfirmation?:  boolean;
-  display?:             AnswersDisplay<T>;
-  when?:                ShowInterviewGroup;
-  abort?:               AbortInterview;
-  title?:               string;
-}
-/**
- * Interface. Represents a set of status indicators for an SfdxFalconInterview.
- */
-export interface InterviewStatus {
-  aborted?:   boolean;
-  completed?: boolean;
-  reason?:    string;
-}
-
-/**
- * Type alias defining a function that checks whether an Interview should be aborted.
- */
-export type AbortInterview = (groupAnswers:InquirerAnswers, userAnswers?:InquirerAnswers) => boolean | string;
-
-/**
- * Type alias defining a function that can be used to determine boolean control-flow inside an Interview.
- */
-export type InterviewControlFunction = (userAnswers:InquirerAnswers, sharedData?:object) => boolean | Promise<boolean>;
-
-/**
- * Type alias defining a function or simple boolean that checks whether an Interview Group should be shown.
- */
-export type ShowInterviewGroup = boolean | InterviewControlFunction;
-
-/**
  * Function type alias defining a function that returns Inquirer Questions.
  */
 export type QuestionsBuilder = () => Questions;
@@ -408,22 +342,6 @@ export type Questions = Questions;
  * Alias to the Question type from yeoman-generator. This is the "official" type for SFDX-Falcon.
  */
 export type Question = Question;
-
-/**
- * Interface. Represents the initialization requirements for Yeoman Generators that implement SfdxFalconYeomanGenerator.
- */
-export interface GeneratorRequirementsDELETE {
-  git:              boolean;
-  gitRemoteUri:     string;
-  localFile:        string;
-  localDirectory:   string;
-  standardOrgs:     boolean;
-  scratchOrgs:      boolean;
-  devHubOrgs:       boolean;
-  envHubOrgs:       boolean;
-  managedPkgOrgs:   boolean;
-  unmanagedPkgOrgs: boolean;
-}
 
 //
 //
