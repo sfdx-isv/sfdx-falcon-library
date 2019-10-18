@@ -153,5 +153,5 @@ export abstract class InterviewQuestionsBuilder extends Builder {
   }
 
   // Require that the `build()` method must be implemented to return an Inquirer `Questions` object.
-  public abstract build():Questions;
+  public abstract build(buildCtx?:unknown):Questions;
 }
