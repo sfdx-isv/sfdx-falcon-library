@@ -10,9 +10,13 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import SFDX Questions Builders.
-import  * as Sfdx  from  './sfdx';
+import  * as Sfdx     from  './sfdx';
+
+// Import General Questions Builders
+import  * as General  from  './general';
 
 // Re-Export Git and SFDX Task Builders.
 export {
-  Sfdx
+  Sfdx,
+  General
 };
