@@ -300,6 +300,11 @@ export type YeomanCheckboxChoice = InquirerChoice;
 export type YeomanChoiceDisabledFunction = (answers:unknown) => boolean|string; // tslint:disable-line: no-any
 
 /**
+ * Type. Represents the function signature for an Inquirer `validate()` function.
+ */
+export type InquirerValidateFunction = (input:unknown, answers?:InquirerAnswers) => string|boolean|Promise<string|boolean>;
+
+/**
  * Represents what an answers hash should look like during Yeoman/Inquirer interactions
  * where the user is being asked to proceed/retry/abort something.
  */
