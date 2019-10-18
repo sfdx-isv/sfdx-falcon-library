@@ -162,12 +162,10 @@ export class InterviewGroup<T extends JsonMap> {
 export class SfdxFalconInterview<T extends JsonMap> {
 
   // Public members
-//  public readonly   context:        object;                             // ???
-//  public readonly   sharedData:     object;                             // ???
-  public readonly   defaultAnswers: T;                                  // ???
-  public            status:         InterviewStatus;                    // ???
-  public            userAnswers:    T;                                  // ???
-  public            when:           ShowInterviewGroup;                 // ???
+  public readonly   defaultAnswers: T;                                            // ???
+  public            status:         InterviewStatus;                              // ???
+  public            userAnswers:    T;                                            // ???
+  public            when:           ShowInterviewGroup;                           // ???
 
   // Private members
   private readonly  _interviewGroups:     Array<InterviewGroup<T>>;               // ???
@@ -205,16 +203,14 @@ export class SfdxFalconInterview<T extends JsonMap> {
 
     // Initialize this instance.
     this.defaultAnswers       = opts.defaultAnswers as T;
+    this.userAnswers          = {} as T;
+    this.status               = {aborted: false, completed: false};
     this._confirmation        = opts.confirmation;
     this._confirmationHeader  = opts.confirmationHeader || '';
     this._display             = opts.display;
     this._displayHeader       = opts.displayHeader      || '';
     this._invertConfirmation  = opts.invertConfirmation || false;
-//    this.context              = opts.context            || {} as object;
-//    this.sharedData           = opts.sharedData         || {} as object;
-    this.userAnswers          = {} as T;
     this._interviewGroups     = new Array<InterviewGroup<T>>();
-    this.status               = {aborted: false, completed: false};
   }
 
   //─────────────────────────────────────────────────────────────────────────────┐
