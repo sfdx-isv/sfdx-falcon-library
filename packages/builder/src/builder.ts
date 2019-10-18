@@ -104,7 +104,7 @@ export abstract class Builder {
   }
 
   // Abstract Public Methods.
-  public abstract build():unknown;
+  public abstract build(buildCtx?:unknown):unknown;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
