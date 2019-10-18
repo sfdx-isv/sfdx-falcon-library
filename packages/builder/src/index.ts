@@ -12,15 +12,16 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import code for re-export.
-import  {Builder}                   from  './builder';
-import  {DebugNamespaces}           from  './builder';
-import  {determineDbgNsExt}         from  './builder';
-import  {ExternalContext}           from  './external-context';
-import  {ExternalContextOptions}    from  './external-context';
-import  {InterviewQuestionsBuilder} from  './questions';
-import  {QuestionsBuilder}          from  './questions';
-import  {TaskBuilder}               from  './task';
-import  {TaskGroupBuilder}          from  './task';
+import  {Builder}                           from  './builder';
+import  {DebugNamespaces}                   from  './builder';
+import  {determineDbgNsExt}                 from  './builder';
+import  {ExternalContext}                   from  './external-context';
+import  {ExternalContextOptions}            from  './external-context';
+import  {InterviewQuestionsBuilder}         from  './questions';
+import  {InterviewQuestionsBuilderOptions}  from  './questions';
+import  {QuestionsBuilder}                  from  './questions';
+import  {TaskBuilder}                       from  './task';
+import  {TaskGroupBuilder}                  from  './task';
 
 // Re-export everything.
 export  {Builder};
@@ -29,6 +30,7 @@ export  {determineDbgNsExt};
 export  {ExternalContext};
 export  {ExternalContextOptions};
 export  {InterviewQuestionsBuilder};
+export  {InterviewQuestionsBuilderOptions};
 export  {QuestionsBuilder};
 export  {TaskBuilder};
 export  {TaskGroupBuilder};

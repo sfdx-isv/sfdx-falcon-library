@@ -32,6 +32,19 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * Interface. Baseline structure for the options object that should be provided to the `constructor`
+ * of any class that extends `InterviewQuestionsBuilder`.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface InterviewQuestionsBuilderOptions {
+  extCtx:     ExternalContext;
+  msgStrings: {
+    [key:string]: string
+  };
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @abstract
  * @class       QuestionsBuilder
  * @extends     Builder
@@ -101,42 +114,56 @@ export abstract class InterviewQuestionsBuilder extends Builder {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @constructs  InterviewQuestionsBuilder
-   * @param       {ExternalContext} [extCtx]  Optional. Provides information
-   *              about the External Context into which a derived Builder will
-   *              need to function.
-   * @description Constructs a `Builder` object.
+   * @param       {InterviewQuestionsBuilderOptions} opts Required. Options
+   *              that determine how this `InterviewQuestionsBuilder` object
+   *              will be constructed.
+   * @description Constructs a `InterviewQuestionsBuilder` object.
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  constructor(extCtx?:ExternalContext) {
+  constructor(opts:InterviewQuestionsBuilderOptions) {
 
-    // Call the superclass constructor.
-    super(extCtx);
-
-    // Define the local and external debug namespaces.
+    // Define the local debug namespace.
     const baseClassName     = `InterviewQuestionsBuilder`;
-    const derivedClassName  = this.constructor.name;
     const funcName          = `constructor`;
     const dbgNsLocal        = `${dbgNs}:${baseClassName}:${funcName}`;
-    const dbgNsExt          = `${this.dbgNsExt}:${derivedClassName}:${funcName}(${baseClassName})`;
 
     // Debug incoming arguments.
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
-    // Ensure that an External Context argument was provided.
-    TypeValidator.throwOnEmptyNullInvalidObject (extCtx, `${dbgNsExt}`, `ExternalContext`);
+    // Ensure that an object was provided for the opts argument, and that it has *something* for extCtx.
+    // We have to check for an empty/null/invalid extCtx here because the base class won't fail hard
+    // if it's not there.  For Interview Question Builders, we *want* to fail hard on missing extCtx though.
+    TypeValidator.throwOnEmptyNullInvalidObject(opts,         `${dbgNsLocal}`,  `InterviewQuestionsBuilderOptions`);
+    TypeValidator.throwOnEmptyNullInvalidObject(opts.extCtx,  `${dbgNsLocal}`,  `InterviewQuestionsBuilderOptions.extCtx`);
+
+    // Make sure the Message Strings option is an object, if supplied.
+    // If not supplied, initialize it to an empty object.
+    if (opts.msgStrings) {
+      TypeValidator.throwOnInvalidObject(opts.msgStrings,  `${dbgNsLocal}`,  `InterviewQuestionsBuilderOptions.msgStrings`);
+    }
+    else {
+      opts.msgStrings = {};
+    }
+
+    // Call the superclass constructor.
+    super(opts.extCtx);
+
+    // Define the external debug namespaces.
+    const derivedClassName  = this.constructor.name;
+    const dbgNsExt          = `${this.dbgNsExt}:${derivedClassName}:${funcName}(${baseClassName})`;
 
     // Ensure that the External Context contains a vaild Interview Scope.
-    TypeValidator.throwOnEmptyNullInvalidObject (extCtx.context,                            `${dbgNsExt}`, `ExternalContext.context`);
-    TypeValidator.throwOnEmptyNullInvalidObject (extCtx.context['answers'],                 `${dbgNsExt}`, `ExternalContext.context.answers`);
-    TypeValidator.throwOnNullInvalidObject      (extCtx.context['answers']['default'],      `${dbgNsExt}`, `ExternalContext.context.answers.default`);
-    TypeValidator.throwOnNullInvalidObject      (extCtx.context['answers']['user'],         `${dbgNsExt}`, `ExternalContext.context.answers.user`);
-    TypeValidator.throwOnNullInvalidObject      (extCtx.context['answers']['final'],        `${dbgNsExt}`, `ExternalContext.context.answers.final`);
-    TypeValidator.throwOnNullInvalidObject      (extCtx.context['answers']['meta'],         `${dbgNsExt}`, `ExternalContext.context.answers.meta`);
-    TypeValidator.throwOnEmptyNullInvalidObject (extCtx.context['answers']['confirmation'], `${dbgNsExt}`, `ExternalContext.context.answers.confirmation`);
+    TypeValidator.throwOnEmptyNullInvalidObject (this.extCtx.context,                            `${dbgNsExt}`, `ExternalContext.context`);
+    TypeValidator.throwOnEmptyNullInvalidObject (this.extCtx.context['answers'],                 `${dbgNsExt}`, `ExternalContext.context.answers`);
+    TypeValidator.throwOnNullInvalidObject      (this.extCtx.context['answers']['default'],      `${dbgNsExt}`, `ExternalContext.context.answers.default`);
+    TypeValidator.throwOnNullInvalidObject      (this.extCtx.context['answers']['user'],         `${dbgNsExt}`, `ExternalContext.context.answers.user`);
+    TypeValidator.throwOnNullInvalidObject      (this.extCtx.context['answers']['final'],        `${dbgNsExt}`, `ExternalContext.context.answers.final`);
+    TypeValidator.throwOnNullInvalidObject      (this.extCtx.context['answers']['meta'],         `${dbgNsExt}`, `ExternalContext.context.answers.meta`);
+    TypeValidator.throwOnEmptyNullInvalidObject (this.extCtx.context['answers']['confirmation'], `${dbgNsExt}`, `ExternalContext.context.answers.confirmation`);
 
     // Make sure that the external context has a reference to a `sharedData` object variable.
-    if (TypeValidator.isNullInvalidObject(extCtx.context['sharedData'])) {
+    if (TypeValidator.isNullInvalidObject(this.extCtx.context['sharedData'])) {
       throw new SfdxFalconError ( `The context referenced by 'ExternalContext.context' must have a 'sharedData' `
                                 + `object varialbe defined in order to use instances of ${derivedClassName}.`
                                 , `SharedDataNotFound`
@@ -144,7 +171,7 @@ export abstract class InterviewQuestionsBuilder extends Builder {
     }
 
     // Make sure that there is only one Shared Data object in use.
-    if (extCtx.sharedData !== extCtx.context['sharedData']) {
+    if (this.extCtx.sharedData !== this.extCtx.context['sharedData']) {
       throw new SfdxFalconError ( `ExternalContext member 'sharedData' must point to the same object `
                                 + `as the 'sharedData' variable that is defined in the caller's context.`
                                 , `SharedDataMismatch`
