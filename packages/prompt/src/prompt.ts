@@ -75,7 +75,7 @@ export class SfdxFalconPrompt<T extends JsonMap> {
   /** Returns the set of Inquirer `Questions` that will be displayed during the 'confirmation' phase of the prompt. */
   public get confirmation():Questions {
     if (this._confirmation instanceof Builder) {
-      return this._confirmation.build();
+      return this._confirmation.build(this);
     }
     if (typeof this._confirmation === 'function') {
       return this._confirmation.call(this, this._confirmationArgs);
@@ -94,7 +94,7 @@ export class SfdxFalconPrompt<T extends JsonMap> {
   /** Returns the set of Inquirer `Questions` that will be displayed as the main part of this prompt. */
   public get questions():Questions {
     if (this._questions instanceof Builder) {
-      return this._questions.build();
+      return this._questions.build(this);
     }
     if (typeof this._questions === 'function') {
       return this._questions.apply(this, this._questionsArgs);
