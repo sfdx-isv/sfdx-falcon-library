@@ -170,6 +170,6 @@ export function determineDbgNsExt(extCtx:ExternalContext, derivedClassName:strin
   const dbgNsExt =  (TypeValidator.isNotEmptyNullInvalidObject(extCtx) && TypeValidator.isNotEmptyNullInvalidString(extCtx.dbgNs))
                     ? `${extCtx.dbgNs}:${derivedClassName}:${funcName}`
                     : dbgNsAlt;
-  SfdxFalconDebug.debugString(`${dbgNsLocal}:dbgNsExt:`, dbgNsExt);
+  SfdxFalconDebug.str(`${dbgNsLocal}:dbgNsExt:`, dbgNsExt);
   return dbgNsExt;
 }
