@@ -48,7 +48,11 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 interface InterviewAnswers extends JsonMap {
-  baseDirectory:  string;
+  targetDirectory:    string;
+  baseDirectory:      string;
+  isScratchOrg:       boolean;
+  targetOrgAlias:     string;
+  targetOrgUsername:  string;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -83,12 +87,12 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
       gitEnvReqs: {},
       localEnvReqs: {},
       sfdxEnvReqs: {
-        standardOrgs:     false,
-        scratchOrgs:      false,
-        devHubOrgs:       false,
-        envHubOrgs:       false,
+        standardOrgs:     true,
+        scratchOrgs:      true,
+        devHubOrgs:       true,
+        envHubOrgs:       true,
         managedPkgOrgs:   true,
-        unmanagedPkgOrgs: false
+        unmanagedPkgOrgs: true
       }
     };
 
@@ -105,7 +109,11 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
     this.generatorMessages.warning        = `${this.commandName} xxxcompleted successfully, but with some warnings (see above)`;
 
     // Initialize DEFAULT Interview Answers.
-    this.answers.default.baseDirectory = path.resolve('/users/vchawla/devtest/nothing');
+    this.answers.default.baseDirectory      = path.resolve('/users/vchawla/devtest/base/nothing');
+    this.answers.default.targetDirectory    = path.resolve('/users/vchawla/devtest/target/nothing');
+    this.answers.default.isScratchOrg       = false;
+    this.answers.default.targetOrgAlias     = 'NOT_SPECIFIED';
+    this.answers.default.targetOrgUsername  = 'NOT_SPECIFIED';
 
     // Initialize Shared Data.
     this.sharedData['reportJson']       = {};
@@ -138,37 +146,62 @@ export default class PlayGroundGenerator01 extends SfdxFalconGenerator<Interview
   //───────────────────────────────────────────────────────────────────────────┘
   protected _buildInterview():SfdxFalconInterview<InterviewAnswers> {
 
+    // Prepare a function-local version of ExternalContext.
+    const extCtx = this.extCtx.append('_buildInterview');
+
     // Initialize the Interview object.
     const interview = new SfdxFalconInterview<InterviewAnswers>({
       defaultAnswers:     this.answers.default,
-//      confirmation:       QBLibrary.confirmProceedRestart,
-      confirmation:       [{
-        type:     'confirm',
-        name:     'isScratchOrg',
-        message:  'Is the target a Scratch Org?',
-        default:  true,
-        when:     true
-      }],
+      confirmation:       new QBL.General.ConfirmProceedRestart({
+        extCtx: extCtx,
+        msgStrings: {
+          promptConfirmation: 'Dude...are you SURE about that?',
+          promptStartOver:    'My man...do you wanna go again?'
+        }
+      }),
       confirmationHeader: chalk.yellow('Review Your Settings:'),
       display:            this._buildInterviewAnswersTableData,
       context:            this,
       sharedData:         this.sharedData
     });
 
-    // Group 0: Specify the directory containing the TM1 config extraction.
+    // Group 0: Choose a TM1 source org.
+    interview.createGroup({
+      title:      chalk.yellow('\nOrg Selection:'),
+      questions:  new QBL.Sfdx.ChooseSingleOrg({
+        extCtx: extCtx,
+        scratchOrgChoices:  this.sfdxEnv.scratchOrgChoices,
+        standardOrgChoices: this.sfdxEnv.standardOrgChoices,
+        msgStrings: {
+          promptIsScratchOrg:       'Is the target a Scratch Org?',
+          promptScratchOrgChoice:   'From which scratch org do you want to extract TM1 configuration?',
+          promptStandardOrgChoice:  'From which org do you want to extract TM1 configuration?'
+        }
+      }),
+      confirmation: new QBL.Sfdx.ConfirmNoTargetOrg({
+        extCtx:     extCtx,
+        msgStrings: null
+      }),
+      abort:  groupAnswers => {
+        if (groupAnswers.targetOrgUsername === 'NOT_SPECIFIED') {
+          return 'A connection to an org is required to continue.';
+        }
+        else {
+          return false;
+        }
+      }
+    });
+    // Group 1: Provide a target directory for this project.
     interview.createGroup({
       title:      chalk.yellow('\nTM1 Extraction Directory:'),
-      questions:  new QBL.Sfdx.ChooseSingleOrg(
-        this.extCtx.append(`_buildInterview`),
-        this.sfdxEnv.scratchOrgChoices,
-        this.sfdxEnv.standardOrgChoices,
-        /*
-        {
-          promptIsScratchOrg:       'Hello!',
-          promptScratchOrgChoice:   'I am crazy!',
-          promptStandardOrgChoice:  'more on the way!'
-        }//*/
-      ).build()
+      questions:  new QBL.FileSystem.ProvideBaseDirectory({
+        extCtx:         extCtx,
+        fileOrDirName: 'foo.json',
+        msgStrings: {
+          promptProvidePath:  `What's the path to your file?`,
+          errorNotFound:      `Dude...you're hosed!`
+        }
+      })
     });
 
     // Finished building the Interview.
