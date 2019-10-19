@@ -10,21 +10,20 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  * as  fse       from  'fs-extra';               // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
-import  * as  path      from  'path';                   // Node's built-in path library.
+import  * as  fse         from  'fs-extra';               // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
+import  * as  path        from  'path';                   // Node's built-in path library.
 
 // Import SFDX-Falcon Libraries
-import  {TypeValidator} from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
+import  {TypeValidator}   from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
+import  {YeomanValidator} from  '@sfdx-falcon/validator'; // Library of Yeoman-related Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
 import  {InterviewQuestionsBuilder}         from  '@sfdx-falcon/builder'; // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
 import  {SfdxFalconDebug}                   from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
 import  {SfdxFalconPrompt}                  from  '@sfdx-falcon/prompt';  // Class. Allows easy creation of Inquirer prompts that have a "confirmation" question that can be used to restart collection of the information.
 //import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-//import  {SfdxFalconTask}            from  '@sfdx-falcon/task';          // Class. Abstraction of a single Listr Task with a lot of extra functionality bundled in.
 
 // Import SFDX-Falcon Types
-//import  {ExternalContext}                   from  '@sfdx-falcon/builder'; // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {InterviewQuestionsBuilderOptions}  from  '@sfdx-falcon/builder'; // Interface. Baseline structure for the options object that should be provided to the constructor of any class that extends InterviewQuestionsBuilder.
 import  {JsonMap}                           from  '@sfdx-falcon/types';   // Interface. Any JSON-compatible object.
 import  {InquirerValidateFunction}          from  '@sfdx-falcon/types';   // Type. Represents the function signature for an Inquirer validate() function.
@@ -33,7 +32,6 @@ import  {Questions}                         from  '@sfdx-falcon/types';   // Typ
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:builder-library:questions';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}(filesystem)`);
-
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -112,6 +110,7 @@ export class ProvideBaseDirectory extends InterviewQuestionsBuilder {
     TypeValidator.throwOnInvalidInstance  (buildCtx, SfdxFalconPrompt,            `${dbgNS.ext}`, `BuildContext`);
     TypeValidator.throwOnNullInvalidString(buildCtx.defaultAnswers.baseDirectory, `${dbgNS.ext}`, `BuildContext.defaultAnswers.baseDirectory`);
 
+    // Build and return the Questions.
     return [
       {
         type:     'input',
@@ -145,6 +144,86 @@ export class ProvideBaseDirectory extends InterviewQuestionsBuilder {
           // If we get here, all validation checks passed. Return TRUE.
           return true;
         }
+      }
+    ];
+  }
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ *  Interface. Specifies options for the `ProvideTargetDirectory` constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface ProvideTargetDirectoryOptions extends InterviewQuestionsBuilderOptions {
+  fileOrDirName:        string;
+  validateFunction?:    InquirerValidateFunction;
+  msgStrings: {
+    promptProvidePath?: string,
+    errorNotFound?:     string
+  };
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ * @class       ProvideTargetDirectory
+ * @extends     InterviewQuestionsBuilder
+ * @summary     Interview Questions Builder for providing a "target directory".
+ * @description Interview Questions Builder for providing a "target directory".
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export class ProvideTargetDirectory extends InterviewQuestionsBuilder {
+
+  public promptProvidePath: string;
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @constructs  ProvideTargetDirectory
+   * @param       {ProvideTargetDirectoryOptions} opts  Required.
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  constructor(opts:ProvideTargetDirectoryOptions) {
+
+    // Call the superclass constructor.
+    super(opts);
+
+    // Initialize debug for this method.
+    const dbgNS = this.initializeDebug(dbgNs, `constructor`, arguments);
+
+    // Validate optional options.
+    if (opts.msgStrings.promptProvidePath)  TypeValidator.throwOnEmptyNullInvalidString (opts.msgStrings.promptProvidePath, `${dbgNS.ext}`,  `msgStrings.promptProvidePath`);
+    
+    // Initialize member variables.
+    this.promptProvidePath  = opts.msgStrings.promptProvidePath ||  `What is the path to your target directory?`;
+  }
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      build
+   * @returns     {Questions}
+   * @description Builds the Interview Questions.
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public build(buildCtx:SfdxFalconPrompt<JsonMap>):Questions {
+
+    // Initialize debug for this method.
+    const dbgNS = this.initializeDebug(dbgNs, `build`, arguments);
+
+    // Validate the Build Context.
+    TypeValidator.throwOnInvalidInstance  (buildCtx, SfdxFalconPrompt,              `${dbgNS.ext}`, `BuildContext`);
+    TypeValidator.throwOnNullInvalidString(buildCtx.defaultAnswers.targetDirectory, `${dbgNS.ext}`, `BuildContext.defaultAnswers.targetDirectory`);
+
+    // Build and return the Questions.
+    return [
+      {
+        type:     'input',
+        name:     'targetDirectory',
+        message:  this.promptProvidePath,
+        default:  ( typeof buildCtx.userAnswers.targetDirectory !== 'undefined' )
+                  ? buildCtx.userAnswers.targetDirectory        // Current Value
+                  : buildCtx.defaultAnswers.targetDirectory,    // Default Value
+        validate: YeomanValidator.targetPath,                   // Check targetPath for illegal chars
+        filter:   filterLocalPath,                              // Returns a Resolved path
+        when:     true
       }
     ];
   }
