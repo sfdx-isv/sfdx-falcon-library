@@ -6,7 +6,7 @@ Lerna-based monorepo containing the SFDX-Falcon Library, a framework for buildin
 List of the most common commands used to managed this monorepo. Unless otherwise indicated, all of these commands should be executed from the repository's root directory.
 
 ### `lerna bootstrap`
-???
+Bootstrap the packages in the current Lerna repo. Installs all of their dependencies and links any cross-dependencies.
 
 ### `yarn add <dependency> --dev -W`
 Adds a common dev dependency to the entire workspace. Dependencies added in this way are available to all packages in the workspace.
@@ -51,12 +51,12 @@ SFDX-Falcon packages are dependent upon one another in the following order.
     * `@sfdx-falcon/util`
 7. Independent Siblings
     * `@sfdx-falcon/command`
-    * `@sfdx-falcon/environment`
     * `@sfdx-falcon/prompt`
     * `@sfdx-falcon/task`
-8. Independent Siblings
+8. `@sfdx-falcon/environment`
+9. Independent Siblings
     * `@sfdx-falcon/interview`
     * `@sfdx-falcon/task-bundle`
-9. `@sfdx-falcon/builder-library`
-10. `@sfdx-falcon/generator`
+10. `@sfdx-falcon/builder-library`
+11. `@sfdx-falcon/generator`
 
