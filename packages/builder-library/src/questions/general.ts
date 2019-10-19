@@ -10,27 +10,35 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-//import  {ListrTask}                 from  'listr';    // Interface. Represents a Task object as defined by Listr.
-//import  Listr =                     require('listr'); // Provides asynchronous list with status of task completion.
-//import * as path                    from  'path';     // Node's built-in path library.
 
 // Import SFDX-Falcon Libraries
-import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
+import  {TypeValidator}                     from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {InterviewQuestionsBuilder} from  '@sfdx-falcon/builder';       // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-//import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-//import  {SfdxFalconTask}            from  '@sfdx-falcon/task';          // Class. Abstraction of a single Listr Task with a lot of extra functionality bundled in.
+import  {InterviewQuestionsBuilder}         from  '@sfdx-falcon/builder';   // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
+import  {SfdxFalconDebug}                   from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+//import  {SfdxFalconError}                   from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import SFDX-Falcon Types
-import  {ExternalContext}           from  '@sfdx-falcon/builder';       // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
-import  {Questions}                 from  '@sfdx-falcon/types';         // Type. Alias to the Questions type from yeoman-generator. This is the "official" type for SFDX-Falcon.
+import  {InterviewQuestionsBuilderOptions}  from  '@sfdx-falcon/builder';   // Interface. Baseline structure for the options object that should be provided to the constructor of any class that extends InterviewQuestionsBuilder.
+import  {Questions}                         from  '@sfdx-falcon/types';     // Type. Alias to the Questions type from yeoman-generator. This is the "official" type for SFDX-Falcon.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:builder-library:questions';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}(general)`);
 
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ *  Interface. Specifies options for the `ConfirmProceedRestart` constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface ConfirmProceedRestartOptions extends InterviewQuestionsBuilderOptions {
+  msgStrings: {
+    promptConfirmation?:  string;
+    promptStartOver?:     string;
+  };
+}
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -50,30 +58,25 @@ export class ConfirmProceedRestart extends InterviewQuestionsBuilder {
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
-   * @constructs  ChooseSingleOrg
-   * @param       {ExternalContext} extCtx  Required.
-   * @param       {object}  [promptStrings] Optional.
+   * @constructs  ConfirmProceedRestart
+   * @param       {ConfirmProceedRestartOptions} opts  Required.
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  constructor(extCtx:ExternalContext,
-              promptStrings:{promptConfirmation?: string, promptStartOver?: string}={}) {
+  constructor(opts:ConfirmProceedRestartOptions) {
 
     // Call the superclass constructor.
-    super(extCtx);
+    super(opts);
 
     // Initialize debug for this method.
     const dbgNS = this.initializeDebug(dbgNs, `constructor`, arguments);
 
-    // Validate incoming arguments.
-    TypeValidator.throwOnNullInvalidObject(promptStrings, `${dbgNS.ext}`, `promptStrings`);
-
     // Validate optional arguments.
-    if (TypeValidator.isNotNullUndefined(promptStrings.promptConfirmation)) TypeValidator.throwOnEmptyNullInvalidString(promptStrings.promptConfirmation, `${dbgNS.ext}`,  `promptStrings.promptConfirmation`);
-    if (TypeValidator.isNotNullUndefined(promptStrings.promptStartOver))    TypeValidator.throwOnEmptyNullInvalidString(promptStrings.promptStartOver,    `${dbgNS.ext}`,  `promptStrings.promptStartOver`);
+    if (opts.msgStrings.promptConfirmation) TypeValidator.throwOnEmptyNullInvalidString(opts.msgStrings.promptConfirmation, `${dbgNS.ext}`,  `msgStrings.promptConfirmation`);
+    if (opts.msgStrings.promptStartOver)    TypeValidator.throwOnEmptyNullInvalidString(opts.msgStrings.promptStartOver,    `${dbgNS.ext}`,  `msgStrings.promptStartOver`);
     
     // Initialize member variables.
-    this.promptConfirmation = promptStrings.promptConfirmation  ||  `Would you like to proceed based on the above settings?`;
-    this.promptStartOver    = promptStrings.promptStartOver     ||  `Would you like to start again and enter new values?`;
+    this.promptConfirmation = opts.msgStrings.promptConfirmation  ||  `Would you like to proceed based on the above settings?`;
+    this.promptStartOver    = opts.msgStrings.promptStartOver     ||  `Would you like to start again and enter new values?`;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐

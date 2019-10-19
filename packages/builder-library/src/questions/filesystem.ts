@@ -85,9 +85,9 @@ export class ProvideBaseDirectory extends InterviewQuestionsBuilder {
     TypeValidator.throwOnEmptyNullInvalidString (opts.fileOrDirName, `${dbgNS.ext}`, `fileOrDirName`);
 
     // Validate optional options.
-    if (TypeValidator.isNotNullUndefined(opts.msgStrings.promptProvidePath))  TypeValidator.throwOnEmptyNullInvalidString (opts.msgStrings.promptProvidePath, `${dbgNS.ext}`,  `msgStrings.promptProvidePath`);
-    if (TypeValidator.isNotNullUndefined(opts.msgStrings.errorNotFound))      TypeValidator.throwOnEmptyNullInvalidString (opts.msgStrings.errorNotFound,     `${dbgNS.ext}`,  `msgStrings.errorNotFound`);
-    if (TypeValidator.isNotNullUndefined(opts.validateFunction))              TypeValidator.throwOnInvalidFunction        (opts.validateFunction,             `${dbgNS.ext}`,  `validateFunction`);
+    if (opts.msgStrings.promptProvidePath)  TypeValidator.throwOnEmptyNullInvalidString (opts.msgStrings.promptProvidePath, `${dbgNS.ext}`,  `msgStrings.promptProvidePath`);
+    if (opts.msgStrings.errorNotFound)      TypeValidator.throwOnEmptyNullInvalidString (opts.msgStrings.errorNotFound,     `${dbgNS.ext}`,  `msgStrings.errorNotFound`);
+    if (opts.validateFunction)              TypeValidator.throwOnInvalidFunction        (opts.validateFunction,             `${dbgNS.ext}`,  `validateFunction`);
     
     // Initialize member variables.
     this.fileOrDirName      = opts.fileOrDirName;

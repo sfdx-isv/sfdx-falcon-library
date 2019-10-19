@@ -12,24 +12,41 @@
 // Import External Libraries, Modules, and Types
 
 // Import SFDX-Falcon Libraries
-import  {TypeValidator}             from  '@sfdx-falcon/validator';     // Library of Type Validation helper functions.
+import  {TypeValidator}                     from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {InterviewQuestionsBuilder} from  '@sfdx-falcon/builder';       // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import  {SfdxFalconPrompt}          from  '@sfdx-falcon/prompt';        // Class. Allows easy creation of Inquirer prompts that have a "confirmation" question that can be used to restart collection of the information.
-//import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {InterviewQuestionsBuilder}         from  '@sfdx-falcon/builder';   // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
+import  {SfdxFalconDebug}                   from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconPrompt}                  from  '@sfdx-falcon/prompt';    // Class. Allows easy creation of Inquirer prompts that have a "confirmation" question that can be used to restart collection of the information.
+//import  {SfdxFalconError}                   from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import SFDX-Falcon Types
-import  {ExternalContext}           from  '@sfdx-falcon/builder';       // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
-import  {InquirerChoices}           from  '@sfdx-falcon/types';
-import  {JsonMap}                   from  '@sfdx-falcon/types';         // Interface. Any JSON-compatible object.
-import  {Questions}                 from  '@sfdx-falcon/types';         // Type. Alias to the Questions type from yeoman-generator. This is the "official" type for SFDX-Falcon.
+import  {InterviewQuestionsBuilderOptions}  from  '@sfdx-falcon/builder';   // Interface. Baseline structure for the options object that should be provided to the constructor of any class that extends InterviewQuestionsBuilder.
+import  {InquirerChoices}                   from  '@sfdx-falcon/types';
+import  {JsonMap}                           from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
+import  {InquirerValidateFunction}          from  '@sfdx-falcon/types';     // Type. Represents the function signature for an Inquirer validate() function.
+import  {Questions}                         from  '@sfdx-falcon/types';     // Type. Alias to the Questions type from yeoman-generator. This is the "official" type for SFDX-Falcon.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:builder-library:questions';
 SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}(sfdx)`);
 
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
+ *  Interface. Specifies options for the `ChooseSingleOrg` constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface ChooseSingleOrgOptions extends InterviewQuestionsBuilderOptions {
+  scratchOrgChoices:    InquirerChoices;
+  standardOrgChoices:   InquirerChoices;
+  validateFunction?:    InquirerValidateFunction;
+  msgStrings: {
+    promptIsScratchOrg?:      string;
+    promptStandardOrgChoice?: string;
+    promptScratchOrgChoice?:  string;
+  };
+}
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -50,37 +67,32 @@ export class ChooseSingleOrg extends InterviewQuestionsBuilder {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @constructs  ChooseSingleOrg
-   * @param       {ExternalContext} extCtx  Required.
-   * @param       {InquirerChoices} scratchOrgChoices Required.
-   * @param       {InquirerChoices} standardOrgChoices  Required.
-   * @param       {object}  [promptStrings] Optional.
+   * @param       {ChooseSingleOrgOptions} opts  Required.
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  constructor(extCtx:ExternalContext, scratchOrgChoices:InquirerChoices, standardOrgChoices:InquirerChoices,
-              promptStrings:{promptIsScratchOrg?: string, promptStandardOrgChoice?: string, promptScratchOrgChoice?: string}={}) {
+  constructor(opts:ChooseSingleOrgOptions) {
 
     // Call the superclass constructor.
-    super(extCtx);
+    super(opts);
 
     // Initialize debug for this method.
     const dbgNS = this.initializeDebug(dbgNs, `constructor`, arguments);
 
     // Validate incoming arguments.
-    TypeValidator.throwOnEmptyNullInvalidArray(standardOrgChoices,  `${dbgNS.ext}`,  `standardOrgChoices`);
-    TypeValidator.throwOnEmptyNullInvalidArray(scratchOrgChoices,   `${dbgNS.ext}`,  `scratchOrgChoices`);
-    TypeValidator.throwOnNullInvalidObject    (promptStrings,       `${dbgNS.ext}`,  `promptStrings`);
+    TypeValidator.throwOnEmptyNullInvalidArray(opts.standardOrgChoices,  `${dbgNS.ext}`,  `ChooseSingleOrgOptions.standardOrgChoices`);
+    TypeValidator.throwOnEmptyNullInvalidArray(opts.scratchOrgChoices,   `${dbgNS.ext}`,  `ChooseSingleOrgOptions.scratchOrgChoices`);
 
     // Validate optional arguments.
-    if (TypeValidator.isNotNullUndefined(promptStrings.promptIsScratchOrg))       TypeValidator.throwOnEmptyNullInvalidString(promptStrings.promptIsScratchOrg,       `${dbgNS.ext}`,  `promptStrings.promptIsScratchOrg`);
-    if (TypeValidator.isNotNullUndefined(promptStrings.promptScratchOrgChoice))   TypeValidator.throwOnEmptyNullInvalidString(promptStrings.promptScratchOrgChoice,   `${dbgNS.ext}`,  `promptStrings.promptScratchOrgChoice`);
-    if (TypeValidator.isNotNullUndefined(promptStrings.promptStandardOrgChoice))  TypeValidator.throwOnEmptyNullInvalidString(promptStrings.promptStandardOrgChoice,  `${dbgNS.ext}`,  `promptStrings.promptStandardOrgChoice`);
+    if (opts.msgStrings.promptIsScratchOrg)       TypeValidator.throwOnEmptyNullInvalidString(opts.msgStrings.promptIsScratchOrg,       `${dbgNS.ext}`,  `msgStrings.promptIsScratchOrg`);
+    if (opts.msgStrings.promptScratchOrgChoice)   TypeValidator.throwOnEmptyNullInvalidString(opts.msgStrings.promptScratchOrgChoice,   `${dbgNS.ext}`,  `msgStrings.promptScratchOrgChoice`);
+    if (opts.msgStrings.promptStandardOrgChoice)  TypeValidator.throwOnEmptyNullInvalidString(opts.msgStrings.promptStandardOrgChoice,  `${dbgNS.ext}`,  `msgStrings.promptStandardOrgChoice`);
     
     // Initialize member variables.
-    this.scratchOrgChoices        = scratchOrgChoices;
-    this.standardOrgChoices       = standardOrgChoices;
-    this.promptIsScratchOrg       = promptStrings.promptIsScratchOrg      ||  `Is the target a Scratch Org?`;
-    this.promptScratchOrgChoice   = promptStrings.promptScratchOrgChoice  ||  `Which scratch org would you like to work with?`;
-    this.promptStandardOrgChoice  = promptStrings.promptStandardOrgChoice ||  `Which org would you like to work with?`;
+    this.scratchOrgChoices        = opts.scratchOrgChoices;
+    this.standardOrgChoices       = opts.standardOrgChoices;
+    this.promptIsScratchOrg       = opts.msgStrings.promptIsScratchOrg      ||  `Is the target a Scratch Org?`;
+    this.promptScratchOrgChoice   = opts.msgStrings.promptScratchOrgChoice  ||  `Which scratch org would you like to work with?`;
+    this.promptStandardOrgChoice  = opts.msgStrings.promptStandardOrgChoice ||  `Which org would you like to work with?`;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -119,6 +131,17 @@ export class ChooseSingleOrg extends InterviewQuestionsBuilder {
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ *  Interface. Specifies options for the `ConfirmNoTargetOrg` constructor.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+export interface ConfirmNoTargetOrgOptions extends InterviewQuestionsBuilderOptions {
+  msgStrings: {
+    promptStartOver?: string
+  };
+}
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @class       ConfirmNoTargetOrg
  * @extends     InterviewQuestionsBuilder
  * @summary     Interview Questions Builder for confirming refusal of a Target Org selection.
@@ -132,26 +155,22 @@ export class ConfirmNoTargetOrg extends InterviewQuestionsBuilder {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @constructs  ConfirmNoTargetOrg
-   * @param       {ExternalContext} extCtx  Required.
-   * @param       {object}  [promptStrings] Optional.
+   * @param       {ConfirmNoTargetOrgOptions} opts  Required.
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  constructor(extCtx:ExternalContext, promptStrings:{promptStartOver?: string}={}) {
+  constructor(opts:ConfirmNoTargetOrgOptions) {
 
     // Call the superclass constructor.
-    super(extCtx);
+    super(opts);
 
     // Initialize debug for this method.
     const dbgNS = this.initializeDebug(dbgNs, `constructor`, arguments);
 
-    // Validate incoming arguments.
-    TypeValidator.throwOnNullInvalidObject(promptStrings, `${dbgNS.ext}`, `promptStrings`);
-
-    // Validate optional arguments.
-    if (TypeValidator.isNotNullUndefined(promptStrings.promptStartOver))  TypeValidator.throwOnEmptyNullInvalidString(promptStrings.promptStartOver,  `${dbgNS.ext}`, `promptStrings.promptStartOver`);
+    // Validate optional options.
+    if (opts.msgStrings.promptStartOver)  TypeValidator.throwOnEmptyNullInvalidString (opts.msgStrings.promptStartOver, `${dbgNS.ext}`,  `msgStrings.promptStartOver`);
     
     // Initialize member variables.
-    this.promptStartOver = promptStrings.promptStartOver || `Selecting a target org is required. Would you like to see the choices again?`;
+    this.promptStartOver = opts.msgStrings.promptStartOver || `Selecting a target org is required. Would you like to see the choices again?`;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -168,7 +187,7 @@ export class ConfirmNoTargetOrg extends InterviewQuestionsBuilder {
 
     // Validate the Build Context.
     TypeValidator.throwOnInvalidInstance        (buildCtx, SfdxFalconPrompt,              `${dbgNS.ext}`, `BuildContext`);
-    TypeValidator.throwOnEmptyNullInvalidString (buildCtx.userAnswers.targetOrgUsernameXX,  `${dbgNS.ext}`, `BuildContext.userAnswers.targetOrgUsername`);
+    TypeValidator.throwOnEmptyNullInvalidString (buildCtx.userAnswers.targetOrgUsername,  `${dbgNS.ext}`, `BuildContext.userAnswers.targetOrgUsername`);
 
     // Build and return the Questions object.
     return [
