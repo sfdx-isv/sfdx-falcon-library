@@ -43,12 +43,12 @@
     "@types/chai": "4.2.0",
     "@types/fs-extra": "8.0.0",
     "@types/inquirer": "6.5.0",
-    "@types/jsforce": "1.9.9",
+    "@types/jsforce": "1.9.10",
     "@types/json2csv": "4.5.0",
     "@types/listr": "0.14.2",
     "@types/lodash": "4.14.137",
     "@types/mocha": "5.2.7",
-    "@types/node": "12.7.2",
+    "@types/node": "12.11.1",
     "@types/shelljs": "0.8.5",
     "@types/yeoman-environment": "2.3.2",
     "@types/yeoman-generator": "3.1.4",
@@ -57,12 +57,13 @@
     "cross-spawn": "6.0.5",
     "del": "5.0.0",
     "globby": "10.0.1",
+    "lerna": "3.18.1",
     "mocha": "6.2.0",
     "mocha-junit-reporter": "1.23.1",
     "nyc": "14.1.1",
     "sinon": "7.4.1",
     "ts-node": "8.3.0",
-    "typescript": "3.5.3"
+    "typescript": "3.6.4"
   },
   "engines": {
     "node": ">=8.0.0"
