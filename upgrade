@@ -1,30 +1,53 @@
 #!/usr/bin/env node
 const chalk             = require('chalk');
+const {existsSync}      = require('fs');
 const {lstatSync}       = require('fs');
 const {readdirSync}     = require('fs');
 const path              = require('path');
 const {spawnSync}       = require('child_process');
+const scope             = `@sfdx-falcon`;
 const userArgs          = process.argv.slice(2);
-const packagesDir       = path.join(__dirname, 'packages');
+const packagesBaseDir   = path.join(__dirname, 'packages');
 
 // Define the directory search function.
 const isDirectory     = source => lstatSync(source).isDirectory();
 const getDirectories  = source => readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
+const packageName     = pkgDir => scope + pkgDir.substring(pkgDir.lastIndexOf(path.sep));
 
-// Get the name of each directory inside this project's packages directory.
-const packages = getDirectories(packagesDir);
+// Get the name of each directory inside this project's base packages directory.
+const packageDirs = getDirectories(packagesBaseDir);
 
 //console.log(`%O`, packages);
 
-// Echo the package directories that we will work with.
-console.log(chalk`{yellow \nUpdating dependencies for the following packages...}`);
-packages.forEach(package => console.log(chalk`{green ${package}}`));
+// Determine if we're working with a single-package request or an ALL-package request.
+if (userArgs.length > 0) {
+  const targetDir = path.join(packagesBaseDir, userArgs[0]);
+  console.log(chalk`{yellow \nUpdating dependencies for the following package...}`);
+  console.log(chalk`{green   ${packageName(targetDir)}}`);
+  if (existsSync(targetDir) !== true) {
+    console.log(chalk`{red \nUpgraded failed. Package directory '${targetDir}' does not exist\n}`);
+    return;
+  }
+  else {
+    process.chdir(targetDir);
+    spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
+  }
+}
+else {
+
+  // Echo the package directories that we will work with.
+  console.log(chalk`{yellow \nUpdating dependencies for the following packages...}`);
+  packageDirs.forEach(packageDir => {
+    console.log(chalk`{green   ${packageName(packageDir)}}`);
+  });
+
+}
 
 // Change the process directory to the Playground
-process.chdir(packages[1]);
+process.chdir(packageDirs[1]);
 
 // Build the Playground package, which should force a build of ALL monorepo packages.
-spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
+//spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
 
 // Echo the command we're about to run.
 //console.log(chalk`{yellow \nAttempting to run ${userArgs[0]}...\n}`);
