@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+const chalk             = require('chalk');
+const {lstatSync}       = require('fs');
+const {readdirSync}     = require('fs');
+const path              = require('path');
+const {spawnSync}       = require('child_process');
+const userArgs          = process.argv.slice(2);
+const packagesDir       = path.join(__dirname, 'packages');
+
+// Define the directory search function.
+const isDirectory     = source => lstatSync(source).isDirectory();
+const getDirectories  = source => readdirSync(source).map(name => path.join(source, name)).filter(isDirectory);
+
+// Get the name of each directory inside this project's packages directory.
+const packages = getDirectories(packagesDir);
+
+//console.log(`%O`, packages);
+
+// Echo the package directories that we will work with.
+console.log(chalk`{yellow \nUpdating dependencies for the following packages...}`);
+packages.forEach(package => console.log(chalk`{green ${package}}`));
+
+// Change the process directory to the Playground
+process.chdir(packages[1]);
+
+// Build the Playground package, which should force a build of ALL monorepo packages.
+spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
+
+// Echo the command we're about to run.
+//console.log(chalk`{yellow \nAttempting to run ${userArgs[0]}...\n}`);
+
+// Execute the command using the OCLIF command runner.
+//spawnSync('./bin/run', userArgs, {shell: false, stdio: 'inherit'});
+
+// Echo the fact that command execution is complete.
+console.log(chalk`{yellow \nPackage update is complete\n}`);
