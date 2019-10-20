@@ -15,7 +15,8 @@
     "@sfdx-falcon/util": "0.0.4-alpha.0",
     "@sfdx-falcon/validator": "0.0.4-alpha.0",
     "fs-extra": "8.1.0",
-    "listr": "0.14.3"
+    "listr": "0.14.3",
+    "tslib": "1.10.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",

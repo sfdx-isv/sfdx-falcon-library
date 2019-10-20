@@ -8,6 +8,7 @@
     "@oclif/parser": "3.8.4",
     "@salesforce/command": "2.1.0",
     "@salesforce/core": "2.1.1",
+    "@salesforce/ts-types": "1.2.1",
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
     "@sfdx-falcon/error": "0.0.4-alpha.0",
     "@sfdx-falcon/status": "0.0.4-alpha.0",

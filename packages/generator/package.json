@@ -5,6 +5,7 @@
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
+    "@salesforce/ts-types": "1.2.1",
     "@sfdx-falcon/builder": "0.0.4-alpha.0",
     "@sfdx-falcon/command": "0.0.4-alpha.0",
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
@@ -16,9 +17,9 @@
     "@sfdx-falcon/util": "0.0.4-alpha.0",
     "@sfdx-falcon/validator": "0.0.4-alpha.0",
     "chalk": "2.4.2",
+    "tslib": "1.10.0",
     "yeoman-generator": "4.0.2",
-    "yosay": "2.0.2",
-    "tslib": "1.10.0"
+    "yosay": "2.0.2"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",

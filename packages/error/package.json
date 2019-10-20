@@ -6,10 +6,11 @@
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
     "@salesforce/core": "2.1.1",
-    "@salesforce/ts-types": "1.2.0",
+    "@salesforce/ts-types": "1.2.1",
     "@sfdx-falcon/debug": "0.0.4-alpha.0",
+    "chalk": "2.4.2",
     "lodash": "4.17.15",
-    "chalk": "2.4.2"
+    "tslib": "1.10.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",
