@@ -17,43 +17,45 @@ const packageName     = pkgDir => scope + pkgDir.substring(pkgDir.lastIndexOf(pa
 // Get the name of each directory inside this project's base packages directory.
 const packageDirs = getDirectories(packagesBaseDir);
 
-//console.log(`%O`, packages);
-
-// Determine if we're working with a single-package request or an ALL-package request.
-if (userArgs.length > 0) {
-  const targetDir = path.join(packagesBaseDir, userArgs[0]);
-  console.log(chalk`{yellow \nUpdating dependencies for the following package...}`);
-  console.log(chalk`{green   ${packageName(targetDir)}}`);
-  if (existsSync(targetDir) !== true) {
-    console.log(chalk`{red \nUpgraded failed. Package directory '${targetDir}' does not exist\n}`);
-    return;
-  }
-  else {
-    process.chdir(targetDir);
-    spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
-  }
+// Make sure that the caller provided exactly one argument.
+if (userArgs.length !== 1) {
+  console.log(chalk`{red \nUpgrade command aborted. You must provide a package name or set the '--all' flag.\n}`);
+  return;
 }
-else {
+
+// Upgrade ALL dependencies of the --all flag is set.
+if (userArgs[0].toLowerCase() === '--all') {
 
   // Echo the package directories that we will work with.
-  console.log(chalk`{yellow \nUpdating dependencies for the following packages...}`);
+  console.log(chalk`{yellow \nUpgrading dependencies for the following packages...}`);
   packageDirs.forEach(packageDir => {
     console.log(chalk`{green   ${packageName(packageDir)}}`);
   });
 
+  // Upgrade the dependencies in each package.
+  packageDirs.forEach(packageDir => {
+    console.log(chalk`{yellow \nUpgrading dependencies for ${packageName(packageDir)}}\n`);
+    process.chdir(packageDir);
+    spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
+  });
+}
+else {
+
+  // Handle a single-package upgrade request.
+  const targetDir = path.join(packagesBaseDir, userArgs[0]);
+  console.log(chalk`{yellow \nUpgrading dependencies for the following package...}`);
+  console.log(chalk`{green   ${packageName(targetDir)}}\n`);
+
+  // Make sure the specified package directory exists and process the upgrade if it does.
+  if (existsSync(targetDir) === true) {
+    process.chdir(targetDir);
+    spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
+  }
+  else {
+    console.log(chalk`{red Upgrade failed. Package directory '${targetDir}' does not exist\n}`);
+    return;
+  }
 }
 
-// Change the process directory to the Playground
-process.chdir(packageDirs[1]);
-
-// Build the Playground package, which should force a build of ALL monorepo packages.
-//spawnSync('yarn upgrade --latest', {shell: true, stdio: 'inherit'});
-
-// Echo the command we're about to run.
-//console.log(chalk`{yellow \nAttempting to run ${userArgs[0]}...\n}`);
-
-// Execute the command using the OCLIF command runner.
-//spawnSync('./bin/run', userArgs, {shell: false, stdio: 'inherit'});
-
-// Echo the fact that command execution is complete.
-console.log(chalk`{yellow \nPackage update is complete\n}`);
+// Report the fact that command execution is complete.
+console.log(chalk`{yellow \nPackage dependency upgrades are complete\n}`);
