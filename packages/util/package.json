@@ -20,6 +20,7 @@
     "csv-parser": "2.3.1",
     "falcon-listr-update-renderer": "0.4.2",
     "fs-extra": "8.1.0",
+    "jsforce": "1.9.2",
     "json2csv": "4.5.4",
     "listr": "0.14.3",
     "listr-silent-renderer": "1.1.1",
