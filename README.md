@@ -10,6 +10,15 @@ This project uses [Yarn Workspaces](https://yarnpkg.com/en/docs/workspaces) to m
 ### Lerna
 This project uses Lerna to coordinate the publishing of packages to the [`@sfdx-falcon`]() scope at [npmjs.com](https://www.npmjs.com).
 
+Because all SFDX-Falcon Library packages are published as part of the `@sfdx-falcon` scope, each package must add the following key to its `package.json` file.
+
+```json
+"publishConfig": {
+  "access": "public"
+}
+```
+For more about per-package configuration options, see the [Lerna Documentation](https://github.com/lerna/lerna/tree/master/commands/publish#per-package-configuration).
+
 # Monorepo Cheat Sheet
 List of the most common commands used to managed this monorepo. Unless otherwise indicated, all of these commands should be executed from the repository's root directory.
 
@@ -50,30 +59,45 @@ After building a package, VS Code's built in TypeScript linter can show false er
 Prints the username that's currently logged into the NPM registry. This is the user who will be used during the `lerna publish` operation.
 
 ### `lerna publish`
+Publishes all workspace packages to NPM. Allows you to specify the next version number before publishing.
 
+When publishing, Lerna executes specific [npm lifecycle scripts](https://docs.npmjs.com/misc/scripts#description) in the following order:
+
+#### Pre Publish
+*In root package:*
+- `prepublish`
+- `prepare`
+- `prepublishOnly`
+- `prepack`
+
+*In each subpackage:*
+- `prepublish`
+- `prepare`
+- `prepublishOnly`
+- `prepack`
+
+#### Packing each subpackage
+
+*In each subpackage:*
+- `postpack`
+
+#### After all subpackages packed
+
+*In root package:*
+- `postpack`
+
+#### Publishing each subpackage
+
+*In each subpackage:*
+- `publish`
+- `postpublish`
+
+#### After all subpackages published
+
+*In root package:*
+- `publish`
+- `postpublish`
 
 # Project Notes
 General notes about the project
-
-### Dependency Order
-SFDX-Falcon packages are dependent upon one another in the following order.
-
-1. `@sfdx-falcon/types`
-2. `@sfdx-falcon/debug`
-3. `@sfdx-falcon/error`
-4. `@sfdx-falcon/validator`
-5. `@sfdx-falcon/status`
-6. Independent Siblings
-    * `@sfdx-falcon/builder`
-    * `@sfdx-falcon/util`
-7. Independent Siblings
-    * `@sfdx-falcon/command`
-    * `@sfdx-falcon/prompt`
-    * `@sfdx-falcon/task`
-8. `@sfdx-falcon/environment`
-9. Independent Siblings
-    * `@sfdx-falcon/interview`
-    * `@sfdx-falcon/task-bundle`
-10. `@sfdx-falcon/builder-library`
-11. `@sfdx-falcon/generator`
-
+TBD
