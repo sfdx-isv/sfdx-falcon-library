@@ -13,7 +13,6 @@
     "@sfdx-falcon/error": "0.0.5-alpha.0",
     "@sfdx-falcon/status": "0.0.5-alpha.0",
     "@sfdx-falcon/types": "0.0.5-alpha.0",
-    "@sfdx-falcon/util": "0.0.5-alpha.0",
     "@sfdx-falcon/validator": "0.0.5-alpha.0",
     "tslib": "1.10.0",
     "yeoman-environment": "2.5.0"
