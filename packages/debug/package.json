@@ -6,7 +6,7 @@
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
     "@salesforce/ts-types": "1.2.1",
-    "@sfdx-falcon/types": "^0.0.5-alpha.0",
+    "@sfdx-falcon/types": "0.0.5-alpha.0",
     "chalk": "2.4.2",
     "debug": "4.1.1",
     "tslib": "1.10.0"
