@@ -1,5 +1,37 @@
 # SFDX-Falcon Library Package Dependencies
-Master list of all direct dependencies used by packages in the SFDX-Falcon library.
+
+## Internal Dependencies
+Many of the packages in the SFDX-Falcon Library are dependent on one another. Understanding the precedence of each is critical to avoid creating circular dependencies between packages at build-time.
+
+Each package folder contains two key files that must be properly crafted and maintained: `package.json` and `tsconfig.build.json`.
+
+Maintaining `package.json` is easy. If you need a dependency, just add it to the `dependencies` or `devDependencies` hash.  This is typically done by adding dependencies in alphabetical order.
+
+Maintaining `tsconfig.build.json` is trickier. The array of `path` values in the `references` hash **must** be defined in the proper order with dependent packages always listed **after** any packages on which they depend.
+
+To help ensure correct precedence, here is a list of SFDX-Falcon packages in order of dependence.
+
+1. `@sfdx-falcon/types`
+2. `@sfdx-falcon/debug`
+3. `@sfdx-falcon/error`
+4. `@sfdx-falcon/validator`
+5. `@sfdx-falcon/status`
+6. Independent Siblings
+    * `@sfdx-falcon/builder`
+    * `@sfdx-falcon/util`
+7. Independent Siblings
+    * `@sfdx-falcon/command`
+    * `@sfdx-falcon/prompt`
+    * `@sfdx-falcon/task`
+8. `@sfdx-falcon/environment`
+9. Independent Siblings
+    * `@sfdx-falcon/interview`
+    * `@sfdx-falcon/task-bundle`
+10. `@sfdx-falcon/builder-library`
+11. `@sfdx-falcon/generator`
+
+## External Dependencies
+Master list of all direct external dependencies used by packages in the SFDX-Falcon library.
 
 | Dependency | License | Package | Code Repository |
 | ---- | ---- | ---- | ---- |
