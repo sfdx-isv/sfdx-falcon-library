@@ -11,9 +11,6 @@
     "@sfdx-falcon/status": "0.0.4-alpha.0",
     "@sfdx-falcon/types": "0.0.4-alpha.0",
     "@sfdx-falcon/validator": "0.0.4-alpha.0",
-    "@types/jsforce": "1.9.10",
-    "@types/node": "12.11.1",
-    "lerna": "3.18.1",
     "listr": "0.14.3",
     "tslib": "1.10.0",
     "typescript": "3.6.4"
