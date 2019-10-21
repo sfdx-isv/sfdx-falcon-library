@@ -22,7 +22,7 @@ import  {ExternalContext}     from  './external-context';     // Class. Collecti
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:builder';
-SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}(builder)`);
 
 /*
  * NOTES:
