@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/builder-library/src/tasks/git.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/builder-library/src/tasks/git.ts
  * @summary       Exports a library of Task Builder functions related to Git.
  * @description   Exports a library of Task Builder functions related to Git.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -31,8 +32,8 @@ import  {ListrObject}               from  '@sfdx-falcon/types';   // Interface. 
 import  {ShellExecResult}           from  '@sfdx-falcon/types';   // Interface. Represents the result of a call to shell.execL().
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:builder:task:git';
-SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:builder-library:tasks';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}(git)`);
 
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐

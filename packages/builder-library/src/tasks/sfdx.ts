@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/builder-library/src/tasks/sfdx.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/builder-library/src/tasks/sfdx.ts
  * @summary       Exports a library of Task Builder functions related to SFDX.
  * @description   Exports a library of Task Builder functions related to SFDX.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -31,8 +32,8 @@ import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class
 //import { waitASecond } from '@sfdx-falcon/util/lib/async';
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:builder:task:sfdx';
-SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:builder-library:tasks';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}(sfdx)`);
 
 
 
