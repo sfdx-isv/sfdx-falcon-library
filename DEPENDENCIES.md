@@ -11,24 +11,25 @@ Maintaining `tsconfig.build.json` is trickier. The array of `path` values in the
 
 To help ensure correct precedence, here is a list of SFDX-Falcon packages in order of dependence.
 
-1. `@sfdx-falcon/types`
-2. `@sfdx-falcon/debug`
-3. `@sfdx-falcon/error`
-4. `@sfdx-falcon/validator`
-5. `@sfdx-falcon/status`
-6. Independent Siblings
-    * `@sfdx-falcon/builder`
-    * `@sfdx-falcon/util`
-7. Independent Siblings
-    * `@sfdx-falcon/command`
-    * `@sfdx-falcon/prompt`
-    * `@sfdx-falcon/task`
-8. `@sfdx-falcon/environment`
-9. Independent Siblings
-    * `@sfdx-falcon/interview`
-    * `@sfdx-falcon/task-bundle`
-10. `@sfdx-falcon/builder-library`
-11. `@sfdx-falcon/generator`
+1.  Independent Siblings
+      * `@sfdx-falcon/types`
+      * `@sfdx-falcon/debug`
+2.  `@sfdx-falcon/error`
+3.  `@sfdx-falcon/validator`
+4.  `@sfdx-falcon/status`
+5.  Independent Siblings
+      * `@sfdx-falcon/builder`
+      * `@sfdx-falcon/command`
+      * `@sfdx-falcon/util`
+6.  Independent Siblings
+      * `@sfdx-falcon/prompt`
+      * `@sfdx-falcon/task`
+7.  `@sfdx-falcon/environment`
+8.  Independent Siblings
+      * `@sfdx-falcon/interview`
+      * `@sfdx-falcon/task-bundle`
+9.  `@sfdx-falcon/builder-library`
+10. `@sfdx-falcon/generator`
 
 ## External Dependencies
 Master list of all direct external dependencies used by packages in the SFDX-Falcon library.
@@ -73,6 +74,7 @@ Master list of all direct external dependencies used by packages in the SFDX-Fal
 | `"fs-extra": "8.1.0"`                         | [MIT](https://github.com/jprichardson/node-fs-extra/blob/master/LICENSE)                  | [fs-extra](https://www.npmjs.com/package/fs-extra)                                          | [GitHub](https://github.com/jprichardson/node-fs-extra) |
 | `"globby": "10.0.1"`                          | [MIT](https://github.com/sindresorhus/globby/blob/master/license)                         | [globby](https://www.npmjs.com/package/globby)                                              | [GitHub](https://github.com/sindresorhus/globby) |
 | `"inquirer": "7.0.0"`                         | [MIT](https://github.com/SBoudrias/Inquirer.js/blob/master/LICENSE)                       | [inquirer](https://www.npmjs.com/package/inquirer)                                          | [GitHub](https://github.com/SBoudrias/Inquirer.js) |
+| `"jsforce": "1.9.2"`                          | [MIT](https://github.com/jsforce/jsforce/blob/master/LICENSE)                             | [jsforce](https://www.npmjs.com/package/jsforce)                                            | [GitHub](https://github.com/jsforce/jsforce) |
 | `"json2csv": "4.5.4"`                         | [MIT](https://github.com/zemirco/json2csv/blob/master/LICENSE.md)                         | [json2csv](https://www.npmjs.com/package/json2csv)                                          | [GitHub](https://github.com/zemirco/json2csv) |
 | `"lerna": "3.18.1"`                           | [MIT](https://github.com/lerna/lerna/blob/master/LICENSE)                                 | [lerna](https://www.npmjs.com/package/lerna)                                                | [GitHub](https://github.com/lerna/lerna) |
 | `"listr": "0.14.3"`                           | [MIT](https://github.com/SamVerschueren/listr/blob/master/license)                        | [listr](https://www.npmjs.com/package/listr)                                                | [GitHub](https://github.com/SamVerschueren/listr) |
