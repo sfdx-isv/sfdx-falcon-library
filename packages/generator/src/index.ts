@@ -1,13 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/generator/src/index.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/generator/src/index.ts
  * @summary       Exports abstract classes that are SFDX-Falcon flavored extensions to `yeoman-generator`.
  *                Part of the SFDX-Falcon Library.
  * @description   Exports abstract classes that are SFDX-Falcon flavored extensions to `yeoman-generator`.
  *                Part of the SFDX-Falcon Library.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import from generator.

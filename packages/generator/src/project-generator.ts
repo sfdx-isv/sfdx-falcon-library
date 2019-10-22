@@ -1,14 +1,15 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/generator/src/project-generator.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/generator/src/project-generator.ts
  * @summary       Exports `SfdxFalconProjectGenerator` for use with custom Yeoman generators that
  *                focus on standing up local projects.
  * @description   Exports an abstract class that extends the SFDX-Falcon Library's `SfdxFalconGenerator`
  *                class, adding customized support for tools and capabilities that make it easier
  *                to stand up a local git-based project.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -41,11 +42,6 @@ import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Inter
 //import  {ListrTaskBundle}           from  '@sfdx-falcon/types';       // Interface. Represents the suite of information required to run a Listr Task Bundle.
 import  {StatusMessageType}         from  '@sfdx-falcon/types';       // Enum. Represents the various types/states of a Status Message.
 import  {StyledMessage}             from  '@sfdx-falcon/types';       // Interface. Allows for specification of a message string and chalk-specific styling information.
-
-// Requires
-//const {version}         = require('../../../package.json'); // The version of the SFDX-Falcon plugin
-//const {falcon}          = require('../../../package.json'); // The custom "falcon" key from package.json. This holds custom project-level values.
-//const yosay             = require('yosay');                 // ASCII art creator brings Yeoman to life.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:project-generator';

@@ -1,12 +1,13 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/generator/src/generator.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/generator/src/generator.ts
  * @summary       Exports `SfdxFalconGenerator` for use with custom Yeoman generators.
  * @description   Exports an abstract class that extends Yeoman's `Generator` class, adding
  *                customized support for SFDX-Falcon specific tools and capabilities.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -64,7 +65,7 @@ export interface Answers<T extends JsonMap> {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface GeneratorMessages {
-  /** Required. Message that will be displayed by the yosay "Yeoman" ASCII art when the generator is loaded. */
+  /** Required. Message that will be displayed by the opening Banner when the generator is loaded. */
   opening:        string;
   /** Required. Message shown to the user before the interview starts during the prompting() run-loop function. */
   preInterview:   string;
@@ -387,7 +388,7 @@ export abstract class SfdxFalconGenerator<T extends JsonMap> extends Generator {
       // Throw an Initialization Error.
       throw new SfdxFalconError( `Command initialization failed. ${initializationError.message}`
                                , `InitializationError`
-                               , `${dbgNs}default_initializing`
+                               , `${dbgNs}:default_initializing`
                                , SfdxFalconError.wrap(initializationError));
     }
 
