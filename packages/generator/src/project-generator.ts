@@ -13,7 +13,6 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  {JsonMap}       from  '@salesforce/ts-types'; // Any JSON-compatible object.
 //import  chalk           from  'chalk';                // Helps write colored text to the console.
 //import  * as path       from  'path';                 // Library. Helps resolve local paths at runtime.
 import  * as Generator  from  'yeoman-generator';     // Class. Custom Generator classes must extend this.
@@ -37,6 +36,7 @@ import  {GeneratorStatus}           from  '@sfdx-falcon/status';      // Class. 
 import  {GeneratorOptions}            from  '@sfdx-falcon/command';     // Interface. Specifies options used when spinning up an SFDX-Falcon Yeoman environment.
 import  {SfdxEnvironmentRequirements} from  '@sfdx-falcon/environment'; // Interface. Represents the elements of the local SFDX Environment that are required by the calling code.
 import  {SfdxFalconTableData}         from  '@sfdx-falcon/status';      // Interface. Represents and array of SfdxFalconKeyValueTableDataRow objects.
+import  {JsonMap}                     from  '@sfdx-falcon/types';       // Any JSON-compatible object.
 //import  {InquirerChoices}           from  '@sfdx-falcon/types';       // Type. Represents a single "choice" option in an Inquirer multi-choice/multi-select question.
 //import  {ListrContextFinalizeGit}   from  '@sfdx-falcon/types';       // Interface. Represents the Listr Context variables used by the "finalizeGit" task collection.
 //import  {ListrTaskBundle}           from  '@sfdx-falcon/types';       // Interface. Represents the suite of information required to run a Listr Task Bundle.
