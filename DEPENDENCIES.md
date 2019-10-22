@@ -12,8 +12,8 @@ Maintaining `tsconfig.build.json` is trickier. The array of `path` values in the
 To help ensure correct precedence, here is a list of SFDX-Falcon packages in order of dependence.
 
 1.  Independent Siblings
-      * `@sfdx-falcon/types`
       * `@sfdx-falcon/debug`
+      * `@sfdx-falcon/types`
 2.  `@sfdx-falcon/error`
 3.  `@sfdx-falcon/validator`
 4.  `@sfdx-falcon/status`
