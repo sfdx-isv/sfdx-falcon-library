@@ -8,7 +8,6 @@
     "@salesforce/ts-types": "1.2.1",
     "@sfdx-falcon/builder": "0.0.5-alpha.0",
     "@sfdx-falcon/debug": "0.0.5-alpha.0",
-    "@sfdx-falcon/error": "0.0.5-alpha.0",
     "@sfdx-falcon/prompt": "0.0.5-alpha.0",
     "@sfdx-falcon/status": "0.0.5-alpha.0",
     "@sfdx-falcon/types": "0.0.5-alpha.0",
