@@ -1,14 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/status/src/task-status.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/status/src/task-status.ts
  * @summary       Exports the `TaskStatus` class. Simplifies interaction with the status field
  *                of `Observer`-based tasks used by `Listr`.
  * @description   Exports the `TaskStatus` class. Simplifies interaction with the status field
  *                of `Observer`-based tasks used by `Listr`.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types

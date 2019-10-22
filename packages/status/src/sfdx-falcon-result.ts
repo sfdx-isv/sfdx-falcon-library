@@ -1,33 +1,33 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/status/src/sfdx-falcon-result.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/status/src/sfdx-falcon-result.ts
  * @summary       Exports `SfdxFalconResult`, which can be used to communicate status/results between
  *                various SFDX-Falcon modules.
  * @description   Exports a concrete class that can be used to create "Result" objects.  Each Result
  *                can be used to track status and detail information of the context of some running
  *                code, then pass that information back to a "parent" result.  This gives the ability
  *                to track complex interactions over many different sections of code.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import {isEmpty}  from  'lodash'; // Useful function for detecting empty objects.
+import  chalk                     from  'chalk';              // Makes it easier to generate colored CLI output via console.log.
+import  inquirer                  = require('inquirer');      // Provides UX for getting feedback from the user.
+import  {isEmpty}                 from  'lodash';             // Useful function for detecting empty objects.
+import  util                      = require('util');          // Provides access to the "inspect" function to help output objects via console.log.
 
 // Import SFDX-Falcon Classes & Functions
-import {SfdxFalconDebug}  from '@sfdx-falcon/debug';  // Class. Specialized debug provider for SFDX-Falcon code.
-import {SfdxFalconError}  from '@sfdx-falcon/error';  // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {SfdxFalconDebug}         from '@sfdx-falcon/debug';  // Class. Specialized debug provider for SFDX-Falcon code.
+import  {SfdxFalconError}         from '@sfdx-falcon/error';  // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import Internal Types
-import  {SfdxFalconResultStatus}  from './index'; // Enum. Represents the different types of sources where Results might come from.
-import  {SfdxFalconResultType}    from './index'; // Enum. Represents the different types of sources where Results might come from.
+import  {SfdxFalconResultStatus}  from './index';             // Enum. Represents the different types of sources where Results might come from.
+import  {SfdxFalconResultType}    from './index';             // Enum. Represents the different types of sources where Results might come from.
 
 // Require Modules
-const chalk     = require('chalk');     // Makes it easier to generate colored CLI output via console.log.
-const inquirer  = require('inquirer');  // Provides UX for getting feedback from the user.
-const util      = require('util');      // Provides access to the "inspect" function to help output objects via console.log.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:status:result';
@@ -294,7 +294,7 @@ export class SfdxFalconResult {
 
     // Only render Child Results if the Child Inspect Depth is 3 or greater.
     if (isEmpty(result.children) === false && options.childInspectDepth >= 3) {
-      renderResult += chalk`\n{${options.labelColor} Child Results: (Depth=${options.childInspectDepth})}\n{reset ${util.inspect(result.children, {depth:options.childInspectDepth, colors:true})}}`;
+      renderResult += chalk`\n{${options.labelColor} Child Results: (Depth=${options.childInspectDepth.toString()})}\n{reset ${util.inspect(result.children, {depth:options.childInspectDepth, colors:true})}}`;
     }
 
     return renderResult;
@@ -319,12 +319,12 @@ export class SfdxFalconResult {
       + chalk`\n{${options.labelColor} Result Type:}        {${options.valueColor} ${result.type}}`
       + chalk`\n{${options.labelColor} Result Name:}        {${options.valueColor} ${result.name}}`
       + chalk`\n{${options.labelColor} Result Status:}      {${options.valueColor} ${result.status}}`
-      + chalk`\n{${options.labelColor} Result Start Time:}  {${options.valueColor} ${result._startTime} (UTC)}`
-      + chalk`\n{${options.labelColor} Result End Time:}    {${options.valueColor} ${result._endTime} (UTC)}`
-      + chalk`\n{${options.labelColor} Result Duration:}    {${options.valueColor} ${result.duration/1000} seconds}`
-      + chalk`\n{${options.labelColor} Number of Children:} {${options.valueColor} ${result.children.length}}`;
+      + chalk`\n{${options.labelColor} Result Start Time:}  {${options.valueColor} ${result._startTime.toString()} (UTC)}`
+      + chalk`\n{${options.labelColor} Result End Time:}    {${options.valueColor} ${result._endTime.toString()} (UTC)}`
+      + chalk`\n{${options.labelColor} Result Duration:}    {${options.valueColor} ${(result.duration/1000).toString()} seconds}`
+      + chalk`\n{${options.labelColor} Number of Children:} {${options.valueColor} ${result.children.length.toString()}}`;
     if (isEmpty(result.detail) === false) {
-      renderResult += chalk`\n{${options.labelColor} Result Detail: (Depth=${options.detailInspectDepth})}\n{reset ${util.inspect(result.detail, {depth:options.detailInspectDepth, colors:true})}}`;
+      renderResult += chalk`\n{${options.labelColor} Result Detail: (Depth=${options.detailInspectDepth.toString()})}\n{reset ${util.inspect(result.detail, {depth:options.detailInspectDepth, colors:true})}}`;
     }
     return renderResult;
   }
@@ -374,7 +374,7 @@ export class SfdxFalconResult {
     // Render output for each Error object in the errors array.
     for (let i=0; i < errors.length; i++) {
       renderResult += chalk`\n{yellow ${separator}--------------${separator}}`;
-      renderResult += chalk`\n{yellow ${separator} ERROR ${errors.length - i} of ${errors.length} ${separator}}`;
+      renderResult += chalk`\n{yellow ${separator} ERROR ${(errors.length - i).toString()} of ${errors.length.toString()} ${separator}}`;
       renderResult += chalk`\n{yellow ${separator}--------------${separator}}`;
       renderResult += SfdxFalconError.renderError(errors[i], options.childInspectDepth, options.detailInspectDepth, options.errorInspectDepth);
     }

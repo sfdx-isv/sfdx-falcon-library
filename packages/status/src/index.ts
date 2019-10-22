@@ -1,13 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/status/src/index.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/status/src/index.ts
  * @summary       Collection of standardized mechanisms to track status/results and display this
  *                information coherently to the user.
  * @description   Collection of standardized mechanisms to track status/results and display this
  *                information coherently to the user.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Re-Export from sfdx-falcon-result.
