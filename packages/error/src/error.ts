@@ -1,24 +1,28 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/error/src/error.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/error/src/error.ts
  * @summary       Provides specialized error structures for SFDX-Falcon Library modules.
  * @description   Provides specialized error structures for SFDX-Falcon Library modules.  Wraps
- *                SfdxError by adding additional SFDX-Falcon specific stack information as well as
+ *                `SfdxError` by adding additional SFDX-Falcon specific stack information as well as
  *                customized rendering capabilities to show formatted output via the console.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
 import  {SfdxError}         from  '@salesforce/core';     // SFDX Error Object.
-import  {JsonMap}           from  '@salesforce/ts-types'; // Type. Any JSON key-value structure.
 import  chalk               from  'chalk';                // Makes it easier to generate colored CLI output via console.log.
 import  {isEmpty}           from  'lodash';               // Useful function for detecting empty objects.
 import  util                = require('util');            // Provides access to the "inspect" function to help output objects via console.log.
 
 // Import SFDX-Falcon Classes & Functions
 import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug';   // Class. Internal debugging framework for SFDX-Falcon.
+
+// Import SFDX-Falcon Types
+import  {JsonMap}           from  '@sfdx-falcon/types';   // Type. Any JSON key-value structure.
+
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**

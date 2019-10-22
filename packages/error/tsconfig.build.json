@@ -10,6 +10,7 @@
     "./src/**/*"
   ],
   "references": [
-    {"path": "../debug/tsconfig.build.json"}          // @SFDX-Falcon/debug
+    {"path": "../debug/tsconfig.build.json"},         // @SFDX-Falcon/debug
+    {"path": "../types/tsconfig.build.json"}          // @SFDX-Falcon/types
   ]
 }
