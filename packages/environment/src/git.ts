@@ -1,11 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/environment/src/git.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       INSERT_SUMMARY_HERE
- * @description   INSERT_DESCRIPTION_HERE
- * @license       MIT
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/environment/src/git.ts
+ * @summary       Generates a detailed abstraction of the local Git Environment, ensuring that Git
+ *                is present in the user's system and/or checking accessiblity of remote repos.
+ * @description   Generates a detailed abstraction of the local Git Environment, ensuring that Git
+ *                is present in the user's system and/or checking accessiblity of remote repos.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -27,8 +30,8 @@ import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class
 //import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:sfdx-environment:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:sfdx-environment:git';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐

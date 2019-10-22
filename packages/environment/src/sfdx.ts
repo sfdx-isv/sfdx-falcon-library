@@ -42,7 +42,7 @@ import  {UserName}                 from  '@sfdx-falcon/types';   // Type. Repres
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:environment:sfdx';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐

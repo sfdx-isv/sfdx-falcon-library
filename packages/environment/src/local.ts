@@ -1,11 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/environment/src/local.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       INSERT_SUMMARY_HERE
- * @description   INSERT_DESCRIPTION_HERE
- * @license       MIT
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/environment/src/local.ts
+ * @summary       Generates a detailed abstraction of the local filesystem, making it easier
+ *                to consume configuration files, setup files, reports, etc.
+ * @description   Generates a detailed abstraction of the local filesystem, making it easier
+ *                to consume configuration files, setup files, reports, etc.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -27,8 +30,8 @@ import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';         // Class
 //import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:sfdx-environment:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:sfdx-environment:local';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
