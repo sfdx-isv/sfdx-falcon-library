@@ -9,6 +9,7 @@
     "@salesforce/ts-types": "1.2.1",
     "csv-parser": "2.3.1",
     "inquirer": "7.0.0",
+    "jsforce": "1.9.2",
     "json2csv": "4.5.4",
     "rxjs": "6.5.3",
     "tslib": "1.10.0",

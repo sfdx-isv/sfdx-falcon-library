@@ -4,7 +4,7 @@
  * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
  * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
  *                `https://opensource.org/licenses/BSD-3-Clause`
- * @file          packages/types/metadata-api.ts
+ * @file          packages/types/src/metadata-api.ts
  * @summary       Collection of types/interfaces that model Salesforce Metadata API structures.
  * @description   Collection of types/interfaces that model Salesforce Metadata API structures.
  */

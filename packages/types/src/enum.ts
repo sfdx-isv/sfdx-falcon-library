@@ -4,7 +4,7 @@
  * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
  * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
  *                `https://opensource.org/licenses/BSD-3-Clause`
- * @file          packages/types/enum.ts
+ * @file          packages/types/src/enum.ts
  * @summary       Collection of ENUMs used by the SFDX-Falcon Library.
  * @description   Collection of ENUMs used by the SFDX-Falcon Library.
  */
