@@ -1,13 +1,14 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/task-bundle/src/task-bundle.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/task-bundle/src/task-bundle.ts
  * @summary       Exports the `TaskBundle` object, an execution container for `Listr` tasks.
  * @description   Execution container for `Listr` tasks. Requires the caller to specify standard pre
  *                and post-task messaging as well as `GeneratorStatus` messages for both task
  *                execution success and failure.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types

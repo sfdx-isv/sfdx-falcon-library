@@ -12,8 +12,7 @@
     "@sfdx-falcon/types": "0.0.5-alpha.0",
     "@sfdx-falcon/validator": "0.0.5-alpha.0",
     "listr": "0.14.3",
-    "tslib": "1.10.0",
-    "typescript": "3.6.4"
+    "tslib": "1.10.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "1.22.2",
