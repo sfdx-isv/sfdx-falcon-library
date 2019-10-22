@@ -1,42 +1,43 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/task/src/task.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
- * @summary       Exports SfdxFalconTask, an abstraction of a single Listr Task.
- * @description   Exports SfdxFalconTask, an abstraction of a single Listr Task.
- * @license       MIT
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/task/src/task.ts
+ * @summary       Exports `SfdxFalconTask`, an abstraction of a single Listr Task.
+ * @description   Exports `SfdxFalconTask`, an abstraction of a single Listr Task.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  {ListrContext}      from  'listr';  // Type. Used by the context object that Listr passes from Task to Task in a single execution context.
-import  {ListrTask}         from  'listr';  // Interface. Represents a Task object as defined by Listr.
-import  {ListrTaskWrapper}  from  'listr';  // Class. An instantiated ListrTask that will eventually be in the process of being executed.
-import  {ListrTaskResult}   from  'listr';  // Type. Possible return values from the execution of a Listr Task.
-import  {Observable}        from  'rxjs';   // Class. Used to communicate status with Listr.
-import  {Subscriber}        from  'rxjs';   // Class. Implements the Observer interface and extends the Subscription class.
+import  {ListrContext}          from  'listr';                  // Type. Used by the context object that Listr passes from Task to Task in a single execution context.
+import  {ListrTask}             from  'listr';                  // Interface. Represents a Task object as defined by Listr.
+import  {ListrTaskWrapper}      from  'listr';                  // Class. An instantiated ListrTask that will eventually be in the process of being executed.
+import  {ListrTaskResult}       from  'listr';                  // Type. Possible return values from the execution of a Listr Task.
+import  {Observable}            from  'rxjs';                   // Class. Used to communicate status with Listr.
+import  {Subscriber}            from  'rxjs';                   // Class. Implements the Observer interface and extends the Subscription class.
 
 // Import SFDX-Falcon Libraries
-import  {AsyncUtil}                 from  '@sfdx-falcon/util';      // Library. Async utility helper functions.
-import  {TypeValidator}             from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
+import  {AsyncUtil}             from  '@sfdx-falcon/util';      // Library. Async utility helper functions.
+import  {TypeValidator}         from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {SfdxFalconDebug}           from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import  {SfdxFalconError}           from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
-import  {GeneratorStatus}           from  '@sfdx-falcon/status';    // Class. Status tracking object for use with Generators derived from SfdxFalconGenerator.
-import  {SfdxFalconResult}          from  '@sfdx-falcon/status';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
-import  {TaskStatus}                from  '@sfdx-falcon/status';    // Class. Manages status notification messages for SFDX-Falcon Tasks.
-import  {TaskStatusMessage}         from  '@sfdx-falcon/status';    // Class. Simplifies access to a TaskStatusOptions data structure to help ensure that an external caller can read/set messsages in a way that won't break normal functionality.
+import  {SfdxFalconDebug}       from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconError}       from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {GeneratorStatus}       from  '@sfdx-falcon/status';    // Class. Status tracking object for use with Generators derived from SfdxFalconGenerator.
+import  {SfdxFalconResult}      from  '@sfdx-falcon/status';    // Class. Implements a framework for creating results-driven, informational objects with a concept of heredity (child results) and the ability to "bubble up" both Errors (thrown exceptions) and application-defined "failures".
+import  {TaskStatus}            from  '@sfdx-falcon/status';    // Class. Manages status notification messages for SFDX-Falcon Tasks.
+import  {TaskStatusMessage}     from  '@sfdx-falcon/status';    // Class. Simplifies access to a TaskStatusOptions data structure to help ensure that an external caller can read/set messsages in a way that won't break normal functionality.
 
 // Import SFDX-Falcon Types
-import  {ExternalContext}           from  '@sfdx-falcon/builder'; // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
-import  {SfdxFalconResultType}      from  '@sfdx-falcon/status';  // Enum. Represents the different types of sources where Results might come from.
-import  {ErrorOrResult}             from  '@sfdx-falcon/status';  // Type. Alias to a combination of Error or SfdxFalconResult.
-import  {TaskStatusOptions}         from  '@sfdx-falcon/status';  // Interface. Represents the full suite of options, including all message strings, that are used by the updateStatus() function when creating status update messages for running ListrTask objects.
+import  {ExternalContext}       from  '@sfdx-falcon/builder';   // Interface. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
+import  {SfdxFalconResultType}  from  '@sfdx-falcon/status';    // Enum. Represents the different types of sources where Results might come from.
+import  {ErrorOrResult}         from  '@sfdx-falcon/status';    // Type. Alias to a combination of Error or SfdxFalconResult.
+import  {TaskStatusOptions}     from  '@sfdx-falcon/status';    // Interface. Represents the full suite of options, including all message strings, that are used by the updateStatus() function when creating status update messages for running ListrTask objects.
 
 // Set the File Local Debug Namespace
-const dbgNs = '@sfdx-falcon:task:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:task';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -190,7 +191,7 @@ export class ObservableTaskResult {
   constructor(opts:ObservableTaskResultOptions) {
 
     // Set function-local debug namespace and examine incoming arguments.
-    const dbgNsLocal = `${dbgNs}ObservableTaskResult:constructor`;
+    const dbgNsLocal = `${dbgNs}:ObservableTaskResult:constructor`;
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
   
     // Validate the REQUIRED contents of the options object.
@@ -276,7 +277,7 @@ export class ObservableTaskResult {
   public finalizeFailure(errorOrResult:ErrorOrResult):void {
 
     // Set function-local debug namespace and examine incoming arguments.
-    const dbgNsLocal = `${dbgNs}ObservableTaskResult:finalizeFailure`;
+    const dbgNsLocal = `${dbgNs}:ObservableTaskResult:finalizeFailure`;
     SfdxFalconDebug.msg(`${dbgNsLocal}:`, `finalizeFailure() has been called`);
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
@@ -378,7 +379,7 @@ export class ObservableTaskResult {
   public finalizeSuccess():void {
 
     // Set function-local debug namespace.
-    const dbgNsLocal = `${dbgNs}ObservableTaskResult:finalizeSuccess`;
+    const dbgNsLocal = `${dbgNs}:ObservableTaskResult:finalizeSuccess`;
     SfdxFalconDebug.msg(`${dbgNsLocal}:`, `finalizeSuccess() has been called`);
 
     // Finish any Task Progress Notifications attached to this Observable Task Result.
@@ -468,7 +469,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
   constructor(opts:SfdxFalconTaskOptions) {
 
     // Set function-local debug namespace and examine incoming arguments.
-    const dbgNsLocal = `${dbgNs}SfdxFalconTask:constructor`;
+    const dbgNsLocal = `${dbgNs}:SfdxFalconTask:constructor`;
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Make sure the caller passed in an options object.
@@ -528,7 +529,7 @@ export class SfdxFalconTask<CTX=ListrContext> {
   public build():ListrTask {
 
     // Set function-local debug namespace.
-    const dbgNsLocal = `${dbgNs}SfdxFalconTask:build`;
+    const dbgNsLocal = `${dbgNs}:SfdxFalconTask:build`;
 
     // Build the specialized Observer based task.
     this._task = (taskCtx:ListrContext, taskObj:ListrTaskWrapper) => {
