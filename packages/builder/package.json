@@ -62,7 +62,7 @@
     "task"
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "directories": {

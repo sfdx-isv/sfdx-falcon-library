@@ -58,7 +58,7 @@
     "user-interaction"
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "main": "lib/prompt.js",
   "types": "lib/prompt.d.ts",
   "directories": {

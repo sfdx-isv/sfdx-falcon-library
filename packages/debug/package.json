@@ -54,7 +54,7 @@
     "sfdx-plugin"
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "main": "lib/debug.js",
   "types": "lib/debug.d.ts",
   "directories": {

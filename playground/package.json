@@ -74,7 +74,7 @@
     "sfdx-falcon-library"
   ],
   "homepage": "https://github.com/sfdx-isv/sfdx-falcon-library#readme",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "oclif": {
     "commands": "./lib/commands",
     "bin": "sfdx",
