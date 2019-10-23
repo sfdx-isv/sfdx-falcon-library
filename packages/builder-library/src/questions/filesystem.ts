@@ -10,18 +10,18 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  * as  fse         from  'fs-extra';               // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
-import  * as  path        from  'path';                   // Node's built-in path library.
+import  * as  fse                           from  'fs-extra';               // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
+import  * as  path                          from  'path';                   // Node's built-in path library.
 
 // Import SFDX-Falcon Libraries
-import  {TypeValidator}   from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
-import  {YeomanValidator} from  '@sfdx-falcon/validator'; // Library of Yeoman-related Validation helper functions.
+import  {TypeValidator}                     from  '@sfdx-falcon/validator'; // Library of Type Validation helper functions.
+import  {InteractiveValidator}              from  '@sfdx-falcon/validator'; // Library of Yeoman-related Validation helper functions.
 
 // Import SFDX-Falcon Classes & Functions
-import  {InterviewQuestionsBuilder}         from  '@sfdx-falcon/builder'; // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
-import  {SfdxFalconDebug}                   from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
-import  {SfdxFalconPrompt}                  from  '@sfdx-falcon/prompt';  // Class. Allows easy creation of Inquirer prompts that have a "confirmation" question that can be used to restart collection of the information.
-//import  {SfdxFalconError}           from  '@sfdx-falcon/error';         // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
+import  {InterviewQuestionsBuilder}         from  '@sfdx-falcon/builder';   // Class. Classes derived from QuestionsBuilder can be used to build an Inquirer Questions object.
+import  {SfdxFalconDebug}                   from  '@sfdx-falcon/debug';     // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {SfdxFalconPrompt}                  from  '@sfdx-falcon/prompt';    // Class. Allows easy creation of Inquirer prompts that have a "confirmation" question that can be used to restart collection of the information.
+//import  {SfdxFalconError}                   from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import SFDX-Falcon Types
 import  {InterviewQuestionsBuilderOptions}  from  '@sfdx-falcon/builder'; // Interface. Baseline structure for the options object that should be provided to the constructor of any class that extends InterviewQuestionsBuilder.
@@ -221,7 +221,7 @@ export class ProvideTargetDirectory extends InterviewQuestionsBuilder {
         default:  ( typeof buildCtx.userAnswers.targetDirectory !== 'undefined' )
                   ? buildCtx.userAnswers.targetDirectory        // Current Value
                   : buildCtx.defaultAnswers.targetDirectory,    // Default Value
-        validate: YeomanValidator.targetPath,                   // Check targetPath for illegal chars
+        validate: InteractiveValidator.targetPath,              // Check targetPath for illegal chars
         filter:   filterLocalPath,                              // Returns a Resolved path
         when:     true
       }
