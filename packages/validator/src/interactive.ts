@@ -4,7 +4,7 @@
  * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
  * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
  *                `https://opensource.org/licenses/BSD-3-Clause`
- * @file          packages/validator/src/yeoman.ts
+ * @file          packages/validator/src/interactive.ts
  * @summary       Yeoman generator validation library.
  * @description   Exports validation functions for checking values provided interactively by a user
  *                where sharing a reason why the value is invalid is a critical part of the output.
