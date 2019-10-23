@@ -1280,6 +1280,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/unzipper@0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@types/unzipper/-/unzipper-0.10.0.tgz#ae051eed1ec6735ff5adfac235d9bb17471b2901"
+  integrity sha512-GZL5vt0o9ZAST+7ge1Sirzc14EEJFbq6kib24nS0UglY6BHX8ERhA8cBq4XsYWcGK212FtMBZyJz6AwPvrhGLQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/vinyl@*":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@types/vinyl/-/vinyl-2.0.3.tgz#80a6ce362ab5b32a0c98e860748a31bce9bff0de"
