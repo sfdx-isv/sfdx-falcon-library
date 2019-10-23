@@ -10,15 +10,15 @@
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import from the other files in this package.
-import  * as CoreValidator    from  './core';
-import  * as GitValidator     from  './git';
-import  * as TypeValidator    from  './type';
-import  * as YeomanValidator  from  './yeoman';
+import  * as CoreValidator        from  './core';
+import  * as GitValidator         from  './git';
+import  * as InteractiveValidator from  './interactive';
+import  * as TypeValidator        from  './type';
 
 // Re-export everything.
 export {
-  TypeValidator,
   CoreValidator,
   GitValidator,
-  YeomanValidator
+  InteractiveValidator,
+  TypeValidator
 };
