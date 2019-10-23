@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/validator/src/git.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/validator/src/git.ts
  * @summary       Git validation library.
  * @description   Exports validation functions related to Git.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import SFDX-Falcon Library Classes & Functions
@@ -15,8 +16,8 @@ import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug'; // Class. Provides custo
 import  * as typeValidator  from  './type'; // Library. Type validation functions.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'VALIDATOR:git:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:validator:git';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 // Globals
 const gitUriRegEx = /(^(git|ssh|http(s)?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:\/\-~]+)(\.git)(\/)?$/;
@@ -25,17 +26,17 @@ const gitUriRegEx = /(^(git|ssh|http(s)?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:\/\-~
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    isGitUriValid
- * @param       {string}  gitRemoteUri  Required. ???
- * @returns     {boolean} TRUE if gitRemoteUri is a syntactically valid Git Remote URI.
- * @version     1.0.0
+ * @param       {string}  gitRemoteUri  Required.
+ * @param       {RegExp}  [acceptedProtocols] Optional.
+ * @returns     {boolean} `TRUE` if gitRemoteUri is a syntactically valid Git Remote URI.
  * @description Determines if the URI provided is a syntactically valid Git Remote URI. The
- *              accepted protocols are ssh:, git:, http:, and https:.
+ *              accepted protocols are `ssh:`, `git:`, `http:`, and `https:`.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isGitUriValid(gitRemoteUri:string,  acceptedProtocols?:RegExp):boolean {
 
   // Debug and input validation
-  const dbgNsLocal = `${dbgNs}isGitUriValid`;
+  const dbgNsLocal = `${dbgNs}:isGitUriValid`;
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
   typeValidator.throwOnInvalidString(gitRemoteUri, `${dbgNsLocal}`, `gitRemoteUri`);
 

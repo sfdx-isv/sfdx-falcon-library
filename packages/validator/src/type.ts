@@ -1,16 +1,17 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/validator/src/type.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/validator/src/type.ts
  * @summary       Type validation library. Useful for validating incoming arguments inside functions.
  * @description   Exports basic validation functions for ensuring a variable has the expected type
- *                and/or meets certain basic requirements like not empty, not null, etc.
- * @license       MIT
+ *                and/or meets certain basic requirements like not empty, not `null`, etc.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries & Modules
-import * as fs              from  'fs-extra';             // Extended set of File System utils.
+import * as fse             from  'fs-extra';             // Extended set of File System utils.
 import  {isEmpty}           from  'lodash';               // Useful function for detecting empty objects.
 
 // Import SFDX-Falcon Library Classes & Functions
@@ -21,8 +22,8 @@ import  {SfdxFalconError}   from  '@sfdx-falcon/error';   // Class. Extends Sfdx
 import  {AnyConstructor}    from  '@sfdx-falcon/types';   // Type. A constructor for any type T. T defaults to object when not explicitly supplied.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'VALIDATOR:type:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:validator:type';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -30,10 +31,10 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
  * @function    errMsgEmptyNullInvalidArray
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an empty, null, or invalid array
+ * @returns     {string}  A standardized error message reporting an empty, `null`, or invalid `array`
  *              was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an empty, null, or invalid array was provided.
+ *              message reporting an empty, `null`, or invalid `array` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -49,10 +50,10 @@ export function errMsgEmptyNullInvalidArray(arg:unknown, argName:string):string 
  * @function    errMsgEmptyNullInvalidObject
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an empty, null, or invalid object
+ * @returns     {string}  A standardized error message reporting an empty, `null`, or invalid `object`
  *              was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an empty, null, or invalid object was provided.
+ *              message reporting an empty, `null`, or invalid `object` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -68,10 +69,10 @@ export function errMsgEmptyNullInvalidObject(arg:unknown, argName:string):string
  * @function    errMsgEmptyNullInvalidString
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an empty, null, or invalid string
+ * @returns     {string}  A standardized error message reporting an empty, `null`, or invalid `string`
  *              was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an empty, null, or invalid string was provided.
+ *              message reporting an empty, `null`, or invalid `string` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -87,9 +88,9 @@ export function errMsgEmptyNullInvalidString(arg:unknown, argName:string):string
  * @function    errMsgInvalidArray
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an invalid array was provided.
+ * @returns     {string}  A standardized error message reporting an invalid `array` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an invalid array was provided.
+ *              message reporting an invalid `array` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -143,10 +144,10 @@ export function errMsgInvalidFunction(arg:unknown, argName:string):string {
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the argument was tested against.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an object that is not an instance
- *              of the expected class.
+ * @returns     {string}  A standardized error message reporting an `object` that is not an
+ *              `instance of` the expected class.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an object that is not an instance of the expected class.
+ *              message reporting an `object` that is not an `instance of` the expected class.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -200,9 +201,9 @@ export function errMsgInvalidNumber(arg:unknown, argName:string):string {
  * @function    errMsgInvalidObject
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an invalid object was provided.
+ * @returns     {string}  A standardized error message reporting an invalid `object` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an invalid object was provided.
+ *              message reporting an invalid `object` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -218,9 +219,9 @@ export function errMsgInvalidObject(arg:unknown, argName:string):string {
  * @function    errMsgInvalidString
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting an invalid string was provided.
+ * @returns     {string}  A standardized error message reporting an invalid `string` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting an invalid string was provided.
+ *              message reporting an invalid `string` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -255,9 +256,9 @@ export function errMsgNonReadablePath(path:string, argName:string):string {
  * @function    errMsgNullInvalidArray
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting a null or invalid array was provided.
+ * @returns     {string}  A standardized error message reporting a `null` or invalid `array` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting a null or invalid array was provided.
+ *              message reporting a `null` or invalid `array` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -273,9 +274,9 @@ export function errMsgNullInvalidArray(arg:unknown, argName:string):string {
  * @function    errMsgNullInvalidBoolean
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting a null or invalid boolean was provided.
+ * @returns     {string}  A standardized error message reporting a `null` or invalid `boolean` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting a null or invalid boolean was provided.
+ *              message reporting a `null` or invalid `boolean` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -311,10 +312,10 @@ export function errMsgNullInvalidFunction(arg:unknown, argName:string):string {
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the argument was tested against.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting a null object or an object that
- *              is not an instance of the expected class.
+ * @returns     {string}  A standardized error message reporting a `null` object or an `object` that
+ *              is not an `instance of` the expected class.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting a null object or an object that is not an instance of the
+ *              message reporting a `null` object or an `object` that is not an `instance of` the
  *              expected class.
  * @public
  */
@@ -369,9 +370,9 @@ export function errMsgNullInvalidNumber(arg:unknown, argName:string):string {
  * @function    errMsgNullInvalidObject
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting a null or invalid object was provided.
+ * @returns     {string}  A standardized error message reporting a `null` or invalid `object` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting a null or invalid object was provided.
+ *              message reporting a `null` or invalid `object` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -387,9 +388,9 @@ export function errMsgNullInvalidObject(arg:unknown, argName:string):string {
  * @function    errMsgNullInvalidString
  * @param       {unknown} arg Required. The argument involved in the error.
  * @param       {string}  argName Required. The variable name of the argument involved in the error.
- * @returns     {string}  A standardized error message reporting a null or invalid string was provided.
+ * @returns     {string}  A standardized error message reporting a `null` or invalid `string` was provided.
  * @description Given an argument and the name of that argument, returns a standardized error
- *              message reporting a null or invalid string was provided.
+ *              message reporting a `null` or invalid `string` was provided.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -423,7 +424,7 @@ export function errMsgNullUndefined(arg:unknown, argName:string):string {
  * @function    isEmptyNullInvalidArray
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT an array, or is a null or empty array.
+ * @description Checks if the given variable is NOT an `array`, or is a null or empty `array`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -436,7 +437,7 @@ export function isEmptyNullInvalidArray(variable:unknown):boolean {
  * @function    isEmptyNullInvalidString
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT a string, or is a null or empty string.
+ * @description Checks if the given variable is NOT a `string`, or is a null or empty `string`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -449,7 +450,7 @@ export function isEmptyNullInvalidString(variable:unknown):boolean {
  * @function    isEmptyNullInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT an object, or is a null or empty object.
+ * @description Checks if the given variable is NOT an `object`, or is a null or empty `object`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -462,7 +463,7 @@ export function isEmptyNullInvalidObject(variable:unknown):boolean {
  * @function    isInvalidArray
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT an array.
+ * @description Checks if the given variable is NOT an `array`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -475,7 +476,7 @@ export function isInvalidArray(variable:unknown):boolean {
  * @function    isInvalidBoolean
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT a boolean.
+ * @description Checks if the given variable is NOT a `boolean`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -503,7 +504,7 @@ export function isInvalidFunction(variable:unknown):boolean {
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the variable will be tested against.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT an instance of a the expected class.
+ * @description Checks if the given variable is NOT an `instance of` a the expected class.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -529,7 +530,7 @@ export function isInvalidNumber(variable:unknown):boolean {
  * @function    isInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT an object.
+ * @description Checks if the given variable is NOT an `object`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -542,7 +543,7 @@ export function isInvalidObject(variable:unknown):boolean {
  * @function    isInvalidString
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT a string.
+ * @description Checks if the given variable is NOT a `string`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -568,7 +569,7 @@ export function isNullInvalidArray(variable:unknown):boolean {
  * @function    isNullInvalidBoolean
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT a boolean, or if it is null.
+ * @description Checks if the given variable is NOT a `boolean`, or if it is `null`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -596,7 +597,7 @@ export function isNullInvalidFunction(variable:unknown):boolean {
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the variable will be tested against.
  * @returns     {boolean}
- * @description Checks if the given variable is null or is NOT an instance of the expected class.
+ * @description Checks if the given variable is `null` or is NOT an `instance of` the expected class.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -622,7 +623,7 @@ export function isNullInvalidNumber(variable:unknown):boolean {
  * @function    isNullInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks if the given variable is NOT an object, or if it is null.
+ * @description Checks if the given variable is NOT an `object`, or if it is `null`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -667,7 +668,7 @@ export function isNullUndefined(variable:unknown):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isReadablePath(path:string):boolean {
   try {
-    fs.accessSync(path, fs.constants.R_OK);
+    fse.accessSync(path, fse.constants.R_OK);
   }
   catch (accessError) {
     return false;
@@ -680,7 +681,7 @@ export function isReadablePath(path:string):boolean {
  * @function    isNotEmptyNullInvalidArray
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isEmptyNullInvalidArray().
+ * @description Checks for the inverse of `isEmptyNullInvalidArray()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -693,7 +694,7 @@ export function isNotEmptyNullInvalidArray(variable:unknown):boolean {
  * @function    isNotEmptyNullInvalidString
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isEmptyNullInvalidString().
+ * @description Checks for the inverse of `isEmptyNullInvalidString()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -706,7 +707,7 @@ export function isNotEmptyNullInvalidString(variable:unknown):boolean {
  * @function    isNotEmptyNullInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isEmptyNullInvalidObject().
+ * @description Checks for the inverse of `isEmptyNullInvalidObject()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -719,7 +720,7 @@ export function isNotEmptyNullInvalidObject(variable:unknown):boolean {
  * @function    isNotInvalidArray
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isInvalidArray().
+ * @description Checks for the inverse of `isInvalidArray()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -732,7 +733,7 @@ export function isNotInvalidArray(variable:unknown):boolean {
  * @function    isNotInvalidBoolean
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isInvalidBoolean().
+ * @description Checks for the inverse of `isInvalidBoolean()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -760,7 +761,7 @@ export function isNotInvalidFunction(variable:unknown):boolean {
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the variable will be tested against.
  * @returns     {boolean}
- * @description Checks for the inverse of isInvalidInstance().
+ * @description Checks for the inverse of `isInvalidInstance()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -786,7 +787,7 @@ export function isNotInvalidNumber(variable:unknown):boolean {
  * @function    isNotInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isInvalidObject().
+ * @description Checks for the inverse of `isInvalidObject()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -799,7 +800,7 @@ export function isNotInvalidObject(variable:unknown):boolean {
  * @function    isNotInvalidString
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isInvalidString().
+ * @description Checks for the inverse of `isInvalidString()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -812,7 +813,7 @@ export function isNotInvalidString(variable:unknown):boolean {
  * @function    isNotNullInvalidArray
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isNullInvalidArray().
+ * @description Checks for the inverse of `isNullInvalidArray()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -825,7 +826,7 @@ export function isNotNullInvalidArray(variable:unknown):boolean {
  * @function    isNotNullInvalidBoolean
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isNullInvalidBoolean().
+ * @description Checks for the inverse of `isNullInvalidBoolean()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -853,7 +854,7 @@ export function isNotNullInvalidFunction(variable:unknown):boolean {
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the variable will be tested against.
  * @returns     {boolean}
- * @description Checks for the inverse of isNullInvalidInstance().
+ * @description Checks for the inverse of `isNullInvalidInstance()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -879,7 +880,7 @@ export function isNotNullInvalidNumber(variable:unknown):boolean {
  * @function    isNotNullInvalidObject
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isNullInvalidObject().
+ * @description Checks for the inverse of `isNullInvalidObject()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -892,7 +893,7 @@ export function isNotNullInvalidObject(variable:unknown):boolean {
  * @function    isNotNullInvalidString
  * @param       {unknown} variable  Required. The variable whose type will be validated.
  * @returns     {boolean}
- * @description Checks for the inverse of isNullInvalidString().
+ * @description Checks for the inverse of `isNullInvalidString()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -918,7 +919,7 @@ export function isNotNullUndefined(variable:unknown):boolean {
  * @function    isNotReadablePath
  * @param       {string}  path  Required. Path that will be checked for readability.
  * @returns     {boolean}
- * @description Checks for the inverse of isReadablePath().
+ * @description Checks for the inverse of `isReadablePath()`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -929,20 +930,22 @@ export function isNotReadablePath(path:string):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnEmptyNullInvalidArray
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null, non-empty array. Uses the debug namespace of the external caller as the
- *              base of the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null, non-empty `array`. Uses the debug namespace of the external caller as the
+ *              base of the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnEmptyNullInvalidArray(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnEmptyNullInvalidArray(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isEmptyNullInvalidArray(arg)) {
-    throw new SfdxFalconError( errMsgEmptyNullInvalidArray(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgEmptyNullInvalidArray(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -950,20 +953,22 @@ export function throwOnEmptyNullInvalidArray(arg:unknown, dbgNsExt:string, argNa
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnEmptyNullInvalidObject
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null, non-empty object. Uses the debug namespace of the external caller as the
- *              base of the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null, non-empty `object`. Uses the debug namespace of the external caller as the
+ *              base of the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnEmptyNullInvalidObject(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnEmptyNullInvalidObject(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isEmptyNullInvalidObject(arg)) {
-    throw new SfdxFalconError( errMsgEmptyNullInvalidObject(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgEmptyNullInvalidObject(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -971,20 +976,22 @@ export function throwOnEmptyNullInvalidObject(arg:unknown, dbgNsExt:string, argN
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnEmptyNullInvalidString
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null, non-empty string. Uses the debug namespace of the external caller as the
- *              base of the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null, non-empty `string`. Uses the debug namespace of the external caller as the
+ *              base of the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnEmptyNullInvalidString(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnEmptyNullInvalidString(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isEmptyNullInvalidString(arg)) {
-    throw new SfdxFalconError( errMsgEmptyNullInvalidString(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgEmptyNullInvalidString(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -992,20 +999,22 @@ export function throwOnEmptyNullInvalidString(arg:unknown, dbgNsExt:string, argN
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidArray
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is an
- *              array. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is an
+ *              `array`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidArray(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidArray(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidArray(arg)) {
-    throw new SfdxFalconError( errMsgInvalidArray(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidArray(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1013,20 +1022,22 @@ export function throwOnInvalidArray(arg:unknown, dbgNsExt:string, argName?:strin
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidBoolean
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              boolean. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              `boolean`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidBoolean(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidBoolean(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidBoolean(arg)) {
-    throw new SfdxFalconError( errMsgInvalidBoolean(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidBoolean(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1034,9 +1045,11 @@ export function throwOnInvalidBoolean(arg:unknown, dbgNsExt:string, argName?:str
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidFunction
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
  * @description Given an argument of `unknown` type, attempts to validate that the argument is a
  *              `function`. Uses the debug namespace of the external caller as the base of
@@ -1044,10 +1057,10 @@ export function throwOnInvalidBoolean(arg:unknown, dbgNsExt:string, argName?:str
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidFunction(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidFunction(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidFunction(arg)) {
-    throw new SfdxFalconError( errMsgInvalidFunction(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidFunction(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1055,22 +1068,24 @@ export function throwOnInvalidFunction(arg:unknown, dbgNsExt:string, argName?:st
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidInstance
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the argument will be tested against.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is an
- *              object that's an instace of the specified class. Uses the debug namespace of the
- *              external caller as the base of the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is an
+ *              object that's an `instance of` the specified class. Uses the debug namespace of the
+ *              external caller as the base of the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidInstance(arg:unknown, classConstructor:AnyConstructor, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidInstance(arg:unknown, classConstructor:AnyConstructor, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidInstance(arg, classConstructor))  {
-    throw new SfdxFalconError( errMsgInvalidInstance(arg, classConstructor, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidInstance(arg, classConstructor, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1078,20 +1093,22 @@ export function throwOnInvalidInstance(arg:unknown, classConstructor:AnyConstruc
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidNumber
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
  *              `number`. Uses the debug namespace of the external caller as the base of
  *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidNumber(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidNumber(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidNumber(arg)) {
-    throw new SfdxFalconError( errMsgInvalidNumber(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidNumber(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1099,20 +1116,22 @@ export function throwOnInvalidNumber(arg:unknown, dbgNsExt:string, argName?:stri
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidObject
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is an
- *              object. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is an
+ *              `object`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidObject(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidObject(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidObject(arg)) {
-    throw new SfdxFalconError( errMsgInvalidObject(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidObject(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1120,20 +1139,22 @@ export function throwOnInvalidObject(arg:unknown, dbgNsExt:string, argName?:stri
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnInvalidString
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              string. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              `string`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnInvalidString(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnInvalidString(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isInvalidString(arg)) {
-    throw new SfdxFalconError( errMsgInvalidString(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgInvalidString(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1141,20 +1162,22 @@ export function throwOnInvalidString(arg:unknown, dbgNsExt:string, argName?:stri
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidArray
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null array. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `array`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidArray(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullInvalidArray(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidArray(arg)) {
-    throw new SfdxFalconError( errMsgNullInvalidArray(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidArray(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1162,20 +1185,22 @@ export function throwOnNullInvalidArray(arg:unknown, dbgNsExt:string, argName?:s
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidBoolean
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null boolean. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `boolean`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidBoolean(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullInvalidBoolean(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidBoolean(arg)) {
-    throw new SfdxFalconError( errMsgNullInvalidBoolean(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidBoolean(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1183,9 +1208,11 @@ export function throwOnNullInvalidBoolean(arg:unknown, dbgNsExt:string, argName?
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidFunction
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
  * @description Given an argument of `unknown` type, attempts to validate that the argument is a
  *              non-null `function`. Uses the debug namespace of the external caller as the base of
@@ -1193,10 +1220,10 @@ export function throwOnNullInvalidBoolean(arg:unknown, dbgNsExt:string, argName?
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidFunction(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullInvalidFunction(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidFunction(arg)) {
-    throw new SfdxFalconError( errMsgNullInvalidFunction(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidFunction(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1204,23 +1231,25 @@ export function throwOnNullInvalidFunction(arg:unknown, dbgNsExt:string, argName
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidInstance
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {AnyConstructor}  classConstructor  Required. Constructor function of the object
  *              that the argument will be tested against.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  argName Required. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null object that's an instace of the specified class. Uses the debug namespace
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `object` that's an `instance of` the specified class. Uses the debug namespace
  *              of the external caller as the base of the "source" string used by the thrown
- *              SfdxFalconError.
+ *              `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidInstance(arg:unknown, classConstructor:AnyConstructor, dbgNsExt:string, argName:string):void {
+export function throwOnNullInvalidInstance(arg:unknown, classConstructor:AnyConstructor, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidInstance(arg, classConstructor))  {
-    throw new SfdxFalconError( errMsgNullInvalidInstance(arg, classConstructor, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidInstance(arg, classConstructor, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1228,9 +1257,11 @@ export function throwOnNullInvalidInstance(arg:unknown, classConstructor:AnyCons
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidNumber
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
  * @description Given an argument of `unknown` type, attempts to validate that the argument is a
  *              non-null `number`. Uses the debug namespace of the external caller as the base of
@@ -1238,10 +1269,10 @@ export function throwOnNullInvalidInstance(arg:unknown, classConstructor:AnyCons
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidNumber(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullInvalidNumber(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidNumber(arg)) {
-    throw new SfdxFalconError( errMsgNullInvalidNumber(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidNumber(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1249,20 +1280,22 @@ export function throwOnNullInvalidNumber(arg:unknown, dbgNsExt:string, argName?:
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidObject
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null object. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `object`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidObject(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullInvalidObject(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidObject(arg)) {
-    throw new SfdxFalconError( errMsgNullInvalidObject(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidObject(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1270,20 +1303,22 @@ export function throwOnNullInvalidObject(arg:unknown, dbgNsExt:string, argName?:
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullInvalidString
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given an argument of unknown type, attempts to validate that the argument is a
- *              non-null string. Uses the debug namespace of the external caller as the base of
- *              the "source" string used by the thrown SfdxFalconError.
+ * @description Given an argument of `unknown` type, attempts to validate that the argument is a
+ *              non-null `string`. Uses the debug namespace of the external caller as the base of
+ *              the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullInvalidString(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullInvalidString(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullInvalidString(arg)) {
-    throw new SfdxFalconError( errMsgNullInvalidString(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNullInvalidString(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1291,9 +1326,11 @@ export function throwOnNullInvalidString(arg:unknown, dbgNsExt:string, argName?:
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNullUndefined
- * @param       {unknown} arg Required. The argument whose type will be validated.
+ * @param       {unknown} arg       Required. The argument whose type will be validated.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
  * @description Given an argument of `unknown` type, attempts to validate that the argument is a
  *              not `null` nor `undefined`. Uses the debug namespace of the external caller as the
@@ -1301,10 +1338,10 @@ export function throwOnNullInvalidString(arg:unknown, dbgNsExt:string, argName?:
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNullUndefined(arg:unknown, dbgNsExt:string, argName?:string):void {
+export function throwOnNullUndefined(arg:unknown, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNullUndefined(arg)) {
-    throw new SfdxFalconError( errMsgNullUndefined(arg, argName)
-                             , `TypeError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg    : errMsgNullUndefined(arg, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName   : `TypeError`)
                              , `${dbgNsExt}`);
   }
 }
@@ -1312,45 +1349,22 @@ export function throwOnNullUndefined(arg:unknown, dbgNsExt:string, argName?:stri
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    throwOnNonReadablePath
- * @param       {string}  path  Required. Path that will be checked for readability.
+ * @param       {string}  path      Required. Path that will be checked for readability.
  * @param       {string}  dbgNsExt  Required. The debug namespace of the external caller.
- * @param       {string}  [argName] Optional. The variable name of the argument being validated.
+ * @param       {string}  argName   Required. The variable name of the argument being validated.
+ * @param       {string}  [errMsg]  Optional. Overrides the standard error message.
+ * @param       {string}  [errName] Optional. Overrides the standard error name.
  * @returns     {void}
- * @description Given a string containing a filesystem path, attempts to validate that the path is
+ * @description Given a `string` containing a filesystem path, attempts to validate that the path is
  *              readable by the running user. Uses the debug namespace of the external caller as the
- *              base of the "source" string used by the thrown SfdxFalconError.
+ *              base of the "source" string used by the thrown `SfdxFalconError`.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function throwOnNonReadablePath(path:string, dbgNsExt:string, argName?:string):void {
+export function throwOnNonReadablePath(path:string, dbgNsExt:string, argName:string, errMsg?:string, errName?:string):void {
   if (isNotReadablePath(path))  {
-    throw new SfdxFalconError( errMsgNonReadablePath(path, argName)
-                             , `PathError`
+    throw new SfdxFalconError( (isNotEmptyNullInvalidString(errMsg)   ? errMsg   : errMsgNonReadablePath(path, argName))
+                             , (isNotEmptyNullInvalidString(errName)  ? errName  : `PathError`)
                              , `${dbgNsExt}`);
   }
-}
-
-// ────────────────────────────────────────────────────────────────────────────────────────────────┐
-/**
- * @function    validateTheValidator
- * @returns     {void}
- * @description Ensures that the three expected arguments (unknown[], string, and string[]) were
- *              provided to a "validator" function. Who watches the watchers? The same one who
- *              validates the validators! :-)
- * @public
- */
-// ────────────────────────────────────────────────────────────────────────────────────────────────┘
-export function validateTheValidator():void {
-
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}validateTheValidator:arguments:`, arguments);
-
-  // Validate "args". Throw on null or invalid Array.
-  throwOnNullInvalidArray(arguments[0], dbgNs, 'args');
-  
-  // Validate "dbgNsExt". Throw on null, invalid, or empty String.
-  throwOnEmptyNullInvalidString(arguments[1], dbgNs, 'dbgNsExt');
-
-  // Validate "argNames". Throw on null or invalid Array.
-  throwOnNullInvalidArray(arguments[2], dbgNs, 'argNames');
 }

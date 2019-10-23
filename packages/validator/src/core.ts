@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/validator/src/core.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/validator/src/core.ts
  * @summary       Core (base) validation library.
  * @description   Exports basic validation functions that typically take `string` and return `boolean`.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Imports
@@ -16,8 +17,8 @@ import  {SfdxFalconError} from  '@sfdx-falcon/error'; // Class. Specialized Erro
 import  {isGitUriValid}   from  './git';              // Function. Determines if the URI provided is a syntactically valid Git Remote URI. The accepted protocols are ssh:, git:, http:, and https:.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'VALIDATOR:core:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:validator:core';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 // File Globals
 const standardAlias = /^[a-zA-Z0-9_-]+$/;
@@ -26,7 +27,7 @@ const standardName  = /^[\w\-\_\'\s]+$/;
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @function    gitRemoteUri
+ * @function    validateGitRemoteUri
  * @param       {string}  gitRemoteUri  Required. A URI for a Git Remote
  * @param       {RegExp}  [acceptedProtocols] Optional. RegExp that matches only certain protocols.
  * @returns     {boolean} True if gitRemoteUri is a valid Git Remote URI.
@@ -37,8 +38,10 @@ const standardName  = /^[\w\-\_\'\s]+$/;
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function validateGitRemoteUri(gitRemoteUri:string, acceptedProtocols?:RegExp):boolean {
 
+  // Define function-local debug namespace and debug incoming arguments.
   // Debug, but no input validation. The isGitUriValid function takes care of that.
-  SfdxFalconDebug.obj(`${dbgNs}validateGitRemoteUri:arguments:`, arguments, `validateGitRemoteUri:arguments: `);
+  const dbgNsLocal = `${dbgNs}:validateGitRemoteUri`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Leverage helper function from git-helper.
   return isGitUriValid(gitRemoteUri, acceptedProtocols);
@@ -57,12 +60,15 @@ export function validateGitRemoteUri(gitRemoteUri:string, acceptedProtocols?:Reg
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function validateLocalPath(pathString:string):boolean {
 
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:validateLocalPath`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
   // Begin with Input Debug & Validation
-  SfdxFalconDebug.obj(`${dbgNs}validateLocalPath:arguments:`, arguments, `validateLocalPath:arguments: `);
   if (typeof pathString !== 'string') {
-    throw new SfdxFalconError( `Expected pathString to be type string but got '${typeof pathString}' instead. `
+    throw new SfdxFalconError ( `Expected pathString to be type string but got '${typeof pathString}' instead. `
                               , `TypeError`
-                              , `${dbgNs}validateLocalPath`);
+                              , `${dbgNsLocal}`);
   }
 
   // Can't begin with tilde
@@ -86,12 +92,15 @@ export function validateLocalPath(pathString:string):boolean {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function validateStandardAlias(alias:string, maxLength?:number):boolean {
 
-  // Begin with Input Debug & Validation
-  SfdxFalconDebug.obj(`${dbgNs}validateStandardAlias:arguments:`, arguments, `validateStandardAlias:arguments: `);
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:validateStandardAlias`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+  // Validate input.
   if (typeof alias !== 'string') {
-    throw new SfdxFalconError( `Expected alias to be type string but got '${typeof alias}' instead. `
+    throw new SfdxFalconError ( `Expected alias to be type string but got '${typeof alias}' instead. `
                               , `TypeError`
-                              , `${dbgNs}validateStandardAlias`);
+                              , `${dbgNsLocal}`);
   }
 
   // Find out if the string matches the "standard alias" pattern.
@@ -125,12 +134,15 @@ export function validateStandardAlias(alias:string, maxLength?:number):boolean {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function validateStandardName(name:string, maxLength?:number):boolean {
 
-  // Begin with Input Debug & Validation
-  SfdxFalconDebug.obj(`${dbgNs}validateStandardName:arguments:`, arguments, `arguments: `);
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:validateStandardName`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+  // Validate incoming arguments.
   if (typeof name !== 'string') {
-    throw new SfdxFalconError( `Expected name to be type string but got '${typeof name}' instead. `
+    throw new SfdxFalconError ( `Expected name to be type string but got '${typeof name}' instead. `
                               , `TypeError`
-                              , `${dbgNs}validateStandardName`);
+                              , `${dbgNsLocal}`);
   }
 
   // Find out if the string matches the "standard name" pattern.

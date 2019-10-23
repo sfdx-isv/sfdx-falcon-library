@@ -1,15 +1,21 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/validator/src/yeoman.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/validator/src/yeoman.ts
  * @summary       Yeoman generator validation library.
- * @description   Exports validation class that has static methods that can be used by the Yeoman
- *                generator to determine if data provided during a prompted question should be
- *                considered valid.  All functions here rely on validators/core for implementation
- *                of baseline validation. This module exposes the baseline validation in a manner
- *                compatible with Yeoman.
- * @license       MIT
+ * @description   Exports validation functions for checking values provided interactively by a user
+ *                where sharing a reason why the value is invalid is a critical part of the output.
+ *
+ *                To do this, all validation functions implemented here return `true` when valid
+ *                and a `string` when not, with the `string` indicating why the value supplied
+ *                by the user is invalid.
+ *
+ *                Inquirer-based prompts are going to be the most likely consumers of these
+ *                validation functions. All functions implemented here rely on other functions
+ *                inside `@sfdx-falcon/validator` for their baseline validation implementations.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import Internal Libraries
