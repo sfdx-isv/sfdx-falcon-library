@@ -1,21 +1,21 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/mdapi.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/mdapi.ts
  * @summary       Utility Module - MDAPI
  * @description   Utility functions related to the Salesforce Metadata API.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import SFDX-Falcon Classes & Functions
-import {SfdxFalconDebug}  from  '@sfdx-falcon/debug';     // Class. Specialized debug provider for SFDX-Falcon code.
-import {TypeValidator}    from  '@sfdx-falcon/validator'; // Library. Validation helper functions.
+import  {SfdxFalconDebug} from  '@sfdx-falcon/debug';     // Class. Specialized debug provider for SFDX-Falcon code.
+import  {TypeValidator}   from  '@sfdx-falcon/validator'; // Library. Validation helper functions.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'UTILITY:mdapi:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:util:mdapi';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -31,10 +31,8 @@ SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function createDeveloperName(nameToTransform:string):string {
 
-  // Set function-local debug namespace.
-  const dbgNsLocal = `${dbgNs}createDeveloperName`;
-
-  // Debug incoming arguments
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:createDeveloperName`;
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Make sure that the caller passed us a non-empty, non-null string.
@@ -51,33 +49,33 @@ export function createDeveloperName(nameToTransform:string):string {
 
   // Trim leading and trailing whitespace.
   const trimmedNameToTransform = nameToTransform.trim();
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:trimmedNameToTransform:`, trimmedNameToTransform);
+  SfdxFalconDebug.str(`${dbgNsLocal}:trimmedNameToTransform:`, trimmedNameToTransform);
 
   // Convert all non-word chars to underscores
   const nonWordCharsToUnderscore = trimmedNameToTransform.replace(/\W/g, '_');
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:nonWordCharsToUnderscore:`, nonWordCharsToUnderscore);
+  SfdxFalconDebug.str(`${dbgNsLocal}:nonWordCharsToUnderscore:`, nonWordCharsToUnderscore);
 
   // Convert all groups of underscore chars to a single underscore for each group.
   const multiToSingleUnderscores = nonWordCharsToUnderscore.replace(/[_]+/g, '_');
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:multiToSingleUnderscores:`, multiToSingleUnderscores);
+  SfdxFalconDebug.str(`${dbgNsLocal}:multiToSingleUnderscores:`, multiToSingleUnderscores);
   
   // Remove leading and trailing underscores.
   const noLeadingOrTrailingUnderscores = multiToSingleUnderscores.replace(/^_|_$/g, '');
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:noLeadingOrTrailingUnderscores:`, noLeadingOrTrailingUnderscores);
+  SfdxFalconDebug.str(`${dbgNsLocal}:noLeadingOrTrailingUnderscores:`, noLeadingOrTrailingUnderscores);
 
   // Make sure the first character is a-Z ONLY. Add an "x" if not.
   const firstCharAlphaOnly  = new RegExp(/^[^a-zA-Z]/g).test(noLeadingOrTrailingUnderscores.charAt(0))
                             ? 'x' + noLeadingOrTrailingUnderscores  // First char wasn't alpha.
                             : noLeadingOrTrailingUnderscores;       // First char was alpha.
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:firstCharAlphaOnly:`, firstCharAlphaOnly);
+  SfdxFalconDebug.str(`${dbgNsLocal}:firstCharAlphaOnly:`, firstCharAlphaOnly);
 
   // Final Developer Name must be 80 characters or less.
   const eightyCharsOnly = firstCharAlphaOnly.slice(0, 79);
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:eightyCharsOnly:`, eightyCharsOnly);
+  SfdxFalconDebug.str(`${dbgNsLocal}:eightyCharsOnly:`, eightyCharsOnly);
 
   // One last check to make sure the LAST character isn't an underscore.
   const developerName = eightyCharsOnly.replace(/_$/g, '');
-  SfdxFalconDebug.str(`${dbgNs}createDeveloperName:developerName:`, developerName);
+  SfdxFalconDebug.str(`${dbgNsLocal}:developerName:`, developerName);
 
   // Done!
   return developerName;

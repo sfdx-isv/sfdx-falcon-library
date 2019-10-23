@@ -1,12 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/async.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/async.ts
  * @summary       Helper library for running async logic.
  * @description   Exports functions that make running async logic easier.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import SFDX-Falcon Classes & Functions
@@ -14,7 +14,8 @@ import {SfdxFalconDebug}  from  '@sfdx-falcon/debug'; // Class. Specialized debu
 import {SfdxFalconError}  from  '@sfdx-falcon/error'; // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'UTILITY:async:';
+const dbgNs = '@sfdx-falcon:util:async';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -30,14 +31,15 @@ const dbgNs = 'UTILITY:async:';
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function waitASecond(waitSecs:number=1, convertToMs:boolean=true):Promise<void> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}waitASecond:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:waitASecond`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments
   if (isNaN(waitSecs)) {
     throw new SfdxFalconError( `Expected waitSecs to be a number, but got '${typeof waitSecs}' instead`
                              , `TypeError`
-                             , `${dbgNs}waitASecond`);
+                             , `${dbgNsLocal}`);
   }
 
   // Convert the "wait secs" to milliseconds, unless otherwise specified by the caller.

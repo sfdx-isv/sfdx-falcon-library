@@ -1,45 +1,42 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/git.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/git.ts
  * @summary       Git helper utility library
  * @description   Exports functions that interact with Git via the shell.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import * as path          from  'path';               // Node's path library.
-import {ShellString}      from  'shelljs';            // Contains information regarding the output of a shell.exec() command.
+import  * as path           from  'path';               // Node's path library.
+import  {ShellString}       from  'shelljs';            // Contains information regarding the output of a shell.exec() command.
+import  shell               = require('shelljs');       // Cross-platform shell access - use for setting up Git repo.
 
 // Import SFDX-Falcon Modules
-import {SfdxFalconDebug}  from  '@sfdx-falcon/debug'; // Class. Specialized debug provider for SFDX-Falcon code.
-import {SfdxFalconError}  from  '@sfdx-falcon/error'; // Class. Specialized Error object. Wraps SfdxError.
+import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug'; // Class. Specialized debug provider for SFDX-Falcon code.
+import  {SfdxFalconError}   from  '@sfdx-falcon/error'; // Class. Specialized Error object. Wraps SfdxError.
 
 // Import Internal Modules
-import {waitASecond}      from  './async';            // Function. Allows for a simple "wait" to execute.
+import  {waitASecond}       from  './async';            // Function. Allows for a simple "wait" to execute.
 
 // Import SFDX-Falcon Types
-import {ShellExecResult}  from  '@sfdx-falcon/types'; // Interface. Represents the result of a call to shell.execL().
-
-// Requires
-const shell = require('shelljs'); // Cross-platform shell access - use for setting up Git repo.
+import  {ShellExecResult}   from  '@sfdx-falcon/types'; // Interface. Represents the result of a call to shell.execL().
 
 // File Globals
 // These RegEx Patterns can be inspected/tested at https://regex101.com/r/VuVsfJ/3
 const repoNameRegEx = /\/(\w|-)+\.git\/*$/;
 const gitUriRegEx   = /(^(git|ssh|http(s)?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:\/\-~]+)(\.git)(\/)?$/;
 
-// Set the File Local Debug Namespace
-const dbgNs     = 'UTILITY:git:';
-
-//─────────────────────────────────────────────────────────────────────────────┐
 // Set shelljs config to throw exceptions on fatal errors.  We have to do
 // this so that git commands that return fatal errors can have their output
 // suppresed while the generator is running.
-//─────────────────────────────────────────────────────────────────────────────┘
 shell.config.fatal = true;
+
+// Set the File Local Debug Namespace
+const dbgNs = '@sfdx-falcon:util:git';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -57,35 +54,36 @@ shell.config.fatal = true;
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function gitClone(gitRemoteUri:string, targetDirectory:string='.', repoDirectory:string=''):Promise<ShellExecResult> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}gitClone:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:gitClone`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof gitRemoteUri !== 'string') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}' instead.`
                              , 'TypeError'
-                             , `${dbgNs}gitClone`);
+                             , `${dbgNsLocal}`);
   }
   if (typeof targetDirectory !== 'string') {
     throw new SfdxFalconError( `Expected string for targetDirectory but got '${typeof targetDirectory}' instead.`
                              , 'TypeError'
-                             , `${dbgNs}gitClone`);
+                             , `${dbgNsLocal}`);
   }
   if (targetDirectory.trim() === '') {
     throw new SfdxFalconError( `Must provide a non-empty string for targetDirectory`
                              , 'InvalidParameter'
-                             , `${dbgNs}gitClone`);
+                             , `${dbgNsLocal}`);
   }
 
   // Make sure we start with a resolved path.
-  SfdxFalconDebug.str(`${dbgNs}gitClone:targetDirectory:`,      targetDirectory,                 `targetDirectory (unresolved target directory): `);
-  SfdxFalconDebug.str(`${dbgNs}gitClone:normalizedTargetDir:`,  path.normalize(targetDirectory), `targetDirectory (normalized target directory): `);
+  SfdxFalconDebug.str(`${dbgNsLocal}:targetDirectory:`,      targetDirectory,                 `targetDirectory (unresolved target directory): `);
+  SfdxFalconDebug.str(`${dbgNsLocal}:normalizedTargetDir:`,  path.normalize(targetDirectory), `targetDirectory (normalized target directory): `);
 
   // Normalize and Resolve the Target Directory.
   targetDirectory = path.resolve(path.normalize(targetDirectory));
 
-  SfdxFalconDebug.str(`${dbgNs}gitClone:targetDirectory:`, targetDirectory, `targetDirectory (resolved target directory): `);
-  SfdxFalconDebug.obj(`${dbgNs}gitClone:parsedTargetDir:`, path.parse(targetDirectory), `PARSED targetDirectory: `);
+  SfdxFalconDebug.str(`${dbgNsLocal}:targetDirectory:`, targetDirectory, `targetDirectory (resolved target directory): `);
+  SfdxFalconDebug.obj(`${dbgNsLocal}:parsedTargetDir:`, path.parse(targetDirectory), `PARSED targetDirectory: `);
 
   return new Promise((resolve, reject) => {
 
@@ -95,19 +93,19 @@ export async function gitClone(gitRemoteUri:string, targetDirectory:string='.', 
       shell.pwd();
     }
     catch (cdError) {
-      SfdxFalconDebug.obj(`${dbgNs}gitClone:cdError:`, cdError, `cdError: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:cdError:`, cdError);
 
       // Target directory not found. Create it now.
       try {
         shell.mkdir('-p', targetDirectory);
       }
       catch (mkdirError) {
-        SfdxFalconDebug.obj(`${dbgNs}gitClone:mkdirError:`, mkdirError, `mkdirError: `);
+        SfdxFalconDebug.obj(`${dbgNsLocal}:mkdirError:`, mkdirError);
 
         // The target directory could not be created
         throw new SfdxFalconError( `Could not create directory '${targetDirectory}'`
                                 , 'InvalidTargetDirectory'
-                                , `${dbgNs}gitClone`
+                                , `${dbgNsLocal}`
                                 , mkdirError);
       }
 
@@ -116,12 +114,12 @@ export async function gitClone(gitRemoteUri:string, targetDirectory:string='.', 
         shell.cd(targetDirectory);
       }
       catch (cdError2) {
-        SfdxFalconDebug.obj(`${dbgNs}gitClone:cdError2:`, cdError2, `cdError2: `);
+        SfdxFalconDebug.obj(`${dbgNsLocal}:cdError2:`, cdError2);
 
         // Target directory was created, but can't be navigated to.
         throw new SfdxFalconError( `Target directory '${targetDirectory}' not found or is not accessible`
                                 , 'NoTargetDirectory'
-                                , `${dbgNs}gitClone`
+                                , `${dbgNsLocal}`
                                 , cdError2);
       }
     }
@@ -129,7 +127,7 @@ export async function gitClone(gitRemoteUri:string, targetDirectory:string='.', 
     // If we get here, we can be certain that our shell is inside
     // the target directory.  Now all we need to do is execute
     // `git clone` against the Git Remote URI to pull down the repo.
-    SfdxFalconDebug.str(`${dbgNs}gitClone:`, `shell.exec('git clone ${gitRemoteUri} ${repoDirectory}', {silent: true})`, `Shell Command: `);
+    SfdxFalconDebug.str(`${dbgNsLocal}:`, `shell.exec('git clone ${gitRemoteUri} ${repoDirectory}', {silent: true})`, `Shell Command: `);
 
     // Make an async shell.exec call.
     shell.exec(`git clone ${gitRemoteUri} ${repoDirectory}`, {silent: true}, (code, stdout, stderr) => {
@@ -160,7 +158,7 @@ export async function gitClone(gitRemoteUri:string, targetDirectory:string='.', 
       }
 
       // DEBUG
-      SfdxFalconDebug.obj(`${dbgNs}gitClone:shellExecResult:`, shellExecResult, `shellExecResult: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:shellExecResult:`, shellExecResult);
 
       // Resolve or reject depending on what we got back.
       if (shellExecResult.resolve) {
@@ -186,14 +184,15 @@ export async function gitClone(gitRemoteUri:string, targetDirectory:string='.', 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function gitInit(targetDirectory:string):ShellString {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}gitInit:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:gitInit`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments
   if (typeof targetDirectory !== 'string' || targetDirectory === '') {
     throw new SfdxFalconError( `Expected non-empty string for targetDirectory but got '${typeof targetDirectory}' instead`
                              , 'TypeError'
-                             , `${dbgNs}gitInit`);
+                             , `${dbgNsLocal}`);
   }
 
   // Change the shell's directory to the target directory.
@@ -214,14 +213,15 @@ export function gitInit(targetDirectory:string):ShellString {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function gitAdd(targetDirectory:string):ShellString {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}gitAdd:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:gitAdd`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof targetDirectory !== 'string' || targetDirectory === '') {
     throw new SfdxFalconError( `Expected non-empty string for targetDirectory but got '${typeof targetDirectory}'`
                              , 'TypeError'
-                             , `${dbgNs}gitAdd`);
+                             , `${dbgNsLocal}`);
   }
 
   // Set shelljs config to throw exceptions on fatal errors.
@@ -247,19 +247,20 @@ export function gitAdd(targetDirectory:string):ShellString {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function gitCommit(targetDirectory:string, commitMessage:string):ShellString {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}gitCommit:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:gitCommit`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof targetDirectory !== 'string' || targetDirectory === '') {
     throw new SfdxFalconError( `Expected non-empty string for targetDirectory but got '${typeof targetDirectory}'`
                              , 'TypeError'
-                             , `${dbgNs}gitCommit`);
+                             , `${dbgNsLocal}`);
   }
   if (typeof commitMessage !== 'string' || commitMessage === '') {
     throw new SfdxFalconError( `Expected non-empty string for commitMessage but got '${typeof commitMessage}'`
                              , 'TypeError'
-                             , `${dbgNs}gitCommit`);
+                             , `${dbgNsLocal}`);
   }
 
   // Set shelljs config to throw exceptions on fatal errors.
@@ -285,19 +286,20 @@ export function gitCommit(targetDirectory:string, commitMessage:string):ShellStr
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function gitRemoteAddOrigin(targetDirectory:string, gitRemoteUri:string):ShellString {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}gitRemoteAddOrigin:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:gitRemoteAddOrigin`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof targetDirectory !== 'string' || targetDirectory === '') {
     throw new SfdxFalconError( `Expected non-empty string for targetDirectory but got '${typeof targetDirectory}'`
                              , 'TypeError'
-                             , `${dbgNs}gitRemoteAddOrigin`);
+                             , `${dbgNsLocal}`);
   }
   if (typeof gitRemoteUri !== 'string' || gitRemoteUri === '') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}'`
                              , 'TypeError'
-                             , `${dbgNs}gitRemoteAddOrigin`);
+                             , `${dbgNsLocal}`);
   }
 
   // Set shelljs config to throw exceptions on fatal errors.
@@ -320,6 +322,11 @@ export function gitRemoteAddOrigin(targetDirectory:string, gitRemoteUri:string):
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isGitInstalled():boolean {
+
+  // Define local debug namespace.
+  const dbgNsLocal = `${dbgNs}:isGitInstalled`;
+
+  // Use the shell's `which` command to see if Git is installed.
   try {
     if (shell.which('git')) {
       return true;
@@ -328,7 +335,7 @@ export function isGitInstalled():boolean {
       return false;
     }
   } catch (err) {
-    SfdxFalconDebug.obj(`${dbgNs}gitRemoteAddOrigin:err:`, err, `err: `);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:err:`, err);
     return false;
   }
 }
@@ -346,14 +353,15 @@ export function isGitInstalled():boolean {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function getRepoNameFromUri(gitRemoteUri:string):string {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}getRepoNameFromUri:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:getRepoNameFromUri`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof gitRemoteUri !== 'string') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}'`
                              , 'TypeError'
-                             , `${dbgNs}getRepoNameFromUri`);
+                             , `${dbgNsLocal}`);
   }
 
   // Grab the last part of the URI, eg. "/my-git-repo.git/"
@@ -369,11 +377,11 @@ export function getRepoNameFromUri(gitRemoteUri:string):string {
   if (repoName === '') {
     throw new SfdxFalconError( `Repository name could not be parsed from the Git Remote URI.`
                              , 'UnreadableRepoName'
-                             , `${dbgNs}getRepoNameFromUri`);
+                             , `${dbgNsLocal}`);
   }
 
   // Debug and return
-  SfdxFalconDebug.str(`${dbgNs}getRepoNameFromUri:repoName:`, repoName, `repoName: `);
+  SfdxFalconDebug.str(`${dbgNsLocal}:repoName:`, repoName);
   return repoName;
 }
 
@@ -390,14 +398,15 @@ export function getRepoNameFromUri(gitRemoteUri:string):string {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isGitRemoteEmpty(gitRemoteUri:string):boolean {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}isGitRemoteEmpty:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:isGitRemoteEmpty`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof gitRemoteUri !== 'string') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}'`
                              , 'TypeError'
-                             , `${dbgNs}isGitRemoteEmpty`);
+                             , `${dbgNsLocal}`);
   }
 
   // Execute `git ls-remote` with the --exit-code flag set. This will return
@@ -405,7 +414,7 @@ export function isGitRemoteEmpty(gitRemoteUri:string):boolean {
   try {
     shell.exec(`git ls-remote --exit-code -h ${gitRemoteUri}`, {silent: true});
   } catch (err) {
-    SfdxFalconDebug.obj(`${dbgNs}gitRemoteAddOrigin:err:`, err, `err: `);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:err:`, err);
     return false;
   }
 
@@ -430,19 +439,20 @@ export function isGitRemoteEmpty(gitRemoteUri:string):boolean {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function checkGitRemoteStatus(gitRemoteUri:string, waitSeconds:number=0):Promise<ShellExecResult> {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}checkGitRemoteStatus:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:checkGitRemoteStatus`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof gitRemoteUri !== 'string') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}'`
                              , 'TypeError'
-                             , `${dbgNs}checkGitRemoteStatus`);
+                             , `${dbgNsLocal}`);
   }
   if (isNaN(waitSeconds)) {
     throw new SfdxFalconError( `Expected number for waitSeconds but got '${typeof waitSeconds}'`
                              , 'TypeError'
-                             , `${dbgNs}checkGitRemoteStatus`);
+                             , `${dbgNsLocal}`);
   }
 
   // If waitSeconds is > 0 then use waitASecond() to introduce a delay
@@ -484,7 +494,7 @@ export async function checkGitRemoteStatus(gitRemoteUri:string, waitSeconds:numb
       }
 
       // Debug
-      SfdxFalconDebug.obj(`${dbgNs}checkGitRemoteStatus:shellExecResult:`, shellExecResult, `shellExecResult: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:shellExecResult:`, shellExecResult);
 
       // Resolve or reject depending on what we got back.
       if (shellExecResult.resolve) {
@@ -509,20 +519,21 @@ export async function checkGitRemoteStatus(gitRemoteUri:string, waitSeconds:numb
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isGitRemoteReadable(gitRemoteUri:string):boolean {
 
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}isGitRemoteReadable:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:isGitRemoteReadable`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof gitRemoteUri !== 'string') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}'`
                              , 'TypeError'
-                             , `${dbgNs}isGitRemoteReadable`);
+                             , `${dbgNsLocal}`);
   }
 
   try {
     shell.exec(`git ls-remote -h ${gitRemoteUri}`, {silent: true});
   } catch (err) {
-    SfdxFalconDebug.obj(`${dbgNs}isGitRemoteReadable:err:`, err, `err: `);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:err:`, err);
     return false;
   }
 
@@ -544,14 +555,16 @@ export function isGitRemoteReadable(gitRemoteUri:string):boolean {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function isGitUriValid(gitRemoteUri:string, acceptedProtocols?:RegExp):boolean {
-  // Debug incoming arguments.
-  SfdxFalconDebug.obj(`${dbgNs}isGitRemoteReadable:arguments:`, arguments, `arguments: `);
+
+  // Define local debug namespace and debug incoming arguments
+  const dbgNsLocal = `${dbgNs}:isGitUriValid`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments.
   if (typeof gitRemoteUri !== 'string') {
     throw new SfdxFalconError( `Expected string for gitRemoteUri but got '${typeof gitRemoteUri}'`
                              , 'TypeError'
-                             , `${dbgNs}isGitUriValid`);
+                             , `${dbgNsLocal}`);
   }
 
   if (gitUriRegEx.test(gitRemoteUri)) {

@@ -1,12 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/sfdx.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/sfdx.ts
  * @summary       Utility Module - SFDX
  * @description   Utility functions related to Salesforce DX and the Salesforce CLI
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
@@ -43,8 +43,8 @@ import {JsonMap}                  from  '@sfdx-falcon/types';     // Interface. 
 import {ResolvedConnection}       from  '@sfdx-falcon/types';     // Interface. Represents a resolved (active) JSForce connection to a Salesforce Org.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'UTILITY:sfdx:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:falcon:sfdx';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -80,15 +80,19 @@ export interface SfdxForceDataSoqlQueryOptions {
  * @param       {string}  aliasOrUsername Required. The alias or username associated with a current
  *              Salesforce CLI connected org.
  * @param       {string}  deployDirectory Required. Path to directory containing a package manifest
- *              (package.xml) that specifies the components to deploy.
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI's force:mdapi:deploy command to deploy the metadata
- *              components specified by the Manifest File (package.xml) inside the Deploy Directory.
+ *              (`package.xml`) that specifies the components to deploy.
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI's `force:mdapi:deploy` command to deploy the metadata
+ *              components specified by the Manifest File (`package.xml`) inside the Deploy Directory.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function deployMetadata(aliasOrUsername:string, deployDirectory:string):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:deployMetadata`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Set the SFDX Command String to be used by this function.
   const sfdxCommandString =
@@ -113,7 +117,7 @@ export async function deployMetadata(aliasOrUsername:string, deployDirectory:str
     error:              null
   } as SfdxUtilityResultDetail;
   utilityResult.detail = utilityResultDetail;
-  utilityResult.debugResult('Utility Result Initialized', `${dbgNs}deployMetadata:`);
+  utilityResult.debugResult('Utility Result Initialized', `${dbgNsLocal}:`);
 
   // Define the success, failure, and "mixed" messages for the SFDX command execution.
   const messages = {
@@ -130,22 +134,23 @@ export async function deployMetadata(aliasOrUsername:string, deployDirectory:str
 /**
  * @function    detectSalesforceCliError
  * @param       {unknown} thingToCheck  Required. Either a string buffer containing an
- *              stderr CLI response or a safeParse() JSON object that (hopefully) came from a
+ *              stderr CLI response or a `safeParse()` JSON object that (hopefully) came from a
  *              Salesforce CLI command.
- * @returns     {boolean} Returns TRUE if the stdOutBuffer contains something that might be
- *              considered an error.  FALSE if otherwise.
+ * @returns     {boolean} Returns `true` if the `stdOutBuffer` contains something that might be
+ *              considered an error.  `false` if otherwise.
  * @description Given a string buffer containing an stdout response, determines if that response
  *              should be considered a Salesforce CLI error. Please note that there could still be
- *              something wrong with the result even if this function returns FALSE.  It just means
- *              that stdOutBuffer did not contain something that could be interpreted as a
+ *              something wrong with the result even if this function returns `false`.  It just means
+ *              that `stdOutBuffer` did not contain something that could be interpreted as a
  *              Salesforce CLI Error.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function detectSalesforceCliError(thingToCheck:unknown):boolean {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}detectSalesforceCliError:arguments:`, arguments);
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:detectSalesforceCliError`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Parse thingToCheck if it's a string, assign it directly if not.
   let possibleCliError:object;
@@ -157,7 +162,7 @@ export function detectSalesforceCliError(thingToCheck:unknown):boolean {
   }
 
   // Debug
-  SfdxFalconDebug.obj(`${dbgNs}detectSalesforceCliError:possibleCliError:`, possibleCliError);
+  SfdxFalconDebug.obj(`${dbgNsLocal}:possibleCliError:`, possibleCliError);
 
   // If the Possible CLI Error "status" property is present AND has a non-zero value, then IT IS a Salesforce CLI Error.
   if (possibleCliError['status'] && possibleCliError['status'] !== 0) {
@@ -171,19 +176,23 @@ export function detectSalesforceCliError(thingToCheck:unknown):boolean {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    executeRedirectedSfdxCommand
- * @param       {string}  sfdxCommandString Required. String containing an "sfdx force" command.
+ * @param       {string}  sfdxCommandString Required. String containing an `sfdx force` command.
  * @param       {string}  outputRedirectString  Required. String specifying output redirection.
  * @param       {SfdxFalconResult}  utilityResult Required. Falcon Result used to track actions here.
  * @param       {object}  [messages]  Optional. Success, failure, and "mixed" messages.
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI to execute the "sfdx force" command provided by the caller.
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI to execute the `sfdx force` command provided by the caller.
  *              Output from the command is redirected per the instructions in the Output Redirect
  *              String.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function executeRedirectedSfdxCommand(sfdxCommandString:string, outputRedirectString:string, utilityResult:SfdxFalconResult, messages:object={}):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:executeRedirectedSfdxCommand`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Extract the Detail object from the Utility Result.
   const utilityResultDetail = utilityResult.detail as SfdxUtilityResultDetail;
@@ -242,17 +251,17 @@ export async function executeRedirectedSfdxCommand(sfdxCommandString:string, out
         if (detectSalesforceCliError(stdOutBuffer)) {
 
           // We have a Salesforce CLI Error. Prepare ERROR detail using SfdxCliError.
-          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutBuffer, stdErrBuffer, `${failureMessage}`, `${dbgNs}executeRedirectedSfdxCommand`);
+          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutBuffer, stdErrBuffer, `${failureMessage}`, `${dbgNsLocal}`);
         }
         else {
 
           // We have a shell Error. Prepare ERROR detail using ShellError.
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeRedirectedSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNsLocal}`);
         }
 
         // Close the UTILITY result out as an ERROR.
         utilityResult.error(utilityResultDetail.error);
-        utilityResult.debugResult(`${failureMessage}`, `${dbgNs}executeRedirectedSfdxCommand:`);
+        utilityResult.debugResult(`${failureMessage}`, `${dbgNsLocal}:`);
 
         // Reject the result.
         reject(utilityResult);
@@ -268,16 +277,16 @@ export async function executeRedirectedSfdxCommand(sfdxCommandString:string, out
 
         // Unparseable responses from the CLI are SHELL ERRORS and should be rejected.
         if (parsedCliResponse['unparsed']) {
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeRedirectedSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNsLocal}`);
           utilityResult.error(utilityResultDetail.error);
           reject(utilityResult);
         }
 
         // Parseable responses might be CLI ERRORS and should be marked ERROR and rejected if so.
         if (detectSalesforceCliError(parsedCliResponse)) {
-          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutJsonResponse, stdErrBuffer, `${failureMessage}`, `${dbgNs}executeRedirectedSfdxCommand:`);
+          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutJsonResponse, stdErrBuffer, `${failureMessage}`, `${dbgNsLocal}`);
           utilityResult.error(utilityResultDetail.error);
-          utilityResult.debugResult(`${mixedMessage}`, `${dbgNs}executeRedirectedSfdxCommand:`);
+          utilityResult.debugResult(`${mixedMessage}`, `${dbgNsLocal}:`);
           reject(utilityResult);
         }
 
@@ -286,7 +295,7 @@ export async function executeRedirectedSfdxCommand(sfdxCommandString:string, out
 
         // Regiser a SUCCESS result
         utilityResult.success();
-        utilityResult.debugResult(`${successMessage}`, `${dbgNs}executeRedirectedSfdxCommand:`);
+        utilityResult.debugResult(`${successMessage}`, `${dbgNsLocal}:`);
 
         // Resolve with the successful SFDX-Falcon Result.
         resolve(utilityResult);
@@ -298,18 +307,22 @@ export async function executeRedirectedSfdxCommand(sfdxCommandString:string, out
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    executeSfdxCommand
- * @param       {string}  sfdxCommandString Required. String containing an "sfdx force" command.
+ * @param       {string}  sfdxCommandString Required. String containing an `sfdx force` command.
  * @param       {SfdxFalconResult}  utilityResult Required. Falcon Result used to track actions here.
  * @param       {object}  [messages]  Optional. Success, failure, and "mixed" messages.
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI to execute the "sfdx force" command provided by the caller.
- *              All data returned from the CLI command execution is wrapped up in an SfdxFalconResult
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI to execute the `sfdx force` command provided by the caller.
+ *              All data returned from the CLI command execution is wrapped up in an `SfdxFalconResult`
  *              object, with stdout and stderr contained within the RESULT's details object.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function executeSfdxCommand(sfdxCommandString:string, utilityResult:SfdxFalconResult, messages:object={}):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:executeSfdxCommand`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Extract the Detail object from the Utility Result.
   const utilityResultDetail = utilityResult.detail as SfdxUtilityResultDetail;
@@ -363,17 +376,17 @@ export async function executeSfdxCommand(sfdxCommandString:string, utilityResult
         if (detectSalesforceCliError(stdOutBuffer)) {
 
           // We have a Salesforce CLI Error. Prepare ERROR detail using SfdxCliError.
-          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutBuffer, stdErrBuffer, `${failureMessage}`, `${dbgNs}executeSfdxCommand`);
+          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutBuffer, stdErrBuffer, `${failureMessage}`, `${dbgNsLocal}`);
         }
         else {
 
           // We have a shell Error. Prepare ERROR detail using ShellError.
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNsLocal}`);
         }
 
         // Close the UTILITY result out as an ERROR.
         utilityResult.error(utilityResultDetail.error);
-        utilityResult.debugResult(`${failureMessage}`, `${dbgNs}executeSfdxCommand:`);
+        utilityResult.debugResult(`${failureMessage}`, `${dbgNsLocal}:`);
 
         // Reject the result.
         reject(utilityResult);
@@ -389,16 +402,16 @@ export async function executeSfdxCommand(sfdxCommandString:string, utilityResult
 
         // Unparseable responses from the CLI are SHELL ERRORS and should be rejected.
         if (parsedCliResponse['unparsed']) {
-          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNs}executeSfdxCommand`);
+          utilityResultDetail.error = new ShellError(sfdxCommandString, code, signal, stdOutBuffer, stdErrBuffer, null, `${dbgNsLocal}`);
           utilityResult.error(utilityResultDetail.error);
           reject(utilityResult);
         }
 
         // Parseable responses might be CLI ERRORS and should be marked ERROR and rejected if so.
         if (detectSalesforceCliError(parsedCliResponse)) {
-          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutJsonResponse, stdErrBuffer, `${failureMessage}`, `${dbgNs}executeSfdxCommand:`);
+          utilityResultDetail.error = new SfdxCliError(sfdxCommandString, stdOutJsonResponse, stdErrBuffer, `${failureMessage}`, `${dbgNsLocal}`);
           utilityResult.error(utilityResultDetail.error);
-          utilityResult.debugResult(`${mixedMessage}`, `${dbgNs}executeSfdxCommand:`);
+          utilityResult.debugResult(`${mixedMessage}`, `${dbgNsLocal}:`);
           reject(utilityResult);
         }
 
@@ -407,7 +420,7 @@ export async function executeSfdxCommand(sfdxCommandString:string, utilityResult
 
         // Regiser a SUCCESS result
         utilityResult.success();
-        utilityResult.debugResult(`${successMessage}`, `${dbgNs}executeSfdxCommand:`);
+        utilityResult.debugResult(`${successMessage}`, `${dbgNsLocal}:`);
 
         // Resolve with the successful SFDX-Falcon Result.
         resolve(utilityResult);
@@ -423,17 +436,21 @@ export async function executeSfdxCommand(sfdxCommandString:string, utilityResult
  *              Salesforce CLI connected org.
  * @param       {string}  soqlQuery  Required.
  * @param       {SfdxForceDataSoqlQueryOptions} [opts]  Optional. Allows the caller to set various
- *              flags that are available to the force:data:soql:query command.
+ *              flags that are available to the `force:data:soql:query` command.
  * @param       {string}  [targetFile] Optional. The complete path to a file where the results of
  *              the query should be sent to INSTEAD of to stdout.
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI's force:mdapi:retrieve command to retrieve the metadata
- *              components specified by the supplied Manifest File (ie. package.xml).
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI's `force:mdapi:retrieve` command to retrieve the metadata
+ *              components specified by the supplied Manifest File (ie. `package.xml`).
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function executeSoqlQuery(aliasOrUsername:string, soqlQuery:string, opts:SfdxForceDataSoqlQueryOptions={}, targetFile:string=''):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:executeSoqlQuery`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // TODO: Sanitize the targetFile variable to ensure the caller can't run arbitrary code.
 
@@ -463,7 +480,7 @@ export async function executeSoqlQuery(aliasOrUsername:string, soqlQuery:string,
     error:              null
   } as SfdxUtilityResultDetail;
   utilityResult.detail = utilityResultDetail;
-  utilityResult.debugResult('Utility Result Initialized', `${dbgNs}executeSoqlQuery:`);
+  utilityResult.debugResult('Utility Result Initialized', `${dbgNsLocal}:`);
 
   // Define the success, failure, and "mixed" messages for the SFDX command execution.
   const messages = {
@@ -497,14 +514,18 @@ export async function executeSoqlQuery(aliasOrUsername:string, soqlQuery:string,
  *              packages that should be retrieved.
  * @param       {string}  retrieveTargetDir Required. The root of the directory structure where
  *              the retrieved .zip or metadata files are put.
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI's force:mdapi:retrieve command to retrieve one or more
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI's `force:mdapi:retrieve` command to retrieve one or more
  *              metadata packages from the target org.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function fetchMetadataPackages(aliasOrUsername:string, packageNames:string[], retrieveTargetDir:string):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:fetchMetadataPackages`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Set the SFDX Command String to be used by this function.
   const sfdxCommandString =
@@ -530,7 +551,7 @@ export async function fetchMetadataPackages(aliasOrUsername:string, packageNames
     error:              null
   } as SfdxUtilityResultDetail;
   utilityResult.detail = utilityResultDetail;
-  utilityResult.debugResult('Utility Result Initialized', `${dbgNs}fetchMetadataPackages:`);
+  utilityResult.debugResult('Utility Result Initialized', `${dbgNsLocal}:`);
 
   // Define the success, failure, and "mixed" messages for the SFDX command execution.
   const messages = {
@@ -547,16 +568,17 @@ export async function fetchMetadataPackages(aliasOrUsername:string, packageNames
 /**
  * @function    getConnection
  * @param       {string}  orgAlias  Required. The alias of the org to create a connection to.
- * @param       {string}  [apiVersion]  Optional. Expects format "[1-9][0-9].0", i.e. 42.0.
- * @returns     {Promise<Connection>} Resolves with an authenticated JSForce Connection object.
- * @description Given an SFDX alias, resolves with an authenticated JSForce Connection object
+ * @param       {string}  [apiVersion]  Optional. Expects format `[1-9][0-9].0`, i.e. `42.0`.
+ * @returns     {Promise<Connection>} Resolves with an authenticated JSForce `Connection` object.
+ * @description Given an SFDX alias, resolves with an authenticated JSForce `Connection` object
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function getConnection(aliasOrUsername:string, apiVersion?:string):Promise<Connection> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}getConnection:arguments:`, arguments, `arguments: `);
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:getConnection`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Fetch the username associated with this alias.
   let username:string = await getUsernameFromAlias(aliasOrUsername);
@@ -567,7 +589,7 @@ export async function getConnection(aliasOrUsername:string, apiVersion?:string):
   }
 
   // DEBUG
-  SfdxFalconDebug.str(`${dbgNs}getConnection:username:`, username, `username: `);
+  SfdxFalconDebug.str(`${dbgNsLocal}:username:`, username);
 
   // Create an AuthInfo object for the username we have.
   const authInfo = await AuthInfo.create({username: username});
@@ -577,7 +599,7 @@ export async function getConnection(aliasOrUsername:string, apiVersion?:string):
 
   // Set the API version (if specified by the caller).
   if (typeof apiVersion !== 'undefined') {
-    SfdxFalconDebug.str(`${dbgNs}getConnection:apiVersion:`, apiVersion, `apiVersion: `);
+    SfdxFalconDebug.str(`${dbgNsLocal}:apiVersion:`, apiVersion);
     connection.setApiVersion(apiVersion);
   }
 
@@ -588,47 +610,44 @@ export async function getConnection(aliasOrUsername:string, apiVersion?:string):
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    getRecordCountFromResult
- * @param       {SfdxFalconResult}  result  Required. An SfdxFalconResult object that should have
+ * @param       {SfdxFalconResult}  result  Required. An `SfdxFalconResult` object that should have
  *              a valid block of Salesforce Response JSON in its detail member.
- * @returns     {number}  Returns the value of "totalSize" from the parsed JSON response.
- * @description Given an SfdxFalconResult, opens up the result's "detail" member and looks for a
- *              "stdOutParsed" key, then inspects the JSON result, ultimately returning the value
- *              of the "totalSize" key. If this process yields anything that's NaN, this function
+ * @returns     {number}  Returns the value of `totalSize` from the parsed JSON response.
+ * @description Given an `SfdxFalconResult`, opens up the result's `detail` member and looks for a
+ *              `stdOutParsed` key, then inspects the JSON result, ultimately returning the value
+ *              of the `totalSize` key. If this process yields anything that's `NaN`, this function
  *              will throw an Error.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function getRecordCountFromResult(result:SfdxFalconResult):number {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}getRecordCountFromResult:arguments:`, arguments);
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:getRecordCountFromResult`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Make sure that the caller passed us an SfdxFalconResult.
-  if ((result instanceof SfdxFalconResult) !== true) {
-    throw new SfdxFalconError( `Expected result to be an SfdxFalconResult object but got '${typeof result !== 'undefined' ? result.constructor.name : 'undefined'}' instead.`
-                             , `TypeError`
-                             , `${dbgNs}getRecordCountFromResult`);
-  }
+  TypeValidator.throwOnInvalidInstance(result, SfdxFalconResult, `${dbgNsLocal}`, `result`);
 
   // Make sure that the result detail contains a "stdOutParsed" key.
   if (typeof result.detail['stdOutParsed'] !== 'object') {
     throw new SfdxFalconError( `The provided SfdxFalconResult object's details do not contain a 'stdOutParsed' key.`
                              , `InvalidResultDetail`
-                             , `${dbgNs}getRecordCountFromResult`);
+                             , `${dbgNsLocal}`);
   }
 
   // Make sure that the "stdOutParsed" detail contains a "result" key.
   if (typeof result.detail['stdOutParsed']['result'] !== 'object') {
     throw new SfdxFalconError( `The provided SfdxFalconResult object's 'stdOutParsed' details do not contain a 'result' key.`
                              , `InvalidResultDetail`
-                             , `${dbgNs}getRecordCountFromResult`);
+                             , `${dbgNsLocal}`);
   }
 
   // Make sure that the "stdOutParsed" detail contains a "result" key with a numeric "totalSize" value.
   if (isNaN(result.detail['stdOutParsed']['result']['totalSize'])) {
     throw new SfdxFalconError( `The provided SfdxFalconResult object's 'stdOutParsed' details do not contain a numeric value in the 'result.totalSize' key.`
                              , `InvalidResultDetail`
-                             , `${dbgNs}getRecordCountFromResult`);
+                             , `${dbgNsLocal}`);
   }
 
   // If we get here, we can safely return a "totalSize" result.
@@ -638,22 +657,20 @@ export function getRecordCountFromResult(result:SfdxFalconResult):number {
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    getRecordsFromResult
- * @param       {SfdxFalconResult}  result  Required. An SfdxFalconResult object that should have
+ * @param       {SfdxFalconResult}  result  Required. An `SfdxFalconResult` object that should have
  *              a valid block of Salesforce Response JSON in its detail member.
  * @returns     {JsonMap[]} Returns the records contained in the result as an array of JsonMaps.
- * @description Given an SfdxFalconResult, opens up the result's "detail" member and looks for a
- *              "stdOutParsed" key, then inspects the JSON result, ultimately returning the
- *              "records" array. If this process discovers anything other than a "records" array,
+ * @description Given an `SfdxFalconResult`, opens up the result's `detail` member and looks for a
+ *              `stdOutParsed` key, then inspects the JSON result, ultimately returning the
+ *              `records` array. If this process discovers anything other than a `records` array,
  *              it will throw an Error.
  * @public
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export function getRecordsFromResult(result:SfdxFalconResult):JsonMap[] {
 
-  // Define the function-local debug namespace.
-  const dbgNsLocal = `${dbgNs}getRecordsFromResult`;
-
-  // Debug incoming arguments
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:getRecordsFromResult`;
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Make sure that the caller passed us an SfdxFalconResult.
@@ -676,14 +693,23 @@ export function getRecordsFromResult(result:SfdxFalconResult):JsonMap[] {
 /**
  * @function    getUsernameFromAlias
  * @param       {string}  sfdxAlias The local SFDX alias whose Salesforce Username should be found.
- * @returns     {Promise<string>}   Resolves to the username if the alias was found, NULL if not.
+ * @returns     {Promise<string>}   Resolves to the username if the alias was found, `null` if not.
  * @description Given an SFDX org alias, return the Salesforce Username associated with the alias
  *              in the local environment the CLI is running in.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function getUsernameFromAlias(sfdxAlias:string):Promise<string> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:getUsernameFromAlias`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+  // Fetch the username from the alias.
   const username = await Aliases.fetch(sfdxAlias);
+
+  // Debug and return.
+  SfdxFalconDebug.str(`${dbgNsLocal}:username:`, username);
   return username;
 }
 
@@ -704,7 +730,7 @@ export async function getUsernameFromAlias(sfdxAlias:string):Promise<string> {
 export function parseDeployMessages(rawDeployMessages:object[]):DeployMessage[] {
 
   // Define function-local deubg namespace and debug arguments.
-  const dbgNsLocal = `${dbgNs}parseDeployMessages`;
+  const dbgNsLocal = `${dbgNs}:parseDeployMessages`;
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate arguments.
@@ -764,7 +790,7 @@ export function parseDeployMessages(rawDeployMessages:object[]):DeployMessage[] 
 export function parseDeployResult(rawDeployResult:object):DeployResult {
 
   // Define function-local deubg namespace and debug arguments.
-  const dbgNsLocal = `${dbgNs}parseDeployResult`;
+  const dbgNsLocal = `${dbgNs}:parseDeployResult`;
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate arguments.
@@ -889,14 +915,18 @@ export function parseDeployResult(rawDeployResult:object):DeployResult {
  * @function    mdapiConvert
  * @param       {string}  mdapiSourceRootDir  Required. ???
  * @param       {string}  sfdxSourceOutputDir Required. ???
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI's force:mdapi:convert command to convert MDAPI source to
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI's `force:mdapi:convert` command to convert MDAPI source to
  *              SFDX source.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function mdapiConvert(mdapiSourceRootDir:string, sfdxSourceOutputDir:string):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:mdapiConvert`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Set the SFDX Command String to be used by this function.
   const sfdxCommandString =
@@ -919,7 +949,7 @@ export async function mdapiConvert(mdapiSourceRootDir:string, sfdxSourceOutputDi
     error:              null
   } as SfdxUtilityResultDetail;
   utilityResult.detail = utilityResultDetail;
-  utilityResult.debugResult('Utility Result Initialized', `${dbgNs}mdapiConvert:`);
+  utilityResult.debugResult('Utility Result Initialized', `${dbgNsLocal}:`);
 
   // Define the success, failure, and "mixed" messages for the SFDX command execution.
   const messages = {
@@ -936,13 +966,17 @@ export async function mdapiConvert(mdapiSourceRootDir:string, sfdxSourceOutputDi
 /**
  * @function    resolveConnection
  * @param       {AliasOrConnection} aliasOrConnection  Required. Either a string containing the
- *              Alias of the org being queried or an authenticated JSForce Connection object.
- * @returns     {Promise<ResolvedConnection>}  Resolves with an authenticated JSForce Connection.
- * @description Given an Alias/Username or a JSForce Connection, returns a valid JSForce Connection.
+ *              Alias of the org being queried or an authenticated JSForce `Connection` object.
+ * @returns     {Promise<ResolvedConnection>}  Resolves with an authenticated JSForce `Connection`.
+ * @description Given an Alias/Username or a JSForce `Connection`, returns a valid JSForce `Connection`.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function resolveConnection(aliasOrConnection:AliasOrConnection):Promise<ResolvedConnection> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:resolveConnection`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Input validation
   if (typeof aliasOrConnection !== 'string'
@@ -950,7 +984,7 @@ export async function resolveConnection(aliasOrConnection:AliasOrConnection):Pro
           && ((aliasOrConnection as object) instanceof Connection) !== true))  {
     throw new SfdxFalconError( `Expected aliasOrConnection to be a string or Connection Object. Got '${typeof aliasOrConnection}' instead. `
                              , `TypeError`
-                             , `${dbgNs}resolveConnection`);
+                             , `${dbgNsLocal}`);
   }
   
   let connection:Connection;
@@ -979,17 +1013,21 @@ export async function resolveConnection(aliasOrConnection:AliasOrConnection):Pro
  * @param       {string}  aliasOrUsername Required. The alias or username associated with a current
  *              Salesforce CLI connected org.
  * @param       {string}  manifestFilePath  Required. Complete path for the manifest file (ie.
- *              package.xml) that specifies the components to retrieve.
+ *              `package.xml`) that specifies the components to retrieve.
  * @param       {string}  retrieveTargetDir Required. The root of the directory structure where
- *              the retrieved .zip or metadata files are put.
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxShellResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Uses the Salesforce CLI's force:mdapi:retrieve command to retrieve the metadata
- *              components specified by the supplied Manifest File (ie. package.xml).
+ *              the retrieved `.zip` or metadata files are put.
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxShellResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Uses the Salesforce CLI's `force:mdapi:retrieve` command to retrieve the metadata
+ *              components specified by the supplied Manifest File (ie. `package.xml`).
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function retrieveMetadata(aliasOrUsername:string, manifestFilePath:string, retrieveTargetDir:string):Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:retrieveMetadata`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Set the SFDX Command String to be used by this function.
   const sfdxCommandString =
@@ -1014,7 +1052,7 @@ export async function retrieveMetadata(aliasOrUsername:string, manifestFilePath:
     error:              null
   } as SfdxUtilityResultDetail;
   utilityResult.detail = utilityResultDetail;
-  utilityResult.debugResult('Utility Result Initialized', `${dbgNs}retrieveMetadata:`);
+  utilityResult.debugResult('Utility Result Initialized', `${dbgNsLocal}:`);
 
   // Define the success, failure, and "mixed" messages for the SFDX command execution.
   const messages = {
@@ -1030,14 +1068,18 @@ export async function retrieveMetadata(aliasOrUsername:string, manifestFilePath:
 // ────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * @function    scanConnectedOrgs
- * @returns     {Promise<SfdxFalconResult>} Uses an SfdxFalconResult to return data to the caller for
- *              both RESOLVE and REJECT.
- * @description Calls force:org:list --all via an async shell command, then sends the results back
- *              to the caller as an SfdxFalconResult.
+ * @returns     {Promise<SfdxFalconResult>} Uses an `SfdxFalconResult` to return data to the caller
+ *              for both RESOLVE and REJECT.
+ * @description Calls `force:org:list --all` via an async shell command, then sends the results back
+ *              to the caller as an `SfdxFalconResult`.
  * @public @async
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function scanConnectedOrgs():Promise<SfdxFalconResult> {
+
+  // Define local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:scanConnectedOrgs`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Set the SFDX Command String to be used by this function.
   const sfdxCommandString = `sfdx force:org:list --all --json`;
@@ -1052,7 +1094,7 @@ export async function scanConnectedOrgs():Promise<SfdxFalconResult> {
     error:              null
   } as SfdxUtilityResultDetail;
   utilityResult.detail = utilityResultDetail;
-  utilityResult.debugResult('Utility Result Initialized', `${dbgNs}scanConnectedOrgs:`);
+  utilityResult.debugResult('Utility Result Initialized', `${dbgNsLocal}:`);
 
   // Define the success, failure, and "mixed" messages for the SFDX command execution.
   const messages = {

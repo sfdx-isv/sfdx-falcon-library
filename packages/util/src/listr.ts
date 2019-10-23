@@ -1,13 +1,13 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/listr.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/listr.ts
  * @summary       Utility Module. Exposes functionality specific to the Listr task runner.
  * @description   Utility functions related to the Listr task runner. Does not contain any Tasks
- *                or Task Bundles.  For those, see ???.
- * @version       1.0.0
- * @license       MIT
+ *                or Task Bundles.  For those, see `@sfdx-falcon/builder-library`.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types

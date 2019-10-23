@@ -1,11 +1,12 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/banner.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/banner.ts
  * @summary       Utility Module. Lets the caller create a "banner" as CLI output.
  * @description   Utility Module. Lets the caller create a "banner" as CLI output.
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types

@@ -1,38 +1,43 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/util/src/bulk-api.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/util/src/csv.ts
  * @summary       CSV file helper utility library
  * @description   Exports functions that help work with CSV files.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
-import  * as  Csv2Json    from  'csv-parser';           // Streaming CSV parser that aims for maximum speed as well as compatibility with the csv-spectrum CSV acid test suite.
-import  * as  Fse         from  'fs-extra';             // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
-import  * as  Json2Csv    from  'json2csv';             // Converts json into csv with column titles and proper line endings.
-import  * as  path        from  'path';                 // Node's path library.
-import  {Readable}        from  'stream';               // Node's stream library.
+import  * as  Csv2Json    from  'csv-parser';             // Streaming CSV parser that aims for maximum speed as well as compatibility with the csv-spectrum CSV acid test suite.
+import  * as  Fse         from  'fs-extra';               // Module that adds a few extra file system methods that aren't included in the native fs module. It is a drop in replacement for fs.
+import  * as  Json2Csv    from  'json2csv';               // Converts json into csv with column titles and proper line endings.
+import  * as  path        from  'path';                   // Node's path library.
+import  {Readable}        from  'stream';                 // Node's stream library.
+
+// Import SFDX-Falcon Libraries
+import  {TypeValidator}   from  '@sfdx-falcon/validator'; // Library of SFDX Helper functions specific to SFDX-Falcon.
 
 // Import SFDX-Falcon Classes & Functions
-import  {SfdxFalconDebug} from  '@sfdx-falcon/debug';   // Class. Specialized debug provider for SFDX-Falcon code.
-import  {SfdxFalconError} from  '@sfdx-falcon/error';   // Class. Specialized Error object. Wraps SfdxError.
+import  {SfdxFalconDebug} from  '@sfdx-falcon/debug';     // Class. Specialized debug provider for SFDX-Falcon code.
+import  {SfdxFalconError} from  '@sfdx-falcon/error';     // Class. Specialized Error object. Wraps SfdxError.
 
 // Import SFDX-Falcon Types
-import  {Csv2JsonOptions} from  '@sfdx-falcon/types';   // Type. Represents the options that are available when converting CSV to JSON. See https://www.npmjs.com/package/csv-parser for documentation.
-import  {Json2CsvOptions} from  '@sfdx-falcon/types';   // Type. Represents the options that are available when converting JSON to CSV. See https://www.npmjs.com/package/json2csv for documentation.
-import  {JsonMap}         from  '@sfdx-falcon/types';   // Interface. Any JSON-compatible object.
+import  {Csv2JsonOptions} from  '@sfdx-falcon/types';     // Type. Represents the options that are available when converting CSV to JSON. See https://www.npmjs.com/package/csv-parser for documentation.
+import  {Json2CsvOptions} from  '@sfdx-falcon/types';     // Type. Represents the options that are available when converting JSON to CSV. See https://www.npmjs.com/package/json2csv for documentation.
+import  {JsonMap}         from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 
 // Set the File Local Debug Namespace
-const dbgNs = 'UTILITY:csv:';
-SfdxFalconDebug.msg(`${dbgNs}`, `Debugging initialized for ${dbgNs}`);
+const dbgNs = '@sfdx-falcon:util:csv';
+SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 
 
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * Interface. Represents the options that can/must be passed to the CsvFile constructor.
  */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface CsvFileOptions {
   csv2jsonOpts?:  Csv2JsonOptions;
   csvData?:       string;
@@ -53,17 +58,17 @@ export interface CsvFileOptions {
  */
 //export type Json2CsvOptions = import('json2csv/JSON2CSVBase').json2csv.Options<JsonMap>;
 
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
  * Interface. Represents the collection of functions that should be applied to CSV data during transformation.
  */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface TransformationFunctions<T> {
   context?:   T;
   onRowData:  (data:JsonMap) => JsonMap;
   onHeaders?: (headers:string[]) => void;
   onEnd?:     (results?:JsonMap[]) => void;
 }
-
-
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
@@ -92,6 +97,10 @@ export class CsvFile {
    */
   //───────────────────────────────────────────────────────────────────────────┘
   public static async create(jsonData:JsonMap[], csvFilePath:string, opts:Json2CsvOptions):Promise<CsvFile> {
+
+    // Define function-local debug namespace and validate incoming arguments.
+    const dbgNsLocal = `${dbgNs}:CsvFile:create`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Create a CsvFile object.
     const csvFile = new CsvFile({
@@ -126,6 +135,10 @@ export class CsvFile {
   //───────────────────────────────────────────────────────────────────────────┘
   public static async load(csvFilePath:string, opts:Csv2JsonOptions):Promise<CsvFile> {
 
+    // Define function-local debug namespace and validate incoming arguments.
+    const dbgNsLocal = `${dbgNs}:CsvFile:load`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
     // Create a CsvFile object.
     const csvFile = new CsvFile({
       directory:    path.dirname(csvFilePath),
@@ -147,8 +160,8 @@ export class CsvFile {
   /**
    * @method      transform
    * @param       {string|JsonMap[]}  sourceData  Required. One of three
-   *              possible things: 1) A string containing the path to a CSV
-   *              file. 2) A string containing valid CSV data. 3) A JsonMap
+   *              possible things: 1) A `string` containing the path to a CSV
+   *              file. 2) A `string` containing valid CSV data. 3) A `JsonMap`
    *              array with data destined for a CSV file.
    * @param       {function}  tranformationFunction Required. The function that
    *              will be called on to transform each row.
@@ -156,22 +169,25 @@ export class CsvFile {
    *              that the caller wants to eventually write CSV data to disk.
    * @param       {Json2CsvOptions} j2cOpts  Required. CSV file creation options.
    * @param       {Csv2JsonOptions} [c2jOpts]  Optional. CSV file parser options.
-   *              Required if the first argument is a string, ie. a path to a
-   *              CSV file or a string containing CSV data.
+   *              Required if the first argument is a `string`, ie. a path to a
+   *              CSV file or a `string` containing CSV data.
    * @return      {Promise<CsvFile>}
-   * @description Given some sort of valid Source Data, instantiates a CsvFile
+   * @description Given some sort of valid Source Data, instantiates a `CsvFile`
    *              object then prepares it by transforming the Source Data using
    *              the transformation function that the caller specified. The
-   *              result is a CsvFile object that is read to write its contents
+   *              result is a `CsvFile` object that is read to write its contents
    *              to disk.
    * @public @static @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  // @ts-ignore
+  // @ts-ignore (ignore unused args while waiting to implement this method)
   public static async transform(sourceData:string|JsonMap[], tranformationFunction:unknown, csvFilePath:string, j2cOpts:Json2CsvOptions, c2jOpts?:Csv2JsonOptions):Promise<CsvFile> {
 
+    // Define function-local debug namespace and validate incoming arguments.
+    const dbgNsLocal = `${dbgNs}:CsvFile:transform`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+    
     throw new Error('Method Not Implemented. Please try again later.');
-
   }
 
   // Private Members
@@ -201,14 +217,15 @@ export class CsvFile {
   /**
    * @constructs  CsvFile
    * @param       {CsvFileOptions} opts
-   * @description Constructs a CsvFile object.
+   * @description Constructs a `CsvFile` object.
    * @private
    */
   //───────────────────────────────────────────────────────────────────────────┘
   private constructor(opts:CsvFileOptions) {
 
-    // Debug incoming arguments.
-    SfdxFalconDebug.obj(`${dbgNs}CsvFile:constructor:arguments:`, arguments);
+    // Define function-local debug namespace and validate incoming arguments.
+    const dbgNsLocal = `${dbgNs}:CsvFile:constructor`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Initialize member variables based on the provided options.
     this._csv2jsonOpts    = opts.csv2jsonOpts   ||  {};
@@ -236,31 +253,35 @@ export class CsvFile {
   /**
    * @method      build
    * @return      {Promise<void>}
-   * @description Using the array of JSON objects stored by the _jsonData member
-   *              variable and the JSON-to-CSV options stored by _json2csvOpts,
+   * @description Using the array of JSON objects stored by the `_jsonData` member
+   *              variable and the JSON-to-CSV options stored by `_json2csvOpts`,
    *              builds a CSV representation and stores the result in the
-   *              _csvData member variable.
+   *              `_csvData` member variable.
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
   public async build():Promise<void> {
+
+    // Define function-local debug namespace.
+    const dbgNsLocal = `${dbgNs}:CsvFile:build`;
+
     this._csvData = await buildCsvData(this._jsonData, this._json2csvOpts)
     .catch(buildCsvError => {
       throw new SfdxFalconError ( `Error occured while building CSV data.`
                                 , `CsvBuildError`
-                                , `${dbgNs}CsvFile:build`
+                                , `${dbgNsLocal}`
                                 , buildCsvError);
     });
-    SfdxFalconDebug.str(`${dbgNs}CsvFile:build:_csvData:`, this._csvData);
+    SfdxFalconDebug.str(`${dbgNsLocal}:_csvData:`, this._csvData);
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      release
    * @return      {void}
-   * @description Sets all internal references to NULL in hopes that the garbage
-   *              collector will reclaim memory that's no longer needed. This
-   *              is most useful when dealing with very large data sets.
+   * @description Sets all internal references to `null` in hopes that the
+   *              garbage collector will reclaim memory that's no longer needed.
+   *              This is most useful when dealing with very large data sets.
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
@@ -290,17 +311,18 @@ export class CsvFile {
    * @param       {string}  [csvFilePath] Optional. Allows the caller to override
    *              the target file path where the CSV file will be written to.
    * @return      {Promise<void>}
-   * @description Using the path stored by the _filePath member variable, or the
-   *              optional CSV File Path argument (if provided), takes the
-   *              previously-built contents in the _csvData member variable and
-   *              writes it to the local filesystem.
+   * @description Using the path stored by the `_filePath` member variable, or
+   *              the optional CSV File Path argument (if provided), takes the
+   *              previously-built contents in the `_csvData` member variable
+   *              and writes it to the local filesystem.
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
   public async save(rebuildCsvData:boolean=false, csvFilePath:string=''):Promise<void> {
 
-    // Debug incoming arguments
-    SfdxFalconDebug.obj(`${dbgNs}CsvFile:save:arguments:`, arguments);
+    // Define function-local debug namespace and validate incoming arguments.
+    const dbgNsLocal = `${dbgNs}:CsvFile:save`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
     // Make sure this instance is Prepared.
     this.isPrepared();
@@ -318,22 +340,18 @@ export class CsvFile {
     csvFilePath = csvFilePath || this._filePath;
 
     // Make sure that the csvFilePath is a non-empty string.
-    if (typeof csvFilePath !== 'string' || csvFilePath === '') {
-      throw new SfdxFalconError( `Expected csvFilePath to be a non-empty string but got type '${typeof csvFilePath}' instead.`
-                               , `TypeError`
-                               , `${dbgNs}CsvFile:save`);
-    }
+    TypeValidator.throwOnEmptyNullInvalidString(csvFilePath, `${dbgNsLocal}`, `csvFilePath`);
 
     // Make sure that we have a resolved path
     csvFilePath = path.resolve(csvFilePath);
-    SfdxFalconDebug.str(`${dbgNs}CsvFile:save:csvFilePath:`, csvFilePath);
+    SfdxFalconDebug.str(`${dbgNsLocal}:csvFilePath:`, csvFilePath);
 
     // Make sure the destination CSV File Path is writeable by trying to create an empty file there.
     await writeCsvToFile('', csvFilePath)
     .catch(writeError => {
       throw new SfdxFalconError ( `CSV File save operation failed. The path '${csvFilePath}' is not writeable.`
                                 , `CsvFileSaveError`
-                                , `${dbgNs}CsvFile:save`
+                                , `${dbgNsLocal}`
                                 , writeError);
     });
 
@@ -342,7 +360,7 @@ export class CsvFile {
     .catch(writeError => {
       throw new SfdxFalconError ( `CSV File save operation failed. Could not write '${csvFilePath}' to the local filesystem.`
                                 , `CsvFileSaveError`
-                                , `${dbgNs}CsvFile:save`
+                                , `${dbgNsLocal}`
                                 , writeError);
     });
   }
@@ -357,15 +375,19 @@ export class CsvFile {
    */
   //───────────────────────────────────────────────────────────────────────────┘
   private isPrepared():boolean {
+
+    // Define function-local debug namespace.
+    const dbgNsLocal = `${dbgNs}:CsvFile:isPrepared`;
+
     if (this._released === true) {
       throw new SfdxFalconError ( `Operations against CsvFile objects are not permitted once the instance has been released.`
                                 , `ObjectReleased`
-                                , `${dbgNs}CsvFile:isPrepared`);
+                                , `${dbgNsLocal}`);
     }
     if (this._prepared !== true) {
       throw new SfdxFalconError ( `Operations against CsvFile objects are not available until the instance is prepared`
                                 , `ObjectNotPrepared`
-                                , `${dbgNs}CsvFile:isPrepared`);
+                                , `${dbgNsLocal}`);
     }
     else {
       return this._prepared;
@@ -383,54 +405,18 @@ export class CsvFile {
   //───────────────────────────────────────────────────────────────────────────┘
   private validateInitialization():void {
 
+    // Define function-local debug namespace.
+    const dbgNsLocal = `${dbgNs}:CsvFile:validateInitialization`;
+
     // CSV-to-JSON Options must be a non-null object.
-    if (typeof this._csv2jsonOpts !== 'object' || this._csv2jsonOpts === null) {
-      throw new SfdxFalconError ( `Expected csv2jsonOpts to be a non-null object${typeof this._csv2jsonOpts !== 'object' ? ` but got '${typeof this._csv2jsonOpts}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // CSV Data must be a non-null string.
-    if (typeof this._csvData !== 'string' || this._csvData === null) {
-      throw new SfdxFalconError ( `Expected csvData to be a non-null string${typeof this._csvData !== 'string' ? ` but got '${typeof this._csvData}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // CSV Headers must be a non-null array.
-    if (Array.isArray(this._csvHeaders) !== true || this._csvHeaders === null) {
-      throw new SfdxFalconError ( `Expected csvHeaders to be a non-null array${Array.isArray(this._csvHeaders) !== true ? ` but got '${typeof this._csvHeaders}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // Directory must be a non-empty, non-null string.
-    if (typeof this._directory !== 'string' || this._directory === '' || this._directory === null) {
-      throw new SfdxFalconError ( `Expected directory to be a non-empty, non-null string${typeof this._directory !== 'string' ? ` but got '${typeof this._directory}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // File Name must be a non-empty, non-null string.
-    if (typeof this._fileName !== 'string' || this._fileName === '' || this._fileName === null) {
-      throw new SfdxFalconError ( `Expected fileName to be a non-empty, non-null string${typeof this._fileName !== 'string' ? ` but got '${typeof this._fileName}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // File Path must be a non-empty, non-null string.
-    if (typeof this._filePath !== 'string' || this._filePath === '' || this._filePath === null) {
-      throw new SfdxFalconError ( `Expected filePath to be a non-empty, non-null string${typeof this._filePath !== 'string' ? ` but got '${typeof this._filePath}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // JSON-to-CSV Options must be a non-null object.
-    if (typeof this._json2csvOpts !== 'object' || this._json2csvOpts === null) {
-      throw new SfdxFalconError ( `Expected json2csvOpts to be a non-null object${typeof this._json2csvOpts !== 'object' ? ` but got '${typeof this._json2csvOpts}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
-    // JSON Data must be a non-null array.
-    if (Array.isArray(this._jsonData) !== true || this._jsonData === null) {
-      throw new SfdxFalconError ( `Expected jsonData to be a non-null array${Array.isArray(this._jsonData) !== true ? ` but got '${typeof this._jsonData}' instead.` : `.`}`
-                                , `InitialzationError`
-                                , `${dbgNs}CsvFile:validateInitialization`);
-    }
+    TypeValidator.throwOnNullInvalidObject      (this._csv2jsonOpts,  `${dbgNsLocal}`,  `Init.csv2jsonOpts`);
+    TypeValidator.throwOnNullInvalidString      (this._csvData,       `${dbgNsLocal}`,  `Init.csvData`);
+    TypeValidator.throwOnNullInvalidArray       (this._csvHeaders,    `${dbgNsLocal}`,  `Init.csvHeaders`);
+    TypeValidator.throwOnEmptyNullInvalidString (this._directory,     `${dbgNsLocal}`,  `Init.directory`);
+    TypeValidator.throwOnEmptyNullInvalidString (this._fileName,      `${dbgNsLocal}`,  `Init.fileName`);
+    TypeValidator.throwOnEmptyNullInvalidString (this._filePath,      `${dbgNsLocal}`,  `Init.filePath`);
+    TypeValidator.throwOnNullInvalidObject      (this._json2csvOpts,  `${dbgNsLocal}`,  `Init.json2csvOpts`);
+    TypeValidator.throwOnNullInvalidArray       (this._jsonData,      `${dbgNsLocal}`,  `Init.jsonData`);
   }
 }
 
@@ -447,8 +433,9 @@ export class CsvFile {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function buildCsvData(jsonData:JsonMap[], opts:Json2CsvOptions):Promise<string> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}buildCsvData:arguments:`, arguments);
+  // Define function-local debug namespace and validate incoming arguments.
+  const dbgNsLocal = `${dbgNs}:buildCsvData`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments
   validateJsonDataArgument(jsonData);
@@ -458,12 +445,12 @@ export async function buildCsvData(jsonData:JsonMap[], opts:Json2CsvOptions):Pro
   .catch(json2csvError => {
     throw new SfdxFalconError ( `Could not parse JSON to CSV. ${json2csvError.message}`
                               , `Json2CsvParseError`
-                              , `${dbgNs}buildCsvData`
+                              , `${dbgNsLocal}`
                               , json2csvError);
   });
 
   // DEBUG
-  SfdxFalconDebug.str(`${dbgNs}buildCsvData:csvData:`, csvData);
+  SfdxFalconDebug.str(`${dbgNsLocal}:csvData:`, csvData);
 
   // Send the CSV Data back to the caller.
   return csvData;
@@ -484,8 +471,9 @@ export async function buildCsvData(jsonData:JsonMap[], opts:Json2CsvOptions):Pro
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function createFile(jsonData:JsonMap[], csvFilePath:string, opts:Json2CsvOptions):Promise<string> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}createFile:arguments:`, arguments);
+  // Define function-local debug namespace and validate incoming arguments.
+  const dbgNsLocal = `${dbgNs}:createFile`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Validate incoming arguments
   validateJsonDataArgument(jsonData);
@@ -498,7 +486,7 @@ export async function createFile(jsonData:JsonMap[], csvFilePath:string, opts:Js
   .catch(buildCsvError => {
     throw new SfdxFalconError ( `Could not create the CSV file. There was an error while building the CSV data.`
                               , `CsvBuildError`
-                              , `${dbgNs}createFile`
+                              , `${dbgNsLocal}`
                               , buildCsvError);
   });
 
@@ -522,8 +510,9 @@ export async function createFile(jsonData:JsonMap[], csvFilePath:string, opts:Js
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function parseFile(csvFilePath:string, opts:Csv2JsonOptions={}):Promise<JsonMap[]> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}parseFile:arguments:`, arguments);
+  // Define function-local debug namespace and validate incoming arguments.
+  const dbgNsLocal = `${dbgNs}:parseFile`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Results will be an array of JSON Maps.
   const results = [] as JsonMap[];
@@ -534,19 +523,19 @@ export async function parseFile(csvFilePath:string, opts:Csv2JsonOptions={}):Pro
     .on('error', (error:Error) => {
       reject(new SfdxFalconError( `Unable to read '${csvFilePath}'.  ${error.message}`
                                 , `FileStreamError`
-                                , `${dbgNs}parseFile`
+                                , `${dbgNsLocal}`
                                 , error));
     })
     .pipe(Csv2Json(opts))
     .on('data', (data:JsonMap) => results.push(data))
     .on('end',  () => {
-      SfdxFalconDebug.obj(`${dbgNs}parseFile:results:`, results, `results: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:results:`, results);
       resolve(results);
     })
     .on('error', (error:Error) => {
       reject(new SfdxFalconError( `Unable to parse '${csvFilePath}'.  ${error.message}`
                                 , `CsvParsingError`
-                                , `${dbgNs}parseFile`
+                                , `${dbgNsLocal}`
                                 , error));
     });
   });
@@ -566,7 +555,7 @@ export async function parseFile(csvFilePath:string, opts:Csv2JsonOptions={}):Pro
 export async function parseString(csvData:string, opts:Csv2JsonOptions={}):Promise<JsonMap[]> {
 
   // Define function-local debug namespace and debug incoming arguments.
-  const dbgNsLocal = `${dbgNs}parseString`;
+  const dbgNsLocal = `${dbgNs}:parseString`;
   SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Results will be an array of JSON Maps.
@@ -621,24 +610,14 @@ export async function parseString(csvData:string, opts:Csv2JsonOptions={}):Promi
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string, opts:Json2CsvOptions):Promise<void> {
 
-  // JSON Data must be a non-null array.
-  if (Array.isArray(jsonData) !== true || jsonData === null) {
-    throw new SfdxFalconError ( `Expected jsonData to be a non-null array${Array.isArray(jsonData) !== true ? ` but got '${typeof jsonData}' instead.` : `.`}`
-                              , `TypeError`
-                              , `${dbgNs}streamJsonToCsvFile`);
-  }
-  // CSV File Path must be a non-empty, non-null string.
-  if (typeof csvFilePath !== 'string' || csvFilePath === '' || csvFilePath === null) {
-    throw new SfdxFalconError ( `Expected filePath to be a non-empty, non-null string${typeof csvFilePath !== 'string' ? ` but got '${typeof csvFilePath}' instead.` : `.`}`
-                              , `InitialzationError`
-                              , `${dbgNs}streamJsonToCsvFile`);
-  }
-  // Options must be a non-null object.
-  if (typeof opts !== 'object' || opts === null) {
-    throw new SfdxFalconError ( `Expected opts to be a non-null object${typeof opts !== 'object' ? ` but got '${typeof opts}' instead.` : `.`}`
-                              , `InitialzationError`
-                              , `${dbgNs}streamJsonToCsvFile`);
-  }
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:streamJsonToCsvFile`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+  // Validate incoming arguments.
+  TypeValidator.throwOnNullInvalidArray       (jsonData,    `${dbgNsLocal}`,  `jsonData`);
+  TypeValidator.throwOnEmptyNullInvalidString (csvFilePath, `${dbgNsLocal}`,  `csvFilePath`);
+  TypeValidator.throwOnNullInvalidObject      (opts,        `${dbgNsLocal}`,  `opts`);
 
   // Track the current index of the JSON Data being processed.
   let currentIndex = 0;
@@ -663,7 +642,7 @@ export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string
   .catch(fseError => {
     throw new SfdxFalconError ( `Could not write '${csvFilePath}' to the local filesystem. ${fseError.message}`
                               , `FileWriteError`
-                              , `${dbgNs}streamJsonToCsvFile`
+                              , `${dbgNsLocal}`
                               , fseError);
   });
   
@@ -684,7 +663,7 @@ export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string
   .catch(parserError => {
     throw new SfdxFalconError ( `Error while parsing/writing JSON-to-CSV. ${parserError.message}`
                               , `ParserError`
-                              , `${dbgNs}streamJsonToCsvFile`
+                              , `${dbgNsLocal}`
                               , parserError);
   });
 }
@@ -706,6 +685,10 @@ export async function streamJsonToCsvFile(jsonData:JsonMap[], csvFilePath:string
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function transformCsvFileToCsvFile():Promise<void> {
 
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:transformCsvFileToCsvFile`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
   // TODO: Implement this function.
   throw new Error('Not Implemented. Please try again later');
 }
@@ -726,8 +709,9 @@ export async function transformCsvFileToCsvFile():Promise<void> {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function transformFile(csvFilePath:string, tranformationFunctions:TransformationFunctions<unknown>, opts:Csv2JsonOptions={}):Promise<JsonMap[]> {
 
-  // Debug incoming arguments
-  SfdxFalconDebug.obj(`${dbgNs}transformFile:arguments:`, arguments);
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:transformFile`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
 
   // Results will be an array of JSON Maps.
   const results = [] as JsonMap[];
@@ -738,7 +722,7 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
     .on('error', (error:Error) => {
       reject(new SfdxFalconError( `Unable to read '${csvFilePath}'.  ${error.message}`
                                 , `FileStreamError`
-                                , `${dbgNs}transformFile`
+                                , `${dbgNsLocal}`
                                 , error));
     })
     .pipe(Csv2Json(opts))
@@ -755,7 +739,7 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
         catch (headerError) {
           reject(new SfdxFalconError( `Header Transformation Error: ${headerError.message}`
                                     , `HeaderTransformationError`
-                                    , `${dbgNs}transformFile`
+                                    , `${dbgNsLocal}`
                                     , headerError));
         }
       }
@@ -773,7 +757,7 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
         catch (rowDataError) {
           reject(new SfdxFalconError( `Row Data Transformation Error: ${rowDataError.message}`
                                     , `RowDataTransformationError`
-                                    , `${dbgNs}transformFile`
+                                    , `${dbgNsLocal}`
                                     , rowDataError));
         }
       }
@@ -794,17 +778,17 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
         catch (endError) {
           reject(new SfdxFalconError( `End Transformation Error: ${endError.message}`
                                     , `EndTransformationError`
-                                    , `${dbgNs}transformFile`
+                                    , `${dbgNsLocal}`
                                     , endError));
         }
       }
-      SfdxFalconDebug.obj(`${dbgNs}transformFile:results:`, results, `results: `);
+      SfdxFalconDebug.obj(`${dbgNsLocal}:results:`, results);
       resolve(results);
     })
     .on('error', (error:Error) => {
       reject(new SfdxFalconError( `Unable to parse '${csvFilePath}'.  ${error.message}`
                                 , `CsvParsingError`
-                                , `${dbgNs}transformFile`
+                                , `${dbgNsLocal}`
                                 , error));
     });
   });
@@ -822,11 +806,17 @@ export async function transformFile(csvFilePath:string, tranformationFunctions:T
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export async function writeCsvToFile(csvData:string, csvFilePath:string):Promise<void> {
+
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:writeCsvToFile`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+  // Write the CSV file.
   Fse.outputFile(csvFilePath, csvData)
   .catch(fseError => {
     throw new SfdxFalconError ( `Could not write '${csvFilePath}' to the local filesystem. ${fseError.message}`
                               , `FileWriteError`
-                              , `${dbgNs}writeCsvToFile`
+                              , `${dbgNsLocal}`
                               , fseError);
   });
 }
@@ -841,10 +831,11 @@ export async function writeCsvToFile(csvData:string, csvFilePath:string):Promise
  */
 // ────────────────────────────────────────────────────────────────────────────────────────────────┘
 function validateJsonDataArgument(jsonData:unknown):void {
+
+  // Define function-local debug namespace and debug incoming arguments.
+  const dbgNsLocal = `${dbgNs}:validateJsonDataArgument`;
+  SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
   // Validate incoming arguments
-  if (Array.isArray(jsonData) !== true || jsonData === null) {
-    throw new SfdxFalconError( `Expected jsonData to be a non-null array but got ${jsonData !== null ? `type '${typeof jsonData}'` : `a null value`} instead.`
-                             , `TypeError`
-                             , `${dbgNs}validateJsonDataArgument`);
-  }
+  TypeValidator.throwOnNullInvalidArray(jsonData, `${dbgNsLocal}`, `jsonData`);
 }
