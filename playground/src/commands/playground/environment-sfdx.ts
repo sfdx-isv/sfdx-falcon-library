@@ -1,13 +1,13 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/playground/src/commands/playground/environment-sfdx.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/playground/src/commands/playground/environment-sfdx.ts
  * @summary       Implements the CLI command `playground:environment-sfdx`
  * @description   Salesforce CLI Plugin command (playground:environment-sfdx) that allows for testing and
  *                experimentation of the `@sfdx-falcon/environment` package.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types

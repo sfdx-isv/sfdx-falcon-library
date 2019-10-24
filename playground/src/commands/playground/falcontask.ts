@@ -1,13 +1,13 @@
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
- * @file          packages/playground/src/commands/playground/falcontask.ts
- * @copyright     Vivek M. Chawla / Salesforce - 2019
  * @author        Vivek M. Chawla <@VivekMChawla>
+ * @copyright     2019, Vivek M. Chawla / Salesforce. All rights reserved.
+ * @license       BSD-3-Clause For full license text, see the LICENSE file in the repo root or
+ *                `https://opensource.org/licenses/BSD-3-Clause`
+ * @file          packages/playground/src/commands/playground/falcontask.ts
  * @summary       Implements the CLI command `playground:falcontask`
  * @description   Salesforce CLI Plugin command (playground:falcontask) that allows for testing and
  *                experimentation of the `@sfdx-falcon/task` package.
- * @version       1.0.0
- * @license       MIT
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 // Import External Libraries, Modules, and Types
