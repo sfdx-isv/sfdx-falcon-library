@@ -18,6 +18,7 @@
     {"path": "../builder/tsconfig.build.json"},         // @SFDX-Falcon/builder
     {"path": "../command/tsconfig.build.json"},         // @SFDX-Falcon/command
     {"path": "../util/tsconfig.build.json"},            // @SFDX-Falcon/util
+    {"path": "../worker/tsconfig.build.json"},          // @SFDX-Falcon/worker
     {"path": "../prompt/tsconfig.build.json"},          // @SFDX-Falcon/prompt
     {"path": "../task/tsconfig.build.json"},            // @SFDX-Falcon/task
     {"path": "../environment/tsconfig.build.json"},     // @SFDX-Falcon/environment
