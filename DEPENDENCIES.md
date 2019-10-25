@@ -21,6 +21,7 @@ To help ensure correct precedence, here is a list of SFDX-Falcon packages in ord
       * `@sfdx-falcon/builder`
       * `@sfdx-falcon/command`
       * `@sfdx-falcon/util`
+      * `@sfdx-falcon/worker`
 6.  Independent Siblings
       * `@sfdx-falcon/prompt`
       * `@sfdx-falcon/task`
