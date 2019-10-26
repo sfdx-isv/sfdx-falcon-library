@@ -24,7 +24,7 @@ import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug';     // Class. Provides c
 import  {SfdxFalconError}   from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import SFDX-Falcon Types
-import  {JsonMap}           from '@sfdx-falcon/types';
+import  {JsonMap}           from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 
 // Set the File Local Debug Namespace
 const dbgNs = '@sfdx-falcon:worker';
@@ -38,8 +38,9 @@ SfdxFalconDebug.msg(`${dbgNs}:`, `Debugging initialized for ${dbgNs}`);
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export interface SfdxFalconWorkerOptions {
   /**
-   * Optional. Allows the base of `this.dbgNs` to be set by the code that's instantiating an
-   * `SfdxFalconWorker`-derived class. Defaults to `@sfdx-falcon:worker` if not provided.
+   * Optional. Sets the base debug namespace (`this.dbgNs`) of the class being instantiated. Useful
+   * for normalizing the namespace when set by the code that's instantiating an `SfdxFalconWorker`
+   * derived class. Defaults to `@sfdx-falcon:worker` if not provided.
    */
   dbgNsExt?:    string;
   /**
