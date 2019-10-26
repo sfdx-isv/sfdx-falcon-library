@@ -1,15 +1,15 @@
 {
   "name": "@sfdx-falcon/prompt",
   "description": "Provides a standardized means of user interaction via the console. Part of the SFDX-Falcon Library.",
-  "version": "0.0.8-alpha.0",
+  "version": "0.0.8-alpha.1",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
     "@salesforce/ts-types": "1.2.1",
-    "@sfdx-falcon/builder": "0.0.8-alpha.0",
-    "@sfdx-falcon/debug": "0.0.8-alpha.0",
-    "@sfdx-falcon/status": "0.0.8-alpha.0",
-    "@sfdx-falcon/types": "0.0.8-alpha.0",
+    "@sfdx-falcon/builder": "^0.0.8-alpha.1",
+    "@sfdx-falcon/debug": "^0.0.8-alpha.1",
+    "@sfdx-falcon/status": "^0.0.8-alpha.1",
+    "@sfdx-falcon/types": "^0.0.8-alpha.1",
     "inquirer": "7.0.0",
     "tslib": "1.10.0"
   },
