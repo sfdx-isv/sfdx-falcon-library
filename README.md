@@ -58,8 +58,11 @@ After building a package, VS Code's built in TypeScript linter can show false er
 ### `npm whoami`
 Prints the username that's currently logged into the NPM registry. This is the user who will be used during the `lerna publish` operation.
 
-### `lerna publish`
-Publishes all workspace packages to NPM. Allows you to specify the next version number before publishing.
+### `lerna version --force-publish`
+Modifies the version of all packages in the repository.
+
+### `lerna publish from-package`
+Publishes all workspace packages to NPM. Determines the list of packages to publish by inspecting each `package.json` and checking if that package version is present in the registry. Any versions not present in the registry will be published. This is useful when a previous lerna publish failed to publish all packages to the registry.
 
 When publishing, Lerna executes specific [npm lifecycle scripts](https://docs.npmjs.com/misc/scripts#description) in the following order:
 
