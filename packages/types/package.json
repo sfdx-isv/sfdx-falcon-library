@@ -1,7 +1,7 @@
 {
   "name": "@sfdx-falcon/types",
   "description": "Common collection of useful Salesforce-related types. Used by modules in the SFDX-Falcon Library.",
-  "version": "0.0.6-alpha.0",
+  "version": "0.0.8-alpha.0",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
