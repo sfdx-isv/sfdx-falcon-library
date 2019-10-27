@@ -17,7 +17,8 @@
       "@sfdx-falcon/task-bundle": ["task-bundle/src"],
       "@sfdx-falcon/types": ["types/src"],
       "@sfdx-falcon/util": ["util/src"],
-      "@sfdx-falcon/validator": ["validator/src"]
+      "@sfdx-falcon/validator": ["validator/src"],
+      "@sfdx-falcon/worker": ["worker/src"]
     }
   }
 }
