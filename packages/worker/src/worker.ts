@@ -230,7 +230,7 @@ export abstract class SfdxFalconWorker {
 
     // Check if this instance is explicitly NOT prepared (eg. strict equality for `false`).
     if (this._prepared === false) {
-      throw new SfdxFalconError ( `Operations against ${this.constructor.name} objects are not allowed until the instance is prepared.`
+      throw new SfdxFalconError ( `The operation against this ${this.constructor.name} object is not allowed until the instance is prepared.`
                                 , `ObjectNotPrepared`
                                 , `${dbgNsExt}`);
     }
