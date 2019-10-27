@@ -15,10 +15,14 @@ import  {flags}                         from  '@salesforce/command';   // Allows
 import  {Messages}                      from  '@salesforce/core';      // Messages library that simplifies using external JSON for string reuse.
 //import  {SfdxError}                     from  '@salesforce/core';      // Generalized SFDX error which also contains an action.
 
+
+import  {TypeValidator}       from  '@sfdx-falcon/validator'; // Library. Collection of type validation functions.
+
 // Import SFDX-Falcon Classes & Functions
 //import  {ExternalContext}               from  '@sfdx-falcon/builder'; // Class. Collection of key data structures that represent the overall context of the external environment inside of which some a set of specialized logic will be run.
 import  {SfdxFalconCommand}             from  '@sfdx-falcon/command'; // Abstract Class. Extend when building Salesforce CLI commands that use the SFDX-Falcon Library.
 import  {SfdxFalconDebug}               from  '@sfdx-falcon/debug';   // Class. Provides custom "debugging" services (ie. debug-style info to console.log()).
+import  {AsyncUtil}                     from  '@sfdx-falcon/util';
 //import  {SfdxFalconError}               from  '@sfdx-falcon/error';   // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import Falcon Types
@@ -107,7 +111,7 @@ export default class FalconWorkerPlayground extends SfdxFalconCommand {
 
     //SfdxFalconDebug.debugObject('xxxx:', this);
 
-    const workerTest = new WorkerTest();
+    const workerTest = await SfdxFalconWorker.prepare<WorkerTest, WorkerTestOptions>(WorkerTest, {optionOne: 'one', optionTwo: 'two'});
     SfdxFalconDebug.obj(`${dbgNs}:workerTest:`, workerTest);
 
     const workerReport = workerTest.generateReport();
@@ -117,19 +121,20 @@ export default class FalconWorkerPlayground extends SfdxFalconCommand {
   }
 }
 
+// WorkerTestOptions
+interface WorkerTestOptions {
+  optionOne: string;
+  optionTwo: string;
+}
 
 // Define a class that extends SfdxFalconWorker.
-
 class WorkerTest extends SfdxFalconWorker {
 
   constructor() {
     super({
       dbgNsExt:   `${dbgNs}`,
       prepared:   false
-//      reportPath: null
     });
-
-    this.isPrepared();
   }
 
   protected _generateReport():JsonMap {
@@ -137,5 +142,32 @@ class WorkerTest extends SfdxFalconWorker {
       test: "hello",
       success: "Yes there is much success!"
     };
+  }
+
+  protected async _prepare(opts:WorkerTestOptions):Promise<WorkerTest> {
+
+    // Define local debug namespace and echo incoming arguments.
+    const dbgNsLocal = `${this.dbgNs}:_prepare`;
+    SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
+
+
+    await AsyncUtil.waitASecond(3);
+
+    // Validate OPTIONAL incoming options.
+    if (typeof opts !== 'undefined') {
+      TypeValidator.throwOnNullInvalidObject(opts, `${dbgNsLocal}`, `ClassNameOptions`);
+    }
+
+    // Validate REQUIRED incoming options.
+    TypeValidator.throwOnEmptyNullInvalidObject(opts,           `${dbgNsLocal}`, `ClassNameOptions`);
+    TypeValidator.throwOnEmptyNullInvalidString(opts.optionOne, `${dbgNsLocal}`, `ClassNameOptions.optionOne`);
+    TypeValidator.throwOnEmptyNullInvalidString(opts.optionTwo, `${dbgNsLocal}`, `ClassNameOptions.optionTwo`);
+
+    // Do stuf to prepare this instance...
+    // **STUFF**
+
+    // Mark this instance as "prepared".
+    this._prepared = true;
+    return this;
   }
 }
