@@ -24,6 +24,7 @@ import  {SfdxFalconDebug}   from  '@sfdx-falcon/debug';     // Class. Provides c
 import  {SfdxFalconError}   from  '@sfdx-falcon/error';     // Class. Extends SfdxError to provide specialized error structures for SFDX-Falcon modules.
 
 // Import SFDX-Falcon Types
+import  {AnyConstructor}    from  '@sfdx-falcon/types';     // Type. A constructor for any type T. T defaults to object when not explicitly supplied.
 import  {JsonMap}           from  '@sfdx-falcon/types';     // Interface. Any JSON-compatible object.
 
 // Set the File Local Debug Namespace
@@ -55,6 +56,24 @@ export interface SfdxFalconWorkerOptions {
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
 /**
+ * Array of Keys that must be present to consider an object an instance of `SfdxFalconWorker`.
+ */
+//─────────────────────────────────────────────────────────────────────────────────────────────────┘
+const SFDX_FALCON_WORKER_KEYS = [
+  '_prepared',
+  '_reportPath',
+  '_dbgNs',
+  '_generateReport',
+  '_prepare',
+  'prepared',
+  'dbgNs',
+  'generateReport',
+  'saveReport',
+  'isPrepared'
+];
+
+//─────────────────────────────────────────────────────────────────────────────────────────────────┐
+/**
  * @abstract
  * @class       SfdxFalconWorker
  * @summary     Abstract class for building classes that implement task-specific functionality.
@@ -64,6 +83,90 @@ export interface SfdxFalconWorkerOptions {
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 export abstract class SfdxFalconWorker {
+
+  //───────────────────────────────────────────────────────────────────────────┐
+  /**
+   * @method      prepare<T,O>
+   * @param       {AnyConstructor<T>} constructorT  Required. The `constructor`
+   *              for a class that's derived from `SfdxFalconWorker`.
+   * @param       {O} [opts]  Optional. Options that will be provided to the
+   *              `constructorT()` and the resulting object's `_prepare()`
+   *              function.
+   * @return      {T}
+   * @description Returns `true` if the `_prepared` member of a `Worker`
+   *              instance is `true` or `null`. Throws an error otherwise.
+   * @public @static @async
+   */
+  //───────────────────────────────────────────────────────────────────────────┘
+  public static async prepare<T extends object, O extends object>(constructorT:AnyConstructor<T>, opts?:O):Promise<T> {
+   
+    // Define the local debug namespace.
+    const dbgNsLocal = `${dbgNs}:prepare`;
+
+    // Validate that the caller provided a function for constructorT
+    TypeValidator.throwOnNullInvalidFunction(constructorT, `${dbgNsLocal}`, `constructorT`,
+      `The first parameter passed to SfdxFalconWorker.prepare() must be the constructor for `+
+      `a class derived from SfdxFalconWorker.`, `WorkerPrepError`);
+
+    // If an Options object was provided, make sure it's not null or invalid.
+    if (typeof opts !== 'undefined') {
+      TypeValidator.throwOnNullInvalidObject(opts, `${dbgNsLocal}`, `WorkerPrepOptions`,
+      `When provided, the second parameter passed to SfdxFalconWorker.prepare() must be `+
+      `of type'object'.`, `WorkerPrepError`);
+    }
+
+    // Instantiate an object of whatever type the constructor is.
+    let worker:unknown = null;
+    try {
+      worker = new constructorT(opts) as unknown;
+    }
+    catch (constructorError) {
+      throw new SfdxFalconError ( `The constructor provided to SfdxFalconWorker.prepare() failed during preparation. ${constructorError.message}`
+                                , `WorkerPrepError`
+                                , `${dbgNsLocal}`
+                                , constructorError);
+    }
+
+    // Build an array of keys (properties+methods) from the `worker` argument provided by the caller.
+    const workerKeys = ((unknownObj:unknown) => {
+      const properties = new Set();
+      let   currentObj = unknownObj;
+      do {
+        Object.getOwnPropertyNames(currentObj).map(item => properties.add(item));
+        currentObj = Object.getPrototypeOf(currentObj);
+      } while (currentObj);
+      return [...properties.keys()];
+    })(worker);
+
+    // Define Error Messages
+    const invalidObjErrMsg = `The constructor provided to SfdxFalconWorker.prepare() must create an object that is derived from SfdxFalconWorker.`;
+
+    // Ensure `worker` is an instance of `SfdxFalconWorker` by checking if it has all the required object keys.
+    SfdxFalconDebug.obj(`${dbgNsLocal}:SFDX_FALCON_WORKER_KEYS:`, SFDX_FALCON_WORKER_KEYS);
+    SfdxFalconDebug.obj(`${dbgNsLocal}:workerKeys:`,              workerKeys);
+    for (const sfdxFalconWorkerKey of SFDX_FALCON_WORKER_KEYS) {
+      if (workerKeys.includes(sfdxFalconWorkerKey) === false) {
+        throw new SfdxFalconError ( `${invalidObjErrMsg}`
+                                  , `WorkerPrepError`
+                                  , `${dbgNsLocal}`);
+      }
+    }
+
+    // Make sure certain `worker` keys are functions.
+    TypeValidator.throwOnNullInvalidFunction(worker['_generateReport'], `${dbgNsLocal}`, `_generateReport`, `${invalidObjErrMsg}`, `WorkerPrepError`);
+    TypeValidator.throwOnNullInvalidFunction(worker['_prepare'],        `${dbgNsLocal}`, `_prepare`,        `${invalidObjErrMsg}`, `WorkerPrepError`);
+    TypeValidator.throwOnNullInvalidFunction(worker['generateReport'],  `${dbgNsLocal}`, `generateReport`,  `${invalidObjErrMsg}`, `WorkerPrepError`);
+    TypeValidator.throwOnNullInvalidFunction(worker['saveReport'],      `${dbgNsLocal}`, `saveReport`,      `${invalidObjErrMsg}`, `WorkerPrepError`);
+
+    // Call the worker's `_prepare()` method.
+    return await (worker as SfdxFalconWorker)._prepare(opts)
+    .catch((prepError:Error) => {
+      throw new SfdxFalconError ( `Preparation failed. ${prepError.message}`
+                                , `WorkerPrepError`
+                                , `${dbgNsLocal}`
+                                , prepError);
+    }) as unknown as T;
+  }
 
   /**
    * Determines whether the methods and properties of this instance are ready for use.
@@ -213,6 +316,14 @@ export abstract class SfdxFalconWorker {
    * performed by this `Worker`.  Must produce valid JSON or an error will be thrown.
    */
   protected abstract _generateReport():JsonMap;
+  /**
+   * Generates a fully "prepared" version of `this` instance. This method is
+   * called by the static method `SfdxFalconWorker.prepare()` when an instance of
+   * an `SfdxFalconWorker`-derived object requires asynchronous operations to
+   * reach a state where it can be considered fully "prepared" since `constructor`
+   * functions can not implement async code.
+   */
+  protected async abstract _prepare(opts?:object):Promise<SfdxFalconWorker>;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**
