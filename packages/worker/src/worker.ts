@@ -213,14 +213,13 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    *              options in its `prepareOpts` member. The generic type for this
    *              parameter is supplied by the derived class, providing type
    *              safety for this method in instances of the derived class.
-   * @return      {Promise<boolean>}  Returns `true` if preparation succeeded,
-   *              `false` or throws an error if not.
+   * @return      {Promise<void>}  Throws an error if preparation fails.
    * @description Executes the `_prepare()` method from the dervied class and
    *              returns the result from that method call.
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async prepare(opts?:T):Promise<boolean> {
+  public async prepare(opts?:T):Promise<void> {
 
     // Define function-local and external debug namespaces.
     const funcName    = `prepare`;
@@ -259,28 +258,19 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
 
     // Prepare this worker using the method implemented by the derived class.
     await this._prepare(opts)
-    .then((success:boolean) => {
-      if (success === true) {
-        this._prepared = true;
-      }
-      else {
-        throw new SfdxFalconError ( `The _prepare() function failed but did not provide specifics.`
-                                  , `${errName}`
-                                  , `${dbgNsExt}`);
-      }
+    .then(() => {
+      this._prepared = true;
     })
     .catch((preparationError:Error) => {
       this._prepared = false;
       throw new SfdxFalconError	( `Worker Preparation Failed. ${preparationError.message}`
                                   , `${errName}`
                                   , `${dbgNsExt}`
-                                  , preparationError);
+                                  , preparationError
+                                  , opts);
     });
-    
-    // Return the final "prepared" state of this Worker.
     SfdxFalconDebug.str(`${dbgNsLocal}:_preared:`,  `${this._prepared}`);
     SfdxFalconDebug.str(`${dbgNsExt}:_prepared:`,   `${this._prepared}`);
-    return this._prepared;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
@@ -343,7 +333,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    * @method      _prepare
    * @param       {T} opts  Required. Custom prepare options proxied to this
    *              method from the public `prepare()` method.
-   * @return      {Promise<boolean>}
+   * @return      {Promise<void>} Should throw an error if preparation fails.
    * @description **IMPORTANT: Must be overriden by derived class**
    *              Performs the work of "preparing" this worker. Must return
    *              `true` if preparation was successful, `false` (or throw an
@@ -352,7 +342,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    * @protected @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected async _prepare(_opts:T):Promise<boolean> {
+  protected async _prepare(_opts:T):Promise<void> {
 
     // Define external debug namespace.
     const funcName  = `_prepare`;
