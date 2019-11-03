@@ -96,12 +96,6 @@ interface SfdxFalconWorkerBaseOptions {
 export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
 
   /**
-   * Determines whether the methods and properties of this instance are ready for use.
-   * Useful for Workers that must undergo some sort of `async` setup that's not possible
-   * via the `constructor`.
-   */
-  protected _prepared:  boolean;
-  /**
    * Fully resolved filepath where this Worker should write it's report when `saveReport()`
    * is called without passing a value for the `targetFile` parameter.
    */
@@ -111,6 +105,12 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    * `SfdxFalconWorker` base class.
    */
   private readonly _dbgNs:  string;
+  /**
+   * Determines whether the methods and properties of this instance are ready for use.
+   * Useful for Workers that must undergo some sort of `async` setup that's not possible
+   * via the `constructor`.
+   */
+  private _prepared:  boolean;
   /**
    * Indicates whether or not this `Worker` requires preparation.
    */
@@ -123,18 +123,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   /**
    * Indicates wheter or not the methods and properties of this instance are ready for use.
    */
-  public get prepared():boolean {
-    if (this._requiresPrep !== true) {
-
-      // This worker does not require Preparation, so it's always considered to be "prepared".
-      return true;
-    }
-    else {
-
-      // This worker requires Preparation. Return the current "prepared" state.
-      return this._prepared ? true : false;
-    }
-  }
+  public get prepared():boolean { return this._prepared ? true : false; }
   /**
    * Indicates whether or not this `Worker` requires preparation.
    */
@@ -178,7 +167,11 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
     // Initialize member variables.
     this._dbgNs         = `${dbgNsExt}`;
     this._reportPath    = (typeof opts.reportPath   !== 'undefined') ? opts.reportPath    : null;
-    this._requiresPrep  = (typeof opts.requiresPrep !== 'undefined') ? opts.requiresPrep  : null;
+    this._requiresPrep  = (typeof opts.requiresPrep !== 'undefined') ? opts.requiresPrep  : false;
+
+    // If this worker requires prep, initialize `this._prepared` to FALSE.
+    // If it doesn't require prep, then it should be considered "prpared" from the start.
+    this._prepared = this._requiresPrep ? false : true;
   }
 
   //───────────────────────────────────────────────────────────────────────────┐
