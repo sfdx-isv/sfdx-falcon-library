@@ -64,20 +64,16 @@ export interface SfdxFalconWorkerOptions {
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 interface SfdxFalconWorkerBaseOptions {
   /**
-   * Optional. Sets the base debug namespace (`this.dbgNs`) of the class being instantiated. Useful
+   * Required. Sets the base debug namespace (`this.dbgNs`) of the class being instantiated. Useful
    * for normalizing the namespace when set by the code that's instantiating an `SfdxFalconWorker`
-   * derived class. Defaults to `@sfdx-falcon:worker` if not provided.
+   * derived class.
    */
-  dbgNsExt?:      string;
+  dbgNsExt:     string;
   /**
-   * Optional. Sets an initial value for `this._reportPath`. Defaults to `null` if not provided.
-   */
-  reportPath?:    string;
-  /**
-   * Optional. Specifies that this `Worker` requires preparation and should not be used before
+   * Required. Specifies that this `Worker` requires preparation and should not be used before
    * its `prepare()` method is called.
    */
-  requiresPrep?:  boolean;
+  requiresPrep: boolean;
 }
 
 //─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -125,6 +121,11 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    */
   public get prepared():boolean { return this._prepared ? true : false; }
   /**
+   * Fully resolved filepath where this Worker will write it's report when `saveReport()`
+   * is called without passing a value for the `targetFile` parameter.
+   */
+  public get reportPath():string { return this._reportPath; }
+  /**
    * Indicates whether or not this `Worker` requires preparation.
    */
   public get requiresPrep():boolean { return this._requiresPrep ? true : false; }
@@ -132,14 +133,14 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @constructs  SfdxFalconWorker
-   * @param       {SfdxFalconWorkerBaseOptions} [opts]  Optional. Allows the
-   *              caller to customize how this `SfdxFalconWorker`-derived object is
+   * @param       {SfdxFalconWorkerBaseOptions} opts  Required. Allows the
+   *              caller to customize how this `SfdxFalconWorker`-derived object
    *              is constructed.
    * @description Constructs an `SfdxFalconWorker` object.
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public constructor(opts?:SfdxFalconWorkerBaseOptions) {
+  public constructor(opts:SfdxFalconWorkerBaseOptions) {
 
     // Define the local and external debug namespaces.
     const funcName          = `constructor`;
@@ -151,23 +152,15 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
     SfdxFalconDebug.obj(`${dbgNsLocal}:arguments:`, arguments);
     if (dbgNsLocal !== dbgNsExt) SfdxFalconDebug.obj(`${dbgNsExt}:arguments:`, arguments);
 
-    // If the caller provided options, make sure it's a valid object. Otherwise just initialize an empty object.
-    if (typeof opts !== 'undefined') {
-      TypeValidator.throwOnNullInvalidObject(opts, `${dbgNsExt}:${funcName}`, `SfdxFalconWorkerBaseOptions`);
-    }
-    else {
-      opts = {};
-    }
-
     // Validate the members of the options object, if provided.
-    if (typeof opts.dbgNsExt      !== 'undefined')  TypeValidator.throwOnEmptyNullInvalidString (opts.dbgNsExt,     `${dbgNsExt}:${funcName}`,  `SfdxFalconWorkerBaseOptions.dbgNsExt`);
-    if (typeof opts.reportPath    !== 'undefined')  TypeValidator.throwOnEmptyNullInvalidString (opts.reportPath,   `${dbgNsExt}:${funcName}`,  `SfdxFalconWorkerBaseOptions.reportPath`);
-    if (typeof opts.requiresPrep  !== 'undefined')  TypeValidator.throwOnNullInvalidBoolean     (opts.requiresPrep, `${dbgNsExt}:${funcName}`,  `SfdxFalconWorkerBaseOptions.requiresPrep`);
+    TypeValidator.throwOnNullInvalidObject      (opts,              `${dbgNsExt}:${funcName}`,  `SfdxFalconWorkerBaseOptions`);
+    TypeValidator.throwOnEmptyNullInvalidString (opts.dbgNsExt,     `${dbgNsExt}:${funcName}`,  `SfdxFalconWorkerBaseOptions.dbgNsExt`);
+    TypeValidator.throwOnNullInvalidBoolean     (opts.requiresPrep, `${dbgNsExt}:${funcName}`,  `SfdxFalconWorkerBaseOptions.requiresPrep`);
 
     // Initialize member variables.
     this._dbgNs         = `${dbgNsExt}`;
-    this._reportPath    = (typeof opts.reportPath   !== 'undefined') ? opts.reportPath    : null;
     this._requiresPrep  = (typeof opts.requiresPrep !== 'undefined') ? opts.requiresPrep  : false;
+    this._reportPath    = null;
 
     // If this worker requires prep, initialize `this._prepared` to FALSE.
     // If it doesn't require prep, then it should be considered "prpared" from the start.
