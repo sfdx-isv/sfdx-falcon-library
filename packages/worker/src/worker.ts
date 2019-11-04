@@ -188,7 +188,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   public generateReport():JsonMap {
 
     // Use of this method requires that the instance be prepared.
-    this.operationRequiresPreparation();
+    this.operationRequiresPreparation('generateReport()');
 
     // Define function-local and external debug namespaces and validate incoming arguments.
     const funcName    = `generateReport`;
@@ -287,7 +287,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   public async saveReport(reportPath?:string):Promise<JsonMap> {
 
     // Use of this method requires that the instance be prepared.
-    this.operationRequiresPreparation();
+    this.operationRequiresPreparation('saveReport()');
 
     // Define function-local and external debug namespaces and validate incoming arguments.
     const funcName    = `reportPath`;
@@ -364,14 +364,23 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    * @protected
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  protected operationRequiresPreparation():void {
+  protected operationRequiresPreparation(operationLabel?:string):void {
 
     // Define external debug namespace.
     const dbgNsExt = `${this._dbgNs}:requiresPreparation`;
 
+    // Set the operation string.
+    if (typeof operationLabel !== 'string') {
+      operationLabel = ' ';
+    }
+    else {
+      operationLabel = ` '${operationLabel}' `;
+    }
+
     // Check if this instance is explicitly prepared (eg. strict inequality for `true`).
     if (this.prepared !== true) {
-      throw new SfdxFalconError ( `The operation against this ${this.constructor.name} worker object is not allowed until the instance is prepared.`
+      throw new SfdxFalconError ( `The operation${operationLabel}executed against this ${this.constructor.name} object `
+                                + `requires that the instance be prepared. You must call the 'prepare()' method first.`
                                 , `WorkerNotPrepared`
                                 , `${dbgNsExt}`);
     }
