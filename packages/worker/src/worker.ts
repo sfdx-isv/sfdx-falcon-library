@@ -89,7 +89,7 @@ interface SfdxFalconWorkerBaseOptions {
  *              preparation of a `Worker` instance.
  */
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
-export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
+export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions, R extends JsonMap=JsonMap> {
 
   /**
    * Fully resolved filepath where this Worker should write it's report when `saveReport()`
@@ -170,7 +170,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   //───────────────────────────────────────────────────────────────────────────┐
   /**
    * @method      generateReport
-   * @return      {JsonMap} JSON representation this `Worker` object's status.
+   * @return      {R} `JsonMap`-compatible representation this `Worker` object's status.
    * @description Fetches a JSON representation providing details about the
    *              status of the operations performed by this `Worker`.  Will
    *              throw an error if not provided with valid JSON by a call to
@@ -178,7 +178,7 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
    * @public
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public generateReport():JsonMap {
+  public generateReport():R {
 
     // Use of this method requires that the instance be prepared.
     this.operationRequiresPreparation('generateReport()');
@@ -270,14 +270,15 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   /**
    * @method      saveReport
    * @param       {string}  [reportPath] Optional.
-   * @return      {Promise<JsonMap>}
-   * @description Generates a report as a `JsonMap` then writes it to the
-   *              local filesystem at the location specified by `this._reportPath`
-   *              or the `reportPath` location specified by the caller.
+   * @return      {Promise<R>}
+   * @description Generates a report as a `JsonMap`-compatible object then writes
+   *              it to the local filesystem at the location specified by
+   *              `this._reportPath` or the `reportPath` location specified by
+   *              the caller.
    * @public @async
    */
   //───────────────────────────────────────────────────────────────────────────┘
-  public async saveReport(reportPath?:string):Promise<JsonMap> {
+  public async saveReport(reportPath?:string):Promise<R> {
 
     // Use of this method requires that the instance be prepared.
     this.operationRequiresPreparation('saveReport()');
@@ -316,10 +317,10 @@ export abstract class SfdxFalconWorker<T extends SfdxFalconWorkerOptions> {
   }
 
   /**
-   * Generates a `JsonMap` that provides details about the status of the operations
-   * performed by this `Worker`.  Must produce valid JSON or an error will be thrown.
+   * Generates a `JsonMap`-compatible object that provides details about the status of the
+   * operations performed by this `Worker`.  Must produce valid JSON or an error will be thrown.
    */
-  protected abstract _generateReport():JsonMap;
+  protected abstract _generateReport():R;
 
   //───────────────────────────────────────────────────────────────────────────┐
   /**

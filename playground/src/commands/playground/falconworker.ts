@@ -146,6 +146,12 @@ interface WorkerTestOptions extends SfdxFalconWorkerOptions {
   };
 }
 
+// TestReport
+interface TestReport extends JsonMap {
+  test:     string;
+  success:  string;
+}
+
 // Define a class that extends SfdxFalconWorker.
 class WorkerTest extends SfdxFalconWorker<WorkerTestOptions> {
 
@@ -162,7 +168,7 @@ class WorkerTest extends SfdxFalconWorker<WorkerTestOptions> {
     console.log('test me');
   }
 
-  protected _generateReport():JsonMap {
+  protected _generateReport():TestReport {
     return {
       test: "hello",
       success: "Yes there is much success!"
