@@ -1,17 +1,17 @@
 {
   "name": "@sfdx-falcon/interview",
   "description": "Helps developers quickly build complex Inquirer-based interviews. Part of the SFDX-Falcon Library.",
-  "version": "0.0.8-alpha.4",
+  "version": "0.0.8-alpha.5",
   "author": "Vivek M. Chawla (https://twitter.com/VivekMChawla)",
   "bugs": "https://github.com/sfdx-isv/sfdx-falcon-library/issues",
   "dependencies": {
     "@salesforce/ts-types": "1.2.1",
-    "@sfdx-falcon/builder": "0.0.8-alpha.4",
-    "@sfdx-falcon/debug": "0.0.8-alpha.4",
-    "@sfdx-falcon/prompt": "0.0.8-alpha.4",
-    "@sfdx-falcon/status": "0.0.8-alpha.4",
-    "@sfdx-falcon/types": "0.0.8-alpha.4",
-    "@sfdx-falcon/validator": "0.0.8-alpha.4",
+    "@sfdx-falcon/builder": "0.0.8-alpha.5",
+    "@sfdx-falcon/debug": "0.0.8-alpha.5",
+    "@sfdx-falcon/prompt": "0.0.8-alpha.5",
+    "@sfdx-falcon/status": "0.0.8-alpha.5",
+    "@sfdx-falcon/types": "0.0.8-alpha.5",
+    "@sfdx-falcon/validator": "0.0.8-alpha.5",
     "tslib": "1.10.0"
   },
   "devDependencies": {
