@@ -36,6 +36,7 @@ import  {JsonMap}                       from  '@sfdx-falcon/types';   // Type. A
 //import  {SfdxFalconTask}    from '@sfdx-falcon/task';
 //import  {waitASecond}       from '@sfdx-falcon/util/lib/async';
 import  {SfdxFalconWorker}  from  '@sfdx-falcon/worker';  // Abstract Class. Abstract class for building classes that implement task-specific functionality.
+import  {SfdxFalconWorkerOptions}  from  '@sfdx-falcon/worker';  // Interface. Represents the collective options object for classes derived from SfdxFalconWorker.
 //import  Listr               = require('listr');
 //─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
@@ -110,9 +111,21 @@ export default class FalconWorkerPlayground extends SfdxFalconCommand {
     //throw new ShellError('git init --force', 100, 'EONENT', 'STDOUT buffer simulation', 'STDERR buffer simulation\nthis is how we play\nall nitght long!', null, 'My_SfdxFalconError');
 
     //SfdxFalconDebug.debugObject('xxxx:', this);
+    const workerTestOpts = {
+      constructorOpts: {optionOne: 'df', optionTwo: 'df'},
+      prepareOpts: {
+        optionOne: 'ab',
+        optionTwo: 'cd'
+      }
+    };
 
-    const workerTest = await SfdxFalconWorker.prepare<WorkerTest, WorkerTestOptions>(WorkerTest, {optionOne: 'one', optionTwo: 'two'});
+    const workerTest = new WorkerTest(workerTestOpts);
     SfdxFalconDebug.obj(`${dbgNs}:workerTest:`, workerTest);
+
+
+    await workerTest.prepare(workerTestOpts);
+
+    workerTest.testMe();
 
     const workerReport = workerTest.generateReport();
     SfdxFalconDebug.obj(`${dbgNs}:workerReport:`, workerReport);
@@ -122,19 +135,31 @@ export default class FalconWorkerPlayground extends SfdxFalconCommand {
 }
 
 // WorkerTestOptions
-interface WorkerTestOptions {
-  optionOne: string;
-  optionTwo: string;
+interface WorkerTestOptions extends SfdxFalconWorkerOptions {
+  constructorOpts: {
+    optionOne: string;
+    optionTwo: string;
+  };
+  prepareOpts?: {
+    optionOne: string;
+    optionTwo: string;
+  };
 }
 
 // Define a class that extends SfdxFalconWorker.
-class WorkerTest extends SfdxFalconWorker {
+class WorkerTest extends SfdxFalconWorker<WorkerTestOptions> {
 
-  constructor() {
+  constructor(opts:WorkerTestOptions) {
     super({
-      dbgNsExt:   `${dbgNs}`,
-      prepared:   false
+      dbgNsExt:     `${dbgNs}`,
+      requiresPrep: true
     });
+    SfdxFalconDebug.obj(`${this.dbgNs}:opts:`, opts);
+  }
+
+  public testMe():void {
+    this.operationRequiresPreparation();
+    console.log('test me');
   }
 
   protected _generateReport():JsonMap {
@@ -144,7 +169,7 @@ class WorkerTest extends SfdxFalconWorker {
     };
   }
 
-  protected async _prepare(opts:WorkerTestOptions):Promise<WorkerTest> {
+  protected async _prepare(opts:WorkerTestOptions):Promise<void> {
 
     // Define local debug namespace and echo incoming arguments.
     const dbgNsLocal = `${this.dbgNs}:_prepare`;
@@ -160,14 +185,11 @@ class WorkerTest extends SfdxFalconWorker {
 
     // Validate REQUIRED incoming options.
     TypeValidator.throwOnEmptyNullInvalidObject(opts,           `${dbgNsLocal}`, `ClassNameOptions`);
-    TypeValidator.throwOnEmptyNullInvalidString(opts.optionOne, `${dbgNsLocal}`, `ClassNameOptions.optionOne`);
-    TypeValidator.throwOnEmptyNullInvalidString(opts.optionTwo, `${dbgNsLocal}`, `ClassNameOptions.optionTwo`);
+    TypeValidator.throwOnEmptyNullInvalidString(opts.prepareOpts.optionOne, `${dbgNsLocal}`, `ClassNameOptions.prepareOpts.optionOne`);
+    TypeValidator.throwOnEmptyNullInvalidString(opts.prepareOpts.optionTwo, `${dbgNsLocal}`, `ClassNameOptions.prepareOpts.optionTwo`);
 
     // Do stuf to prepare this instance...
     // **STUFF**
 
-    // Mark this instance as "prepared".
-    this._prepared = true;
-    return this;
   }
 }
