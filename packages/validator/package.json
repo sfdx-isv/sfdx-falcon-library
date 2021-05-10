@@ -10,7 +10,7 @@
     "@sfdx-falcon/error": "0.0.8-alpha.7",
     "@sfdx-falcon/types": "0.0.8-alpha.7",
     "fs-extra": "8.1.0",
-    "lodash": "4.17.15",
+    "lodash": "4.17.21",
     "tslib": "1.10.0"
   },
   "devDependencies": {
